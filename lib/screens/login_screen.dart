@@ -8,6 +8,8 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _idController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _idFocusNode = FocusNode();
+  final _passwordFocusNode = FocusNode();
   bool _obscureText = true;
   String _errorMessage = '';
 
@@ -22,6 +24,22 @@ class _LoginScreenState extends State<LoginScreen> {
   void _login() {
     final id = _idController.text;
     final password = _passwordController.text;
+
+    if (id.isEmpty) {
+      setState(() {
+        _errorMessage = '아이디를 입력해주세요.';
+      });
+      _idFocusNode.requestFocus();
+      return;
+    }
+
+    if (password.isEmpty) {
+      setState(() {
+        _errorMessage = '비밀번호를 입력해주세요.';
+      });
+      _passwordFocusNode.requestFocus();
+      return;
+    }
 
     if (_dummyUsers.containsKey(id) && _dummyUsers[id] == password) {
       Navigator.pushReplacementNamed(context, '/home');
@@ -57,29 +75,28 @@ class _LoginScreenState extends State<LoginScreen> {
                   height: 80,
                 ),
                 SizedBox(height: 16),
-                Text(
-                  'APP',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
               ],
             ),
             SizedBox(height: 32),
             // 아이디 텍스트 필드
             TextField(
               controller: _idController,
+              focusNode: _idFocusNode,
               decoration: InputDecoration(
                 labelText: '아이디',
                 hintText: 'app@naver.com',
                 border: OutlineInputBorder(),
               ),
+              textInputAction: TextInputAction.next,
+              onSubmitted: (_) {
+                FocusScope.of(context).requestFocus(_passwordFocusNode);
+              },
             ),
             SizedBox(height: 16),
             // 비밀번호 텍스트 필드
             TextField(
               controller: _passwordController,
+              focusNode: _passwordFocusNode,
               obscureText: _obscureText,
               decoration: InputDecoration(
                 labelText: '비밀번호',
@@ -95,6 +112,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                 ),
               ),
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => _login(),
             ),
             SizedBox(height: 8),
             Align(
@@ -159,6 +178,8 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     _idController.dispose();
     _passwordController.dispose();
+    _idFocusNode.dispose();
+    _passwordFocusNode.dispose();
     super.dispose();
   }
 }
