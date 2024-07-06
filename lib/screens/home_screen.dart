@@ -7,7 +7,7 @@ class HomeScreen extends StatelessWidget {
       body: Column(
         children: [
           Container(
-            height: 136,
+            height: 100,
             width: double.infinity,
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -18,7 +18,7 @@ class HomeScreen extends StatelessWidget {
             ),
             alignment: Alignment.center,
             child: Text(
-              '결재 관리',
+              '피드',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -51,7 +51,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 Positioned(
-                  bottom: 70, // 바텀 네비게이션 바보다 50px 위로 이동
+                  bottom: 30, // 바텀 네비게이션 바보다 50px 위로 이동
                   left: 0,
                   right: 0,
                   child: Row(
