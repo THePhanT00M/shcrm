@@ -18,7 +18,7 @@ class AuthSelectionScreen extends StatelessWidget {
                 padding:
                     const EdgeInsets.only(top: 150.0, left: 32.0, right: 32.0),
                 child: Text(
-                  '성공한 기업들의 혁신적인 비용관리, APP(가제)',
+                  '성공한 기업들의 혁신적인 비용관리, APP',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
