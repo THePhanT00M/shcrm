@@ -5,7 +5,7 @@ class ReportsPage extends StatelessWidget {
   final List<Map<String, String>> dummyData = [
     {
       'status': '작성 중',
-      'totalExpenses': '총 지출 0건',
+      'totalExpenses': '총 지출 1건',
       'title': '6월 경비 지출 건',
       'amount': '₩ 645,250'
     },
