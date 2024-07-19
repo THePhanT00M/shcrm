@@ -44,7 +44,7 @@ class ReportsPage extends StatelessWidget {
         automaticallyImplyLeading: false,
         backgroundColor: Color(0xFF10D9B5),
         elevation: 0,
-        toolbarHeight: 120,
+        toolbarHeight: 140,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -57,7 +57,8 @@ class ReportsPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                margin:
+                    EdgeInsets.only(top: 25, right: 10, left: 10, bottom: 5),
                 child: Row(
                   children: [
                     Expanded(
