@@ -108,7 +108,7 @@ flutter:
     - assets/background.png
     - assets/camera_icon.png
     - assets/selfie_icon.png
-    - assets/icon1.png
-    - assets/icon2.png
-    - assets/icon3.png
-    - assets/icon4.png
+    - assets/icons/icon1.svg
+    - assets/icons/icon2.svg
+    - assets/icons/icon3.svg
+    - assets/icons/icon4.svg

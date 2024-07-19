@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class LoadingScreen extends StatefulWidget {
   @override
@@ -24,29 +23,14 @@ class _LoadingScreenState extends State<LoadingScreen> {
         _isConnected = false;
       });
     } else {
-      _checkToken();
+      _navigateToNextScreen();
     }
   }
 
-  Future<void> _checkToken() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('jwt_token');
-
-    if (token != null) {
-      _navigateToHome();
-    } else {
-      _navigateToAuthSelection();
-    }
-  }
-
-  void _navigateToHome() async {
-    await Future.delayed(Duration(seconds: 3), () {});
-    Navigator.pushReplacementNamed(context, '/home');
-  }
-
-  void _navigateToAuthSelection() async {
+  void _navigateToNextScreen() async {
     await Future.delayed(Duration(seconds: 3), () {});
     Navigator.pushReplacementNamed(context, '/auth-selection');
+    //Navigator.pushReplacementNamed(context, '/home');
   }
 
   @override
