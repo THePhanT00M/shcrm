@@ -9,15 +9,15 @@ class HomeScreen extends StatelessWidget {
           Container(
             height: 100,
             width: double.infinity,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF073F7D), Color(0xFF1A2E43)],
+                colors: [Color(0xFF10D9B5), Color(0xFF009EB4)],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
             ),
             alignment: Alignment.center,
-            child: Text(
+            child: const Text(
               '피드',
               style: TextStyle(
                 fontSize: 24,
@@ -33,7 +33,7 @@ class HomeScreen extends StatelessWidget {
                 Container(
                   color: Colors.white, // body 배경색 흰색으로 설정
                 ),
-                Center(
+                const Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -59,15 +59,15 @@ class HomeScreen extends StatelessWidget {
                     children: [
                       ElevatedButton.icon(
                         onPressed: () {},
-                        icon: Icon(Icons.camera_alt),
-                        label: Text('촬영'),
+                        icon: const Icon(Icons.camera_alt),
+                        label: const Text('촬영'),
                         style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(
+                          padding: const EdgeInsets.symmetric(
                               vertical: 15, horizontal: 30),
                           backgroundColor:
-                              Color(0xFF007AE1), // background color
+                              const Color(0xFF007AE1), // background color
                           foregroundColor: Colors.white, // text color
-                          shape: RoundedRectangleBorder(
+                          shape: const RoundedRectangleBorder(
                             borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(20),
                               bottomLeft: Radius.circular(20),
@@ -77,15 +77,15 @@ class HomeScreen extends StatelessWidget {
                       ),
                       ElevatedButton.icon(
                         onPressed: () {},
-                        icon: Icon(Icons.edit),
-                        label: Text('셀프'),
+                        icon: const Icon(Icons.edit),
+                        label: const Text('셀프'),
                         style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(
+                          padding: const EdgeInsets.symmetric(
                               vertical: 15, horizontal: 30),
                           backgroundColor:
-                              Color(0xFF05A3DE), // background color
+                              const Color(0xFF05A3DE), // background color
                           foregroundColor: Colors.white, // text color
-                          shape: RoundedRectangleBorder(
+                          shape: const RoundedRectangleBorder(
                             borderRadius: BorderRadius.only(
                               topRight: Radius.circular(20),
                               bottomRight: Radius.circular(20),
@@ -104,22 +104,22 @@ class HomeScreen extends StatelessWidget {
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white, // BottomNavigationBar 배경색을 흰색으로 설정
-        items: [
+        items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: 'label',
+            label: '알림',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.list),
-            label: 'label',
+            label: '보고서',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.note),
-            label: 'label',
+            label: '보드',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
-            label: 'label',
+            label: '마이',
           ),
         ],
       ),
