@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'feed/main.dart'; // 여기에 실제 프로젝트 이름을 사용하세요.
+import 'feed/main.dart';
+import 'report/main.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -48,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildFloatingButtons() {
-    if (_selectedIndex == 2 || _selectedIndex == 3) {
+    if (_selectedIndex == 1 || _selectedIndex == 2 || _selectedIndex == 3) {
       return SizedBox.shrink();
     }
 
@@ -132,13 +133,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
-  }
-}
-
-class ReportsPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text('보고서 페이지'));
   }
 }
 
