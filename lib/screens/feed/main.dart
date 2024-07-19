@@ -7,7 +7,7 @@ class NotificationsPage extends StatelessWidget {
       body: Column(
         children: [
           Container(
-            height: 100,
+            height: 120,
             width: double.infinity,
             decoration: const BoxDecoration(
               gradient: LinearGradient(

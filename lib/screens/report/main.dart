@@ -43,7 +43,7 @@ class ReportsPage extends StatelessWidget {
         children: [
           Container(
             height:
-                150, // Adjust height to accommodate both title and search/filter
+                170, // Adjust height to accommodate both title and search/filter
             width: double.infinity,
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -104,7 +104,7 @@ class ReportsPage extends StatelessWidget {
                 Container(
                   width: double.infinity,
                   padding:
-                      EdgeInsets.symmetric(horizontal: 32.0, vertical: 8.0),
+                      EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
                   child: Container(
                     padding:
                         EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -147,8 +147,7 @@ class ReportsPage extends StatelessWidget {
                   color: Color(0xFFf0f0f0), // body background color
                 ),
                 ListView.builder(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 32.0, vertical: 8.0),
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8.0),
                   itemCount: dummyData.length,
                   itemBuilder: (context, index) {
                     return CustomCard(
@@ -207,20 +206,31 @@ class CustomCard extends StatelessWidget {
     Color textColor = getTextColor(statusColor);
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
       child: Container(
         width: double.infinity,
         height: 98,
         margin: EdgeInsets.symmetric(vertical: 8.0),
         decoration: BoxDecoration(
           color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(5),
+            bottomLeft: Radius.circular(5),
+            topRight: Radius.circular(13),
+            bottomRight: Radius.circular(13),
+          ),
         ),
         child: Row(
           children: [
             Container(
               width: 7,
               height: double.infinity,
-              color: statusColor,
+              decoration: BoxDecoration(
+                color: statusColor,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(15),
+                  bottomLeft: Radius.circular(15),
+                ),
+              ),
             ),
             Expanded(
               child: Padding(

@@ -62,10 +62,13 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           ElevatedButton.icon(
             onPressed: () {},
-            icon: const Icon(Icons.camera_alt),
+            icon: const Icon(
+              Icons.camera_alt,
+              size: 14,
+            ),
             label: const Text('촬영'),
             style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+              padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 15),
               backgroundColor: const Color(0xFF0088D4), // background color
               foregroundColor: Colors.white, // text color
               shape: const RoundedRectangleBorder(
@@ -78,10 +81,13 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           ElevatedButton.icon(
             onPressed: () {},
-            icon: const Icon(Icons.edit),
+            icon: const Icon(
+              Icons.edit,
+              size: 14,
+            ),
             label: const Text('셀프'),
             style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+              padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 15),
               backgroundColor: const Color(0xFF0CCEAB), // background color
               foregroundColor: Colors.white, // text color
               shape: const RoundedRectangleBorder(
