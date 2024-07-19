@@ -4,34 +4,38 @@ class NotificationsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          Container(
-            height: 120,
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF10D9B5), Color(0xFF009EB4)],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
-            alignment: Alignment.center,
-            child: const Text(
-              '피드',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-              textAlign: TextAlign.center,
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        toolbarHeight: 100,
+        backgroundColor: Color(0xFF10D9B5),
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF10D9B5), Color(0xFF009EB4)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
             ),
           ),
+          alignment: Alignment.center,
+          child: const Text(
+            '피드',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+      body: Column(
+        children: [
           Expanded(
             child: Stack(
               children: [
                 Container(
-                  color: Colors.white, // body 배경색 흰색으로 설정
+                  color: Color(0xFFf0f0f0), // body 배경색 흰색으로 설정
                 ),
                 const Center(
                   child: Column(

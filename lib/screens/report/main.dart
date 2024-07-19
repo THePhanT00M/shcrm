@@ -39,126 +39,118 @@ class ReportsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          Container(
-            height:
-                170, // Adjust height to accommodate both title and search/filter
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF10D9B5), Color(0xFF009EB4)],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
+      backgroundColor: Color(0xFFf0f0f0),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        backgroundColor: Color(0xFF10D9B5),
+        elevation: 0,
+        toolbarHeight: 120,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF10D9B5), Color(0xFF009EB4)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
             ),
-            alignment: Alignment.center,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Stack(
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                child: Row(
                   children: [
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton(
+                          onPressed: () {
+                            // Add your onPressed code here
+                          },
+                          child: Text(
+                            '지정안함',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                     Center(
                       child: Text(
                         '보고서',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
                       ),
                     ),
-                    Positioned(
-                      left: 16,
-                      top: 0,
-                      bottom: 0,
-                      child: Center(
-                        child: TextButton(
-                          onPressed: () {},
-                          child: Text(
-                            '지정안함',
-                            style: TextStyle(fontSize: 16, color: Colors.white),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      right: 16,
-                      top: 0,
-                      bottom: 0,
-                      child: Center(
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerRight,
                         child: IconButton(
-                          icon: Icon(
-                            Icons.add_circle_outline,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                          onPressed: () {},
+                          icon: Icon(Icons.add), // Icon for the plus button
+                          onPressed: () {
+                            // Add your onPressed code here
+                          },
+                          color: Colors.white, // Adjust the color as needed
                         ),
                       ),
                     ),
                   ],
                 ),
-                SizedBox(
-                    height: 8), // Spacing between the title and search/filter
-                Container(
-                  width: double.infinity,
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-                  child: Container(
-                    padding:
-                        EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                    decoration: BoxDecoration(
-                      color: Color(
-                          0xFF028490), // Background color for the search/filter section
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SvgPicture.asset(
-                          'assets/icons/set.svg', // Path to your SVG asset
-                          height: 16, // Adjust the height to fit your design
-                          colorFilter: ColorFilter.mode(
-                            Colors.white,
-                            BlendMode.srcIn,
-                          ),
-                        ),
-                        SizedBox(width: 8), // Spacing between the icon and text
-                        Text(
-                          '검색 및 필터',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+              ),
+
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                padding: EdgeInsets.symmetric(vertical: 8.0),
+                decoration: BoxDecoration(
+                  color: Color(0xFF028490),
+                  borderRadius: BorderRadius.circular(8.0),
                 ),
-              ],
-            ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SvgPicture.asset(
+                      'assets/icons/set.svg', // Path to your SVG asset
+                      height: 16,
+                      colorFilter: ColorFilter.mode(
+                        Colors.white,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      '검색 및 필터',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 8), // Space below the search/filter
+            ],
           ),
+        ),
+      ),
+      body: Column(
+        children: [
           Expanded(
-            child: Stack(
-              children: [
-                Container(
-                  color: Color(0xFFf0f0f0), // body background color
-                ),
-                ListView.builder(
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8.0),
-                  itemCount: dummyData.length,
-                  itemBuilder: (context, index) {
-                    return CustomCard(
-                      status: dummyData[index]['status']!,
-                      totalExpenses: dummyData[index]['totalExpenses']!,
-                      title: dummyData[index]['title']!,
-                      amount: dummyData[index]['amount']!,
-                    );
-                  },
-                ),
-              ],
+            child: ListView.builder(
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8.0),
+              itemCount: dummyData.length,
+              itemBuilder: (context, index) {
+                return CustomCard(
+                  status: dummyData[index]['status']!,
+                  totalExpenses: dummyData[index]['totalExpenses']!,
+                  title: dummyData[index]['title']!,
+                  amount: dummyData[index]['amount']!,
+                );
+              },
             ),
           ),
         ],
@@ -213,8 +205,8 @@ class CustomCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(5),
-            bottomLeft: Radius.circular(5),
+            topLeft: Radius.circular(7),
+            bottomLeft: Radius.circular(7),
             topRight: Radius.circular(13),
             bottomRight: Radius.circular(13),
           ),
