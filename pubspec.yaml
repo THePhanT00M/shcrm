@@ -112,3 +112,5 @@ flutter:
     - assets/icons/icon2.svg
     - assets/icons/icon3.svg
     - assets/icons/icon4.svg
+    - assets/icons/set.svg
+    - assets/icons/file_folder.svg

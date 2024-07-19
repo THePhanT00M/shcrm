@@ -49,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildFloatingButtons() {
-    if (_selectedIndex == 1 || _selectedIndex == 2 || _selectedIndex == 3) {
+    if (_selectedIndex == 2 || _selectedIndex == 3) {
       return SizedBox.shrink();
     }
 
