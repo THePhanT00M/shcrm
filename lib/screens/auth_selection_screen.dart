@@ -18,7 +18,7 @@ class AuthSelectionScreen extends StatelessWidget {
                 padding:
                     const EdgeInsets.only(top: 150.0, left: 32.0, right: 32.0),
                 child: Text(
-                  '성공한 기업들의 혁신적인 비용관리, APP()',
+                  '성공한 기업들의\n혁신적인 비용관리, APP()',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -41,9 +41,9 @@ class AuthSelectionScreen extends StatelessWidget {
                         style: TextStyle(fontSize: 16),
                       ),
                       style: ElevatedButton.styleFrom(
-                        minimumSize: Size(double.infinity, 50),
+                        minimumSize: Size(double.infinity, 47),
                         foregroundColor: Colors.white,
-                        backgroundColor: Color(0xFF1C31F0),
+                        backgroundColor: Color(0xFF10D9B5),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(5),
                         ),
@@ -59,7 +59,7 @@ class AuthSelectionScreen extends StatelessWidget {
                         style: TextStyle(fontSize: 16),
                       ),
                       style: OutlinedButton.styleFrom(
-                        minimumSize: Size(double.infinity, 50),
+                        minimumSize: Size(double.infinity, 47),
                         foregroundColor: Colors.white,
                         side: BorderSide(color: Colors.white),
                         shape: RoundedRectangleBorder(

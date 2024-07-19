@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -14,34 +16,86 @@ class _LoginScreenState extends State<LoginScreen> {
   String _errorMessage = '';
 
   final Map<String, String> _dummyUsers = {
-    '20212155': 'shinhan24!',
-    '20212156': 'shinhan24!',
-    '20211525': 'shinhan24!',
-    '20212159': 'shinhan24!',
-    '20212224': 'shinhan24!',
+    '20212155@shcrm.com': 'shinhan24!',
+    '20212156@shcrm.com': 'shinhan24!',
+    '20211525@shcrm.com': 'shinhan24!',
+    '20212159@shcrm.com': 'shinhan24!',
+    '20212224@shcrm.com': 'shinhan24!',
   };
 
-  void _login() {
+  void _showAlertDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(20.0)),
+          ),
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(20.0)),
+              color: Colors.white,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: Text(
+                    message,
+                    style: TextStyle(fontSize: 18),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                SizedBox(height: 20),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(
+                    '확인',
+                    style: TextStyle(
+                      color: Colors.blue,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _login() async {
     final id = _idController.text;
     final password = _passwordController.text;
 
+    // Regex pattern for validating an email address
+    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+
     if (id.isEmpty) {
-      setState(() {
-        _errorMessage = '아이디를 입력해주세요.';
-      });
+      _showAlertDialog('이메일을 입력해 주세요.');
+      _idFocusNode.requestFocus();
+      return;
+    }
+
+    if (!emailRegex.hasMatch(id)) {
+      _showAlertDialog('올바른 이메일 형식을 입력해 주세요.');
       _idFocusNode.requestFocus();
       return;
     }
 
     if (password.isEmpty) {
-      setState(() {
-        _errorMessage = '비밀번호를 입력해주세요.';
-      });
+      _showAlertDialog('비밀번호를 입력해 주세요.');
       _passwordFocusNode.requestFocus();
       return;
     }
 
     if (_dummyUsers.containsKey(id) && _dummyUsers[id] == password) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('jwt_token', 'dummy_token'); // Save the token
       Navigator.pushReplacementNamed(context, '/home');
     } else {
       setState(() {
@@ -67,24 +121,33 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // 로고
-            Column(
+            // 로고와 텍스트 APP
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset(
-                  'assets/logo.png', // 로고 이미지 경로를 올바르게 설정하세요.
+                SvgPicture.asset(
+                  'assets/logo.svg', // 로고 이미지 경로를 올바르게 설정하세요.
+                  width: 80,
                   height: 80,
                 ),
-                SizedBox(height: 16),
+                SizedBox(width: 16),
+                Text(
+                  'APP',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
-            SizedBox(height: 32),
+            SizedBox(height: 100),
             // 아이디 텍스트 필드
             TextField(
               controller: _idController,
               focusNode: _idFocusNode,
               decoration: InputDecoration(
-                labelText: '아이디',
-                hintText: 'app@naver.com',
+                labelText: '이메일',
+                hintText: 'abc@example.com',
                 border: OutlineInputBorder(),
               ),
               textInputAction: TextInputAction.next,
@@ -100,6 +163,7 @@ class _LoginScreenState extends State<LoginScreen> {
               obscureText: _obscureText,
               decoration: InputDecoration(
                 labelText: '비밀번호',
+                hintText: '영문, 숫자를 포함한 12글자 이내',
                 border: OutlineInputBorder(),
                 suffixIcon: IconButton(
                   icon: Icon(
@@ -115,14 +179,25 @@ class _LoginScreenState extends State<LoginScreen> {
               textInputAction: TextInputAction.done,
               onSubmitted: (_) => _login(),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                '영문, 숫자를 포함한 12글자 이내',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+            const SizedBox(height: 8),
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: () {
                   // 비밀번호 찾기 페이지로 이동하는 코드 추가
                 },
-                child: Text('비밀번호 찾기'),
+                child: Text(
+                  '비밀번호 찾기',
+                  style: TextStyle(color: Colors.black),
+                ),
               ),
             ),
             if (_errorMessage.isNotEmpty) ...[
@@ -142,10 +217,10 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               style: ElevatedButton.styleFrom(
                 minimumSize: Size(double.infinity, 50),
-                backgroundColor: Color(0xFF1C31F0),
+                backgroundColor: Color(0xFF10D9B5),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5),
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
@@ -161,10 +236,10 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               style: OutlinedButton.styleFrom(
                 minimumSize: Size(double.infinity, 50),
-                foregroundColor: Color(0xFF1C31F0),
-                side: BorderSide(color: Color(0xFF1C31F0)),
+                foregroundColor: Color(0xFF10D9B5),
+                side: BorderSide(color: Color(0xFF10D9B5)),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5),
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
