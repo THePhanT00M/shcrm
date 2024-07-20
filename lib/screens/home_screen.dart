@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'feed/main.dart';
 import 'report/main.dart';
+import 'mypage/main.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -146,12 +147,5 @@ class BoardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(child: Text('보드 페이지'));
-  }
-}
-
-class MyPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text('마이 페이지'));
   }
 }
