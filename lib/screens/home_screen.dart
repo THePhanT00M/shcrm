@@ -139,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             if (_selectedIndex != 2 && _selectedIndex != 3)
               Positioned(
-                bottom: 43,
+                bottom: 45,
                 left: MediaQuery.of(context).size.width / 2 - 25,
                 child: GestureDetector(
                   onTap: _toggleOverlay,
