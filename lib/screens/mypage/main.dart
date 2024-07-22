@@ -9,7 +9,7 @@ class MyPage extends StatelessWidget {
         automaticallyImplyLeading: false,
         backgroundColor: Color(0xFF10D9B5),
         elevation: 0,
-        toolbarHeight: 250,
+        toolbarHeight: 240,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
