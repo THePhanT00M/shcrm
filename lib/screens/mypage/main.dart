@@ -177,7 +177,7 @@ class _FeatureSettingSection2State extends State<FeatureSettingSection2> {
     return Container(
       width: double.infinity,
       color: Colors.white,
-      padding: EdgeInsets.only(left: 24, top: 8, right: 15, bottom: 8),
+      padding: EdgeInsets.only(left: 20, top: 8, right: 20, bottom: 8),
       margin: EdgeInsets.only(bottom: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -193,7 +193,7 @@ class _FeatureSettingSection2State extends State<FeatureSettingSection2> {
               Text(
                 'wi-fi upload only',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -214,7 +214,7 @@ class _FeatureSettingSection2State extends State<FeatureSettingSection2> {
               Text(
                 '이미지 자동 저장',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -235,7 +235,7 @@ class _FeatureSettingSection2State extends State<FeatureSettingSection2> {
               Text(
                 '카메라 모드로 시작',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -261,7 +261,7 @@ class FeatureSettingSection3 extends StatelessWidget {
     return Container(
       width: double.infinity,
       color: Colors.white,
-      padding: EdgeInsets.only(left: 24, top: 8, right: 30, bottom: 8),
+      padding: EdgeInsets.only(left: 20, top: 8, right: 20, bottom: 8),
       margin: EdgeInsets.only(bottom: 10),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -277,7 +277,7 @@ class FeatureSettingSection3 extends StatelessWidget {
               Text(
                 '버전',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -321,7 +321,7 @@ class CustomSwitch extends StatelessWidget {
   const CustomSwitch({
     required this.value,
     required this.onChanged,
-    this.scale = 0.8, // Default scale is 1.0
+    this.scale = 1, // Default scale is 1.0
   });
 
   @override
