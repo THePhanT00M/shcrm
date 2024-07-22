@@ -112,6 +112,48 @@ class _HomeScreenState extends State<HomeScreen> {
         body: Stack(
           children: [
             Center(child: _getSelectedPage(_selectedIndex)),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: BottomNavigationBar(
+                type: BottomNavigationBarType.fixed,
+                backgroundColor: Colors.white, // BottomNavigationBar 배경 색상
+                selectedItemColor: Color(0xFF10D9B5), // 선택된 항목 색상
+                unselectedItemColor: Color(0xFF666666), // 선택되지 않은 항목 색상
+                selectedFontSize: 12, // 선택된 항목의 폰트 크기
+                unselectedFontSize: 12, // 선택되지 않은 항목의 폰트 크기
+                iconSize: 24, // 아이콘 크기
+                currentIndex: _selectedIndex,
+                onTap: _onItemTapped,
+                items: [
+                  _buildNavItem('assets/icons/icon1.svg', '알림', 0),
+                  _buildNavItem('assets/icons/icon2.svg', '보고서', 1),
+                  _buildNavItem('assets/icons/icon3.svg', '보드', 2),
+                  _buildNavItem('assets/icons/icon4.svg', '마이', 3),
+                ],
+              ),
+            ),
+            Positioned(
+              bottom: 30,
+              left: MediaQuery.of(context).size.width / 2 - 25,
+              child: GestureDetector(
+                onTap: _toggleOverlay,
+                child: Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Color(0xFF10D9B5), // 배경 색상
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.edit,
+                    color: Colors.white, // 아이콘 색상
+                    size: 30, // 아이콘 크기
+                  ),
+                ),
+              ),
+            ),
             if (_isOverlayVisible)
               Positioned.fill(
                 child: GestureDetector(
@@ -122,47 +164,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         _buildFloatingButtons(),
-                        SizedBox(height: 80),
+                        SizedBox(height: 160),
                       ],
                     ),
                   ),
                 ),
               ),
           ],
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.white, // BottomNavigationBar 배경 색상
-          selectedItemColor: Color(0xFF10D9B5), // 선택된 항목 색상
-          unselectedItemColor: Color(0xFF666666), // 선택되지 않은 항목 색상
-          selectedFontSize: 12, // 선택된 항목의 폰트 크기
-          unselectedFontSize: 12, // 선택되지 않은 항목의 폰트 크기
-          iconSize: 24, // 아이콘 크기
-          currentIndex: _selectedIndex,
-          onTap: _onItemTapped,
-          items: [
-            _buildNavItem('assets/icons/icon1.svg', '알림', 0),
-            _buildNavItem('assets/icons/icon2.svg', '보고서', 1),
-            _buildNavItem('assets/icons/icon3.svg', '보드', 2),
-            _buildNavItem('assets/icons/icon4.svg', '마이', 3),
-          ],
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        floatingActionButton: GestureDetector(
-          onTap: _toggleOverlay,
-          child: Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: Color(0xFF10D9B5), // 배경 색상
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.edit,
-              color: Colors.white, // 아이콘 색상
-              size: 30, // 아이콘 크기
-            ),
-          ),
         ),
       ),
     );
