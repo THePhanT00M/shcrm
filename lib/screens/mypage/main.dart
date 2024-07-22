@@ -18,12 +18,14 @@ class MyPage extends StatelessWidget {
               end: Alignment.bottomCenter,
             ),
           ),
-          child: Column(
-            children: [
-              Container(
-                margin:
-                    EdgeInsets.only(top: 25, right: 10, left: 10, bottom: 5),
-                child: Center(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  margin:
+                      EdgeInsets.only(top: 30, right: 10, left: 10, bottom: 5),
                   child: Text(
                     'MY',
                     style: TextStyle(
@@ -33,40 +35,92 @@ class MyPage extends StatelessWidget {
                     ),
                   ),
                 ),
-              ),
-              Container(
-                margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 60,
-                      height: 60,
-                      child: CircleAvatar(
-                        backgroundImage: AssetImage('assets/avatar_man.png'),
+                Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 60,
+                        height: 60,
+                        child: CircleAvatar(
+                          backgroundImage: AssetImage('assets/avatar_man.png'),
+                        ),
                       ),
-                    ),
-                    SizedBox(width: 20),
-                    Expanded(
-                      child: Column(
+                      SizedBox(width: 20),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '회사 아이콘',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            Text(
+                              '이름',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.white,
+                              ),
+                            ),
+                            Text(
+                              '이메일',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            '계정',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Text(''),
+                          Text(''),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 10),
+                Container(
+                  margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                  padding:
+                      EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                  decoration: BoxDecoration(
+                    color: Color(0xFF028490),
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '회사 아이콘',
+                            '폴리시',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
                           ),
+                          SizedBox(height: 4),
                           Text(
-                            '이름',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.white,
-                            ),
-                          ),
-                          Text(
-                            '이메일',
+                            '지정 안함',
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.white,
@@ -74,66 +128,16 @@ class MyPage extends StatelessWidget {
                           ),
                         ],
                       ),
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          '계정',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.white,
-                          ),
-                        ),
-                        Text(''),
-                        Text(''),
-                      ],
-                    ),
-                  ],
+                      Icon(
+                        Icons.chevron_right,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              SizedBox(height: 10),
-              Container(
-                margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-                padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                decoration: BoxDecoration(
-                  color: Color(0xFF028490),
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '폴리시',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          '지정 안함',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Icon(
-                      Icons.chevron_right,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 8),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -190,11 +194,14 @@ class _FeatureSettingSection2State extends State<FeatureSettingSection2> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'wi-fi upload only',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  'wi-fi upload only',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               CustomSwitch(
@@ -211,11 +218,14 @@ class _FeatureSettingSection2State extends State<FeatureSettingSection2> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                '이미지 자동 저장',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  '이미지 자동 저장',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               CustomSwitch(
@@ -232,11 +242,14 @@ class _FeatureSettingSection2State extends State<FeatureSettingSection2> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                '카메라 모드로 시작',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  '카메라 모드로 시작',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               CustomSwitch(
@@ -274,17 +287,23 @@ class FeatureSettingSection3 extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                '버전',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  '버전',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-              Text(
-                '1.0.0',
-                style: TextStyle(
-                  fontSize: 16,
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  '1.0.0',
+                  style: TextStyle(
+                    fontSize: 15,
+                  ),
                 ),
               ),
             ],
@@ -293,11 +312,14 @@ class FeatureSettingSection3 extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Help & Feedback',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  'Help & Feedback',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               Icon(

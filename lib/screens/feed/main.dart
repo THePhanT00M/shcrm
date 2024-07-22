@@ -17,15 +17,16 @@ class NotificationsPage extends StatelessWidget {
               end: Alignment.bottomCenter,
             ),
           ),
-          alignment: Alignment.center,
-          child: const Text(
-            '피드',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+          child: Center(
+            child: const Text(
+              '피드',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
           ),
         ),
       ),
@@ -37,9 +38,10 @@ class NotificationsPage extends StatelessWidget {
                 Container(
                   color: Color(0xFFf0f0f0), // body 배경색 흰색으로 설정
                 ),
-                const Center(
+                Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
                         '피드가 없습니다.',

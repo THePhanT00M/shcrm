@@ -103,7 +103,6 @@ class ReportsPage extends StatelessWidget {
                   ],
                 ),
               ),
-
               Container(
                 margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
                 padding: EdgeInsets.symmetric(vertical: 8.0),
