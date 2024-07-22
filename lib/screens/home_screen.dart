@@ -11,10 +11,17 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+  bool _isOverlayVisible = false;
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
+    });
+  }
+
+  void _toggleOverlay() {
+    setState(() {
+      _isOverlayVisible = !_isOverlayVisible;
     });
   }
 
@@ -50,57 +57,48 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildFloatingButtons() {
-    if (_selectedIndex == 2 || _selectedIndex == 3) {
-      return SizedBox.shrink();
-    }
-
-    return Positioned(
-      bottom: 30, // 바텀 네비게이션 바보다 50px 위로 이동
-      left: 0,
-      right: 0,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          ElevatedButton.icon(
-            onPressed: () {},
-            icon: const Icon(
-              Icons.camera_alt,
-              size: 14,
-            ),
-            label: const Text('촬영'),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 15),
-              backgroundColor: const Color(0xFF0088D4), // background color
-              foregroundColor: Colors.white, // text color
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  bottomLeft: Radius.circular(20),
-                ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        ElevatedButton.icon(
+          onPressed: () {},
+          icon: const Icon(
+            Icons.camera_alt,
+            size: 14,
+          ),
+          label: const Text('촬영'),
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 15),
+            backgroundColor: const Color(0xFF0088D4), // background color
+            foregroundColor: Colors.white, // text color
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20),
+                bottomLeft: Radius.circular(20),
               ),
             ),
           ),
-          ElevatedButton.icon(
-            onPressed: () {},
-            icon: const Icon(
-              Icons.edit,
-              size: 14,
-            ),
-            label: const Text('셀프'),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 15),
-              backgroundColor: const Color(0xFF0CCEAB), // background color
-              foregroundColor: Colors.white, // text color
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
-                ),
+        ),
+        ElevatedButton.icon(
+          onPressed: () {},
+          icon: const Icon(
+            Icons.edit,
+            size: 14,
+          ),
+          label: const Text('셀프'),
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 15),
+            backgroundColor: const Color(0xFF0CCEAB), // background color
+            foregroundColor: Colors.white, // text color
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                topRight: Radius.circular(20),
+                bottomRight: Radius.circular(20),
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -114,28 +112,56 @@ class _HomeScreenState extends State<HomeScreen> {
         body: Stack(
           children: [
             Center(child: _getSelectedPage(_selectedIndex)),
-            _buildFloatingButtons(),
+            if (_isOverlayVisible)
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: _toggleOverlay,
+                  child: Container(
+                    color: Colors.black54,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        _buildFloatingButtons(),
+                        SizedBox(height: 80),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
-        bottomNavigationBar: Container(
-          height: 80, // Set the height of the BottomNavigationBar
-          child: BottomNavigationBar(
-            type: BottomNavigationBarType.fixed,
-            backgroundColor:
-                Colors.white, // BottomNavigationBar background color
-            selectedItemColor: Color(0xFF10D9B5), // Selected item color
-            unselectedItemColor: Color(0xFF666666), // Unselected item color
-            selectedFontSize: 12, // Set the font size for selected items
-            unselectedFontSize: 12, // Set the font size for unselected items
-            iconSize: 24, // Set the icon size to be consistent
-            currentIndex: _selectedIndex,
-            onTap: _onItemTapped,
-            items: [
-              _buildNavItem('assets/icons/icon1.svg', '알림', 0),
-              _buildNavItem('assets/icons/icon2.svg', '보고서', 1),
-              _buildNavItem('assets/icons/icon3.svg', '보드', 2),
-              _buildNavItem('assets/icons/icon4.svg', '마이', 3),
-            ],
+        bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Colors.white, // BottomNavigationBar 배경 색상
+          selectedItemColor: Color(0xFF10D9B5), // 선택된 항목 색상
+          unselectedItemColor: Color(0xFF666666), // 선택되지 않은 항목 색상
+          selectedFontSize: 12, // 선택된 항목의 폰트 크기
+          unselectedFontSize: 12, // 선택되지 않은 항목의 폰트 크기
+          iconSize: 24, // 아이콘 크기
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
+          items: [
+            _buildNavItem('assets/icons/icon1.svg', '알림', 0),
+            _buildNavItem('assets/icons/icon2.svg', '보고서', 1),
+            _buildNavItem('assets/icons/icon3.svg', '보드', 2),
+            _buildNavItem('assets/icons/icon4.svg', '마이', 3),
+          ],
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        floatingActionButton: GestureDetector(
+          onTap: _toggleOverlay,
+          child: Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: Color(0xFF10D9B5), // 배경 색상
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.edit,
+              color: Colors.white, // 아이콘 색상
+              size: 30, // 아이콘 크기
+            ),
           ),
         ),
       ),
