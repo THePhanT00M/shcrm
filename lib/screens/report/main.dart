@@ -150,6 +150,18 @@ class ReportsPage extends StatelessWidget {
                   totalExpenses: dummyData[index]['totalExpenses']!,
                   title: dummyData[index]['title']!,
                   amount: dummyData[index]['amount']!,
+                  onTap: () {
+                    // 클릭 시 실행할 동작을 여기서 정의하세요.
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => DetailPage(
+                          title: dummyData[index]['title']!,
+                          amount: dummyData[index]['amount']!,
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             ),
@@ -165,12 +177,14 @@ class CustomCard extends StatelessWidget {
   final String totalExpenses;
   final String title;
   final String amount;
+  final VoidCallback onTap;
 
   CustomCard({
     required this.status,
     required this.totalExpenses,
     required this.title,
     required this.amount,
+    required this.onTap,
   });
 
   @override
@@ -198,103 +212,123 @@ class CustomCard extends StatelessWidget {
     Color statusColor = getStatusColor(status);
     Color textColor = getTextColor(statusColor);
 
-    return ClipRRect(
-      child: Container(
-        width: double.infinity,
-        height: 98,
-        margin: EdgeInsets.symmetric(vertical: 8.0),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(7),
-            bottomLeft: Radius.circular(7),
-            topRight: Radius.circular(13),
-            bottomRight: Radius.circular(13),
+    return GestureDetector(
+      onTap: onTap,
+      child: ClipRRect(
+        child: Container(
+          width: double.infinity,
+          height: 98,
+          margin: EdgeInsets.symmetric(vertical: 8.0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(7),
+              bottomLeft: Radius.circular(7),
+              topRight: Radius.circular(13),
+              bottomRight: Radius.circular(13),
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 7,
-              height: double.infinity,
-              decoration: BoxDecoration(
-                color: statusColor,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(15),
-                  bottomLeft: Radius.circular(15),
+          child: Row(
+            children: [
+              Container(
+                width: 7,
+                height: double.infinity,
+                decoration: BoxDecoration(
+                  color: statusColor,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(15),
+                    bottomLeft: Radius.circular(15),
+                  ),
                 ),
               ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: statusColor,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            status,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: textColor,
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: statusColor,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              status,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: textColor,
+                              ),
                             ),
                           ),
-                        ),
-                        Text(
-                          totalExpenses,
-                          style: TextStyle(fontSize: 14, color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    Row(
-                      children: [
-                        SvgPicture.asset(
-                          'assets/icons/file_folder.svg', // Path to your SVG asset
-                          width: 30,
-                          height: 37, // Adjust the height to fit your design
-                          colorFilter: ColorFilter.mode(
-                            statusColor,
-                            BlendMode.srcIn,
+                          Text(
+                            totalExpenses,
+                            style:
+                                TextStyle(fontSize: 14, color: Colors.grey),
                           ),
-                        ),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            title,
+                        ],
+                      ),
+                      SizedBox(height: 8),
+                      Row(
+                        children: [
+                          SvgPicture.asset(
+                            'assets/icons/file_folder.svg', // Path to your SVG asset
+                            width: 30,
+                            height: 37, // Adjust the height to fit your design
+                            colorFilter: ColorFilter.mode(
+                              statusColor,
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              title,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            amount,
                             style: TextStyle(
-                              fontSize: 16,
                               fontWeight: FontWeight.bold,
+                              fontSize: 16,
                             ),
                           ),
-                        ),
-                        Text(
-                          amount,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            SizedBox(width: 7), // Adding padding to the right side
-          ],
+              SizedBox(width: 7), // Adding padding to the right side
+            ],
+          ),
         ),
       ),
     );
   }
 }
+
+// 예제 페이지로 이동하는 곳
+class DetailPage extends StatelessWidget {
+  final String title;
+  final String amount;
+
+  DetailPage({required this.title, required this.amount});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold();
+      appBar: AppBar(
+        title: Text(title),
+      ),
+      body: Center();
+        child: Text

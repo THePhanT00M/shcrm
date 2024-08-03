@@ -111,7 +111,7 @@ class MyPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '폴리시',
+                            'little',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
@@ -120,7 +120,7 @@ class MyPage extends StatelessWidget {
                           ),
                           SizedBox(height: 4),
                           Text(
-                            '지정 안함',
+                            'subtitle',
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.white,
@@ -258,6 +258,28 @@ class _FeatureSettingSection2State extends State<FeatureSettingSection2> {
                   setState(() {
                     _isStartWithCameraMode = newValue;
                   });
+                },
+              ),
+            ],
+          ),
+          Divider(color: Color.fromARGB(255, 241, 241, 241)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  '이미지 자동 저장',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.chevron_right), // 화살표 아이콘
+                onPressed: () {
+                  // 여기에 버튼 클릭 시 실행할 코드를 작성하세요.
                 },
               ),
             ],
