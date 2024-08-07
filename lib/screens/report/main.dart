@@ -142,7 +142,7 @@ class ReportsPage extends StatelessWidget {
         children: [
           Expanded(
             child: ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8.0),
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               itemCount: dummyData.length,
               itemBuilder: (context, index) {
                 return CustomCard(
@@ -150,18 +150,6 @@ class ReportsPage extends StatelessWidget {
                   totalExpenses: dummyData[index]['totalExpenses']!,
                   title: dummyData[index]['title']!,
                   amount: dummyData[index]['amount']!,
-                  onTap: () {
-                    // 클릭 시 실행할 동작을 여기서 정의하세요.
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => DetailPage(
-                          title: dummyData[index]['title']!,
-                          amount: dummyData[index]['amount']!,
-                        ),
-                      ),
-                    );
-                  },
                 );
               },
             ),
@@ -177,158 +165,99 @@ class CustomCard extends StatelessWidget {
   final String totalExpenses;
   final String title;
   final String amount;
-  final VoidCallback onTap;
 
   CustomCard({
     required this.status,
     required this.totalExpenses,
     required this.title,
     required this.amount,
-    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    Color getStatusColor(String status) {
-      switch (status) {
-        case '반려':
-          return Colors.red;
-        case '작성 중':
-          return Color(0xFF10D9B5);
-        case '완료':
-          return Color(0xFF0088D4);
-        case '검토 중':
-          return Colors.yellow;
-        default:
-          return Colors.black;
-      }
-    }
-
-    Color getTextColor(Color backgroundColor) {
-      double luminance = backgroundColor.computeLuminance();
-      return luminance > 0.7 ? Colors.black : Colors.white;
-    }
-
-    Color statusColor = getStatusColor(status);
-    Color textColor = getTextColor(statusColor);
-
-    return GestureDetector(
-      onTap: onTap,
-      child: ClipRRect(
-        child: Container(
-          width: double.infinity,
-          height: 98,
-          margin: EdgeInsets.symmetric(vertical: 8.0),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(7),
-              bottomLeft: Radius.circular(7),
-              topRight: Radius.circular(13),
-              bottomRight: Radius.circular(13),
-            ),
+    return Container(
+      margin: EdgeInsets.only(bottom: 15.0),
+      padding: EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: Offset(0, 3),
           ),
-          child: Row(
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
               Container(
-                width: 7,
-                height: double.infinity,
+                padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                 decoration: BoxDecoration(
-                  color: statusColor,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(15),
-                    bottomLeft: Radius.circular(15),
+                  color: Color(0xFF10D9B5),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: Text(
+                  status,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
                   ),
                 ),
               ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: statusColor,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              status,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: textColor,
-                              ),
-                            ),
-                          ),
-                          Text(
-                            totalExpenses,
-                            style:
-                                TextStyle(fontSize: 14, color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 8),
-                      Row(
-                        children: [
-                          SvgPicture.asset(
-                            'assets/icons/file_folder.svg', // Path to your SVG asset
-                            width: 30,
-                            height: 37, // Adjust the height to fit your design
-                            colorFilter: ColorFilter.mode(
-                              statusColor,
-                              BlendMode.srcIn,
-                            ),
-                          ),
-                          SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              title,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          Text(
-                            amount,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+              Spacer(),
+              Text(
+                totalExpenses,
+                style: TextStyle(
+                  color: Color(0xFF666666),
+                  fontSize: 12,
                 ),
               ),
-              SizedBox(width: 7), // Adding padding to the right side
             ],
           ),
-        ),
+          SizedBox(height: 16),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center, // center로 수정
+            children: [
+              SvgPicture.asset(
+                'assets/icons/file_folder.svg', // Placeholder path
+                width: 30,
+                height: 36,
+                color: Color(0xFF10D9B5),
+              ),
+              SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF333333),
+                  ),
+                ),
+              ),
+              Text(
+                amount,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF333333),
+                ),
+              ),
+            ],
+          )
+        ],
       ),
     );
   }
 }
 
-// 예제 페이지로 이동하는 곳
-class DetailPage extends StatelessWidget {
-  final String title;
-  final String amount;
-
-  DetailPage({required this.title, required this.amount});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold();
-      appBar: AppBar(
-        title: Text(title),
-      ),
-      body: Center();
-        child: Text
+void main() {
+  runApp(MaterialApp(
+    home: ReportsPage(),
+  ));
+}

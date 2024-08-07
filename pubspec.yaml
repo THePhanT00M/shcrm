@@ -115,3 +115,6 @@ flutter:
     - assets/icons/set.svg
     - assets/icons/file_folder.svg
     - assets/avatar_man.png
+    - assets/icons/receipt.svg
+    - assets/icons/none_picture.svg
+    - assets/icons/re_icon.svg

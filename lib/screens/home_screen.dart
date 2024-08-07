@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'feed/main.dart';
+import 'receipt/main.dart';
 import 'report/main.dart';
 import 'mypage/main.dart';
 
@@ -46,9 +47,9 @@ class _HomeScreenState extends State<HomeScreen> {
       case 0:
         return NotificationsPage();
       case 1:
-        return ReportsPage();
+        return ReceiptsPage();
       case 2:
-        return BoardPage();
+        return ReportsPage();
       case 3:
         return MyPage();
       default:
@@ -130,8 +131,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   onTap: _onItemTapped,
                   items: [
                     _buildNavItem('assets/icons/icon1.svg', '알림', 0),
-                    _buildNavItem('assets/icons/icon2.svg', '보고서', 1),
-                    _buildNavItem('assets/icons/icon3.svg', '보드', 2),
+                    _buildNavItem('assets/icons/receipt.svg', '지출', 1),
+                    _buildNavItem('assets/icons/icon2.svg', '보고서', 2),
                     _buildNavItem('assets/icons/icon4.svg', '마이', 3),
                   ],
                 ),
