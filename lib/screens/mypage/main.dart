@@ -5,6 +5,8 @@ class MyPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor:
+          Color(0xFFf0f0f0), // Set the background color of the Scaffold
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: Color(0xFF10D9B5),
@@ -141,26 +143,22 @@ class MyPage extends StatelessWidget {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Stack(
+      body: Padding(
+        padding: EdgeInsets.only(
+            bottom:
+                70), // Add padding to avoid being hidden by the BottomNavigationBar
+        child: SingleChildScrollView(
+          child: Container(
+            color: Color(
+                0xFFf0f0f0), // Set the background color of the scrollable area
+            child: Column(
               children: [
-                Container(
-                  color: Color(0xFFf0f0f0),
-                ),
-                Center(
-                  child: Column(
-                    children: [
-                      FeatureSettingSection2(),
-                      FeatureSettingSection3(),
-                    ],
-                  ),
-                ),
+                FeatureSettingSection2(),
+                FeatureSettingSection3(),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -181,7 +179,7 @@ class _FeatureSettingSection2State extends State<FeatureSettingSection2> {
     return Container(
       width: double.infinity,
       color: Colors.white,
-      padding: EdgeInsets.only(left: 20, top: 8, right: 20, bottom: 8),
+      padding: EdgeInsets.all(20),
       margin: EdgeInsets.only(bottom: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -296,7 +294,7 @@ class FeatureSettingSection3 extends StatelessWidget {
     return Container(
       width: double.infinity,
       color: Colors.white,
-      padding: EdgeInsets.only(left: 20, top: 8, right: 20, bottom: 8),
+      padding: EdgeInsets.all(20),
       margin: EdgeInsets.only(bottom: 10),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -147,23 +147,22 @@ class ReportsPage extends StatelessWidget {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-              itemCount: dummyData.length,
-              itemBuilder: (context, index) {
-                return CustomCard(
-                  status: dummyData[index]['status']!,
-                  totalExpenses: dummyData[index]['totalExpenses']!,
-                  title: dummyData[index]['title']!,
-                  amount: dummyData[index]['amount']!,
-                );
-              },
-            ),
-          ),
-        ],
+      body: Padding(
+        padding: EdgeInsets.only(
+            bottom:
+                70), // Add padding to avoid being hidden by the BottomNavigationBar
+        child: ListView.builder(
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          itemCount: dummyData.length,
+          itemBuilder: (context, index) {
+            return CustomCard(
+              status: dummyData[index]['status']!,
+              totalExpenses: dummyData[index]['totalExpenses']!,
+              title: dummyData[index]['title']!,
+              amount: dummyData[index]['amount']!,
+            );
+          },
+        ),
       ),
     );
   }

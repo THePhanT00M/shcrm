@@ -7,8 +7,9 @@ class FilterScreen extends StatefulWidget {
 
 class _FilterScreenState extends State<FilterScreen> {
   bool isExpenseRefundAllActive = true;
-  bool?
-      isComplianceActive; // Change this to nullable boolean to allow unselected state
+  bool? isComplianceActive;
+  DateTime startDate = DateTime.now().subtract(Duration(days: 90));
+  DateTime endDate = DateTime.now();
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +21,7 @@ class _FilterScreenState extends State<FilterScreen> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            SizedBox(width: 48), // Placeholder for alignment
+            SizedBox(width: 48),
             Text(
               '보고서',
               style: TextStyle(
@@ -38,95 +39,160 @@ class _FilterScreenState extends State<FilterScreen> {
           ],
         ),
       ),
-      body: Container(
-        color: Color(0xFF007792),
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
-              style:
-                  TextStyle(color: Colors.white), // Text color inside TextField
-              decoration: InputDecoration(
-                hintText: '검색어를 입력해주세요.',
-                hintStyle: TextStyle(color: Colors.white54), // Hint text color
-                prefixIcon: Icon(Icons.search, color: Colors.white),
-                border: OutlineInputBorder(),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                      color: Colors.white54), // Border color when enabled
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                      color: Colors.white), // Border color when focused
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
-            _buildDateRangePicker(context),
-            SizedBox(height: 20),
-            _buildDropdown('플러시', '모든 Policy'),
-            SizedBox(height: 20),
-            _buildDropdown('카테고리', '모든 카테고리'),
-            SizedBox(height: 20),
-            _buildDropdown('지출방법', '모든 지출 방법'),
-            SizedBox(height: 20),
-            _buildDropdown('지출 상태별', '내 지출'),
-            SizedBox(height: 20),
-            _buildExpenseRefundButtons(),
-            SizedBox(height: 20),
-            _buildRegulationButtons(),
-            SizedBox(height: 20),
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  // Apply filter logic
-                },
-                child: Text('필터 적용'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF10D9B5),
-                  minimumSize: Size(double.infinity, 48),
+      body: SingleChildScrollView(
+        child: Container(
+          color: Color(0xFF007792),
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: '검색어를 입력해주세요.',
+                  hintStyle: TextStyle(color: Colors.white54),
+                  prefixIcon: Icon(Icons.search, color: Colors.white),
+                  border: OutlineInputBorder(),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white54),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white),
+                  ),
                 ),
               ),
-            ),
-          ],
+              SizedBox(height: 20),
+              _buildDateRangePicker('기간', context),
+              SizedBox(height: 20),
+              _buildDropdown('플러시', '모든 Policy'),
+              SizedBox(height: 20),
+              _buildDropdown('카테고리', '모든 카테고리'),
+              SizedBox(height: 20),
+              _buildDropdown('지출방법', '모든 지출 방법'),
+              SizedBox(height: 20),
+              _buildDropdown('지출 상태별', '내 지출'),
+              SizedBox(height: 20),
+              _buildExpenseRefundButtons(),
+              SizedBox(height: 20),
+              _buildRegulationButtons(),
+              SizedBox(height: 20),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Apply filter logic
+                  },
+                  child: Text('필터 적용'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF10D9B5),
+                    minimumSize: Size(double.infinity, 48),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildDateRangePicker(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildDateRangePicker(String label, BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildDatePicker(context, '2024.07.01'),
         Text(
-          ' ㅡ ',
+          label,
           style: TextStyle(color: Colors.white),
         ),
-        _buildDatePicker(context, '2024.08.29'),
+        SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildDatePicker(context, startDate, (selectedDate) {
+              setState(() {
+                startDate = selectedDate;
+              });
+            }),
+            Text(
+              ' ㅡ ',
+              style: TextStyle(color: Colors.white),
+            ),
+            _buildDatePicker(context, endDate, (selectedDate) {
+              setState(() {
+                endDate = selectedDate;
+              });
+            }),
+          ],
+        ),
       ],
     );
   }
 
-  Widget _buildDatePicker(BuildContext context, String date) {
-    return InkWell(
-      onTap: () {
-        // Date picker logic
+  Widget _buildDatePicker(BuildContext context, DateTime date,
+      ValueChanged<DateTime> onDateSelected) {
+    return GestureDetector(
+      onTap: () async {
+        DateTime? selectedDate = await showDatePicker(
+          context: context,
+          initialDate: date,
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2101),
+          initialEntryMode: DatePickerEntryMode.calendarOnly,
+          builder: (BuildContext context, Widget? child) {
+            return Theme(
+              data: Theme.of(context).copyWith(
+                inputDecorationTheme: InputDecorationTheme(
+                  border: UnderlineInputBorder(
+                    borderSide: BorderSide(
+                      width: 0.5,
+                      color: Colors.blue,
+                    ),
+                  ),
+                ),
+                colorScheme: ColorScheme.light(
+                  onPrimary: Colors.white,
+                  primary: Colors.blue,
+                  background: Colors.white,
+                ),
+                datePickerTheme: DatePickerThemeData(
+                  headerBackgroundColor: Colors.blue,
+                  backgroundColor: Colors.white,
+                  headerForegroundColor: Colors.white,
+                  surfaceTintColor: Colors.white,
+                  dividerColor: Colors.blue,
+                ),
+              ),
+              child: child!,
+            );
+          },
+        );
+
+        if (selectedDate != null && selectedDate != date) {
+          onDateSelected(selectedDate);
+        }
       },
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+        width: MediaQuery.of(context).size.width * 0.40, // 너비를 45%로 설정
+        padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.white54),
           borderRadius: BorderRadius.circular(5.0),
         ),
         child: Row(
           children: [
-            Icon(Icons.calendar_today, size: 16, color: Colors.white),
+            Icon(
+              Icons.calendar_today,
+              color: Colors.white,
+            ),
             SizedBox(width: 10),
-            Text(
-              date,
-              style: TextStyle(color: Colors.white),
+            Expanded(
+              child: Text(
+                '${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}',
+                textAlign: TextAlign.center, // 텍스트 가운데 정렬
+                style: TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.white,
+                ),
+              ),
             ),
           ],
         ),
@@ -136,13 +202,13 @@ class _FilterScreenState extends State<FilterScreen> {
 
   Widget _buildDropdown(String label, String value) {
     return Column(
-      //crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
           style: TextStyle(color: Colors.white),
         ),
-        SizedBox(height: 8), // Space between the label and the dropdown
+        SizedBox(height: 8),
         Container(
           padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
           decoration: BoxDecoration(
@@ -150,13 +216,14 @@ class _FilterScreenState extends State<FilterScreen> {
             borderRadius: BorderRadius.circular(5.0),
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.center, // 가운데 정렬
             children: [
               Text(
                 value,
                 style: TextStyle(color: Colors.white),
+                textAlign: TextAlign.center, // Text 위젯 가운데 정렬
               ),
-              Icon(Icons.arrow_drop_down, color: Colors.white),
+              // Icon(Icons.arrow_drop_down, color: Colors.white),
             ],
           ),
         ),
@@ -189,8 +256,7 @@ class _FilterScreenState extends State<FilterScreen> {
                       ? Color(0xFF10D9B5)
                       : Color(0xFF007792),
                   foregroundColor: Colors.white,
-                  minimumSize:
-                      Size(double.infinity, 56), // Set the height to 37px
+                  minimumSize: Size(double.infinity, 56),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(4.0),
                     side: BorderSide(
@@ -216,8 +282,7 @@ class _FilterScreenState extends State<FilterScreen> {
                       ? Color(0xFF10D9B5)
                       : Color(0xFF007792),
                   foregroundColor: Colors.white,
-                  minimumSize:
-                      Size(double.infinity, 56), // Set the height to 37px
+                  minimumSize: Size(double.infinity, 56),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(4.0),
                     side: BorderSide(
@@ -260,8 +325,7 @@ class _FilterScreenState extends State<FilterScreen> {
                       ? Color(0xFF10D9B5)
                       : Color(0xFF007792),
                   foregroundColor: Colors.white,
-                  minimumSize:
-                      Size(double.infinity, 56), // Set the height to 37px
+                  minimumSize: Size(double.infinity, 56),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(4.0),
                     side: BorderSide(
@@ -287,8 +351,7 @@ class _FilterScreenState extends State<FilterScreen> {
                       ? Color(0xFF10D9B5)
                       : Color(0xFF007792),
                   foregroundColor: Colors.white,
-                  minimumSize:
-                      Size(double.infinity, 56), // Set the height to 37px
+                  minimumSize: Size(double.infinity, 56),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(4.0),
                     side: BorderSide(
