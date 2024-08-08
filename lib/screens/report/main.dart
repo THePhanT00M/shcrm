@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'filter_screen.dart'; // Import the filter screen
 
 class ReportsPage extends StatelessWidget {
   final List<Map<String, String>> dummyData = [
@@ -104,33 +105,41 @@ class ReportsPage extends StatelessWidget {
                   ],
                 ),
               ),
-              Container(
-                margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-                padding: EdgeInsets.symmetric(vertical: 8.0),
-                decoration: BoxDecoration(
-                  color: Color(0xFF028490),
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SvgPicture.asset(
-                      'assets/icons/set.svg', // Path to your SVG asset
-                      height: 16,
-                      colorFilter: ColorFilter.mode(
-                        Colors.white,
-                        BlendMode.srcIn,
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => FilterScreen()),
+                  );
+                },
+                child: Container(
+                  margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                  decoration: BoxDecoration(
+                    color: Color(0xFF028490),
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SvgPicture.asset(
+                        'assets/icons/set.svg', // Path to your SVG asset
+                        height: 16,
+                        colorFilter: ColorFilter.mode(
+                          Colors.white,
+                          BlendMode.srcIn,
+                        ),
                       ),
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      '검색 및 필터',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
+                      SizedBox(width: 8),
+                      Text(
+                        '검색 및 필터',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               SizedBox(height: 8), // Space below the search/filter
@@ -173,11 +182,29 @@ class CustomCard extends StatelessWidget {
     required this.amount,
   });
 
+  // Define a method to determine the color based on the status
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case '작성 중':
+        return Colors.blue;
+      case '완료':
+        return Colors.green;
+      case '검토 중':
+        return Colors.orange;
+      case '반려':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    Color statusColor = _getStatusColor(status); // Get color based on status
+
     return Container(
       margin: EdgeInsets.only(bottom: 15.0),
-      padding: EdgeInsets.all(16.0),
+      padding: EdgeInsets.only(right: 20.0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8.0),
@@ -190,74 +217,86 @@ class CustomCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                decoration: BoxDecoration(
-                  color: Color(0xFF10D9B5),
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                child: Text(
-                  status,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-              Spacer(),
-              Text(
-                totalExpenses,
-                style: TextStyle(
-                  color: Color(0xFF666666),
-                  fontSize: 12,
-                ),
-              ),
-            ],
+          Container(
+            width: 10,
+            height: 120, // Adjust as needed
+            decoration: BoxDecoration(
+              color: statusColor,
+              borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
+            ),
           ),
-          SizedBox(height: 16),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center, // center로 수정
-            children: [
-              SvgPicture.asset(
-                'assets/icons/file_folder.svg', // Placeholder path
-                width: 30,
-                height: 36,
-                color: Color(0xFF10D9B5),
-              ),
-              SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF333333),
-                  ),
+          SizedBox(
+              width: 10), // Space between the colored strip and the content
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                      decoration: BoxDecoration(
+                        color: statusColor, // Use the color based on status
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      child: Text(
+                        status,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    Spacer(),
+                    Text(
+                      totalExpenses,
+                      style: TextStyle(
+                        color: Color(0xFF666666),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              Text(
-                amount,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF333333),
+                SizedBox(height: 16),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SvgPicture.asset(
+                      'assets/icons/file_folder.svg', // Placeholder path
+                      width: 30,
+                      height: 36,
+                      color: statusColor, // Use the color based on status
+                    ),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF333333),
+                        ),
+                      ),
+                    ),
+                    Text(
+                      amount,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF333333),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          )
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
-}
-
-void main() {
-  runApp(MaterialApp(
-    home: ReportsPage(),
-  ));
 }

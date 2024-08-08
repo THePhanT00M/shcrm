@@ -181,10 +181,3 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-
-class BoardPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text('보드 페이지'));
-  }
-}
