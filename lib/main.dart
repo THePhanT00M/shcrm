@@ -3,6 +3,7 @@ import 'screens/loading_screen.dart';
 import 'screens/auth_selection_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() {
   runApp(MyApp());
@@ -16,6 +17,15 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        const Locale('ko', ''), // Korean
+      ],
+      locale: const Locale('ko', ''), // Set the locale to Korean
       initialRoute: '/',
       routes: {
         '/': (context) => LoadingScreen(),

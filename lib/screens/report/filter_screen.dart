@@ -182,6 +182,7 @@ class _FilterScreenState extends State<FilterScreen> {
             Icon(
               Icons.calendar_today,
               color: Colors.white,
+              size: 16,
             ),
             SizedBox(width: 10),
             Expanded(
@@ -189,7 +190,7 @@ class _FilterScreenState extends State<FilterScreen> {
                 '${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}',
                 textAlign: TextAlign.center, // 텍스트 가운데 정렬
                 style: TextStyle(
-                  fontSize: 16.0,
+                  fontSize: 13.0,
                   color: Colors.white,
                 ),
               ),
