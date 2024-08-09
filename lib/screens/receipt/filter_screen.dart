@@ -25,7 +25,7 @@ class _FilterScreenState extends State<FilterScreen> {
             Align(
               alignment: Alignment.center,
               child: Text(
-                '보고서',
+                '지출',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -90,7 +90,15 @@ class _FilterScreenState extends State<FilterScreen> {
                   SizedBox(height: 20),
                   _buildDropdown('플러시', '모든 Policy'),
                   SizedBox(height: 20),
+                  _buildDropdown('카테고리', '모든 카테고리'),
+                  SizedBox(height: 20),
+                  _buildDropdown('지출방법', '모든 지출 방법'),
+                  SizedBox(height: 20),
+                  _buildDropdown('지출 상태별', '내 지출'),
+                  SizedBox(height: 20),
                   _buildExpenseReportButtons(),
+                  SizedBox(height: 20),
+                  _buildRegulationButtons(),
                 ],
               ),
             ),
@@ -267,7 +275,78 @@ class _FilterScreenState extends State<FilterScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '보고서 속성',
+          '경비 환급',
+          style: TextStyle(color: Colors.white),
+        ),
+        SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    isExpenseRefundAllActive = true;
+                    isFilterButtonEnabled = true; // 버튼 활성화
+                  });
+                },
+                child: Text('모두'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isExpenseRefundAllActive
+                      ? Color(0xFF10D9B5)
+                      : Color(0xFF007792),
+                  foregroundColor: Colors.white,
+                  minimumSize: Size(double.infinity, 49),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4.0),
+                    side: BorderSide(
+                      color: isExpenseRefundAllActive == true
+                          ? Color(0xFF10D9B5)
+                          : Colors.white54,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(width: 10),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    isExpenseRefundAllActive = false;
+                    isFilterButtonEnabled = true; // 버튼 활성화
+                  });
+                },
+                child: Text('경비 환급'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isExpenseRefundAllActive == false
+                      ? Color(0xFF10D9B5)
+                      : Color(0xFF007792),
+                  foregroundColor: Colors.white,
+                  minimumSize: Size(double.infinity, 49),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4.0),
+                    side: BorderSide(
+                      color: isExpenseRefundAllActive == false
+                          ? Color(0xFF10D9B5)
+                          : Colors.white54,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRegulationButtons() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '규정',
           style: TextStyle(color: Colors.white),
         ),
         SizedBox(height: 8),
@@ -279,10 +358,9 @@ class _FilterScreenState extends State<FilterScreen> {
                 onPressed: () {
                   setState(() {
                     isComplianceActive = true;
-                    isFilterButtonEnabled = true; // 버튼 활성화
                   });
                 },
-                child: Text('내 보고서'),
+                child: Text('준수'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: isComplianceActive == true
                       ? Color(0xFF10D9B5)
@@ -306,10 +384,9 @@ class _FilterScreenState extends State<FilterScreen> {
                 onPressed: () {
                   setState(() {
                     isComplianceActive = false;
-                    isFilterButtonEnabled = true; // 버튼 활성화
                   });
                 },
-                child: Text('받은 보고서'),
+                child: Text('위반'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: isComplianceActive == false
                       ? Color(0xFF10D9B5)

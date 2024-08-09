@@ -6,7 +6,7 @@ class NotificationsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        toolbarHeight: 100,
+        toolbarHeight: 60,
         backgroundColor: Color(0xFF10D9B5),
         elevation: 0,
         flexibleSpace: Container(
@@ -17,17 +17,25 @@ class NotificationsPage extends StatelessWidget {
               end: Alignment.bottomCenter,
             ),
           ),
-          child: Center(
-            child: const Text(
-              '피드',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-              textAlign: TextAlign.center,
+        ),
+        title: Column(
+          children: [
+            Stack(
+              children: [
+                Align(
+                  alignment: Alignment.center,
+                  child: Text(
+                    '피드',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
+          ],
         ),
       ),
       body: Column(

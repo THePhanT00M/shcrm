@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'filter_screen.dart'; // Import the filter screen
 
 class ReceiptsPage extends StatelessWidget {
   final List<Map<String, String>> dummyData = [
@@ -41,71 +42,81 @@ class ReceiptsPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Color(0xFFf0f0f0),
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: Color(0xFF10D9B5),
+        backgroundColor: Colors.transparent, // 그라데이션을 위해 투명색 설정
+        toolbarHeight: 120,
         elevation: 0,
-        toolbarHeight: 140,
+        automaticallyImplyLeading: false,
         flexibleSpace: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [Color(0xFF10D9B5), Color(0xFF009EB4)],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                margin:
-                    EdgeInsets.only(top: 25, right: 10, left: 10, bottom: 5),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: TextButton(
-                          onPressed: () {
-                            // Add your onPressed code here
-                          },
-                          child: Text(
-                            '지정안함',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
+        ),
+        title: Column(
+          children: [
+            Stack(
+              children: [
+                Align(
+                  alignment: Alignment.center,
+                  child: Text(
+                    '지출',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
-                    Center(
-                      child: Text(
-                        '지출',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: IconButton(
-                          icon: Icon(Icons.add), // Icon for the plus button
-                          onPressed: () {
-                            // Add your onPressed code here
-                          },
-                          color: Colors.white, // Adjust the color as needed
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-              Container(
-                margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                Positioned(
+                  left: 0, // 왼쪽에 위치
+                  child: TextButton(
+                    onPressed: () {
+                      // 지정안함 버튼 클릭 시 동작할 코드 작성
+                    },
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero, // 여백 제거
+                      minimumSize: Size(50, 30), // 버튼 최소 크기 설정 (필요에 따라 조정)
+                      tapTargetSize:
+                          MaterialTapTargetSize.shrinkWrap, // 버튼 크기를 최소화
+                    ),
+                    child: Text(
+                      '지정안함',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  top: 3, // 화면 높이의 50%
+                  child: Transform.translate(
+                    offset: Offset(0, 0), // 아이콘 높이의 절반만큼 위로 이동
+                    child: GestureDetector(
+                      onTap: () {
+                        // 닫기 버튼 클릭 시 동작할 코드 작성
+                      },
+                      child: Icon(
+                        Icons.add,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 20), // 검색 및 필터 기능과의 간격
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => FilterScreen()),
+                );
+              },
+              child: Container(
                 padding: EdgeInsets.symmetric(vertical: 8.0),
                 decoration: BoxDecoration(
                   color: Color(0xFF028490),
@@ -133,9 +144,8 @@ class ReceiptsPage extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(height: 8), // Space below the search/filter
-            ],
-          ),
+            ),
+          ],
         ),
       ),
       body: Padding(
@@ -176,7 +186,7 @@ class CustomCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.only(bottom: 15.0),
-      padding: EdgeInsets.all(20.0),
+      padding: EdgeInsets.all(10.0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8.0),
@@ -193,8 +203,8 @@ class CustomCard extends StatelessWidget {
         children: [
           SvgPicture.asset(
             iconPath,
-            height: 80,
-            width: 80,
+            height: 50,
+            width: 50,
           ),
           SizedBox(width: 16),
           Column(
