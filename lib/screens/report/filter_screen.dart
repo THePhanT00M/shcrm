@@ -131,7 +131,10 @@ class _FilterScreenState extends State<FilterScreen> {
       children: [
         Text(
           label,
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         SizedBox(height: 8),
         Row(
@@ -237,7 +240,10 @@ class _FilterScreenState extends State<FilterScreen> {
       children: [
         Text(
           label,
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         SizedBox(height: 8),
         Container(
@@ -268,7 +274,10 @@ class _FilterScreenState extends State<FilterScreen> {
       children: [
         Text(
           '보고서 속성',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         SizedBox(height: 8),
         Row(

@@ -139,7 +139,10 @@ class _FilterScreenState extends State<FilterScreen> {
       children: [
         Text(
           label,
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         SizedBox(height: 8),
         Row(
@@ -245,7 +248,10 @@ class _FilterScreenState extends State<FilterScreen> {
       children: [
         Text(
           label,
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         SizedBox(height: 8),
         Container(
@@ -276,7 +282,10 @@ class _FilterScreenState extends State<FilterScreen> {
       children: [
         Text(
           '경비 환급',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         SizedBox(height: 8),
         Row(
@@ -287,7 +296,6 @@ class _FilterScreenState extends State<FilterScreen> {
                 onPressed: () {
                   setState(() {
                     isExpenseRefundAllActive = true;
-                    isFilterButtonEnabled = true; // 버튼 활성화
                   });
                 },
                 child: Text('모두'),
@@ -314,7 +322,6 @@ class _FilterScreenState extends State<FilterScreen> {
                 onPressed: () {
                   setState(() {
                     isExpenseRefundAllActive = false;
-                    isFilterButtonEnabled = true; // 버튼 활성화
                   });
                 },
                 child: Text('경비 환급'),
@@ -347,7 +354,10 @@ class _FilterScreenState extends State<FilterScreen> {
       children: [
         Text(
           '규정',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         SizedBox(height: 8),
         Row(
@@ -358,6 +368,7 @@ class _FilterScreenState extends State<FilterScreen> {
                 onPressed: () {
                   setState(() {
                     isComplianceActive = true;
+                    isFilterButtonEnabled = true; // 버튼 활성화
                   });
                 },
                 child: Text('준수'),
@@ -384,6 +395,7 @@ class _FilterScreenState extends State<FilterScreen> {
                 onPressed: () {
                   setState(() {
                     isComplianceActive = false;
+                    isFilterButtonEnabled = true; // 버튼 활성화
                   });
                 },
                 child: Text('위반'),

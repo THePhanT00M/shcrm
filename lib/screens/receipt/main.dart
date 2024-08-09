@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'filter_screen.dart'; // Import the filter screen
+import 'receipt_registration_screen.dart'; // Import the receipt registration screen
 
 class ReceiptsPage extends StatelessWidget {
   final List<Map<String, String>> dummyData = [
@@ -97,7 +98,29 @@ class ReceiptsPage extends StatelessWidget {
                     offset: Offset(0, 0), // 아이콘 높이의 절반만큼 위로 이동
                     child: GestureDetector(
                       onTap: () {
-                        // 닫기 버튼 클릭 시 동작할 코드 작성
+                        Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    ReceiptRegistrationScreen(),
+                            transitionsBuilder: (context, animation,
+                                secondaryAnimation, child) {
+                              const begin = Offset(1.0, 0.0);
+                              const end = Offset.zero;
+                              const curve = Curves.easeInOut;
+
+                              var tween = Tween(begin: begin, end: end)
+                                  .chain(CurveTween(curve: curve));
+                              var offsetAnimation = animation.drive(tween);
+
+                              return SlideTransition(
+                                position: offsetAnimation,
+                                child: child,
+                              );
+                            },
+                          ),
+                        );
                       },
                       child: Icon(
                         Icons.add,
@@ -156,7 +179,7 @@ class ReceiptsPage extends StatelessWidget {
           itemBuilder: (context, index) {
             return CustomCard(
               iconPath: 'assets/icons/none_picture.svg', // Placeholder path
-              text1: '',
+              text1: dummyData[index]['status']!,
               title: dummyData[index]['title']!,
               amount: dummyData[index]['amount']!,
             );
@@ -182,79 +205,109 @@ class CustomCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 15.0),
-      padding: EdgeInsets.all(10.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: Offset(0, 3),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                ReceiptRegistrationScreen(
+              title: title,
+              amount: amount,
+              iconPath: iconPath,
+            ),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              const begin = Offset(1.0, 0.0);
+              const end = Offset.zero;
+              const curve = Curves.easeInOut;
+
+              var tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              var offsetAnimation = animation.drive(tween);
+
+              return SlideTransition(
+                position: offsetAnimation,
+                child: child,
+              );
+            },
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          SvgPicture.asset(
-            iconPath,
-            height: 50,
-            width: 50,
-          ),
-          SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                text1,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF009EB4),
+        );
+      },
+      child: Container(
+        margin: EdgeInsets.only(bottom: 15.0),
+        padding: EdgeInsets.all(10.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.3),
+              spreadRadius: 1,
+              blurRadius: 5,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            SvgPicture.asset(
+              iconPath,
+              height: 50,
+              width: 50,
+            ),
+            SizedBox(width: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  text1,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF009EB4),
+                  ),
                 ),
-              ),
-              SizedBox(height: 8),
-              Row(
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Color(0xFF009EB4),
+                SizedBox(height: 8),
+                Row(
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF009EB4),
+                      ),
                     ),
-                  ),
-                  SizedBox(width: 16),
-                ],
-              ),
-            ],
-          ),
-          Spacer(),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              SvgPicture.asset(
-                'assets/icons/re_icon.svg',
-                height: 20,
-                width: 14,
-              ),
-              SizedBox(height: 8),
-              Row(
-                children: [
-                  Text(
-                    amount,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF333333),
+                    SizedBox(width: 16),
+                  ],
+                ),
+              ],
+            ),
+            Spacer(),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                SvgPicture.asset(
+                  'assets/icons/re_icon.svg',
+                  height: 20,
+                  width: 14,
+                ),
+                SizedBox(height: 8),
+                Row(
+                  children: [
+                    Text(
+                      amount,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF333333),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
