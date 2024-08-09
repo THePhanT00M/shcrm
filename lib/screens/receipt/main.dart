@@ -174,7 +174,7 @@ class ReceiptsPage extends StatelessWidget {
       body: Padding(
         padding: EdgeInsets.only(bottom: 70),
         child: ListView.builder(
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
           itemCount: dummyData.length,
           itemBuilder: (context, index) {
             return CustomCard(
