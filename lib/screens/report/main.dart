@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'filter_screen.dart'; // Import the filter screen
+import 'report_registration_screen.dart'; // Import the registration screen
 
 class ReportsPage extends StatelessWidget {
   final List<Map<String, String>> dummyData = [
@@ -42,7 +43,7 @@ class ReportsPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Color(0xFFf0f0f0),
       appBar: AppBar(
-        backgroundColor: Colors.transparent, // 그라데이션을 위해 투명색 설정
+        backgroundColor: Colors.transparent,
         toolbarHeight: 120,
         elevation: 0,
         automaticallyImplyLeading: false,
@@ -71,16 +72,15 @@ class ReportsPage extends StatelessWidget {
                   ),
                 ),
                 Positioned(
-                  left: 0, // 왼쪽에 위치
+                  left: 0,
                   child: TextButton(
                     onPressed: () {
                       // 지정안함 버튼 클릭 시 동작할 코드 작성
                     },
                     style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero, // 여백 제거
-                      minimumSize: Size(50, 30), // 버튼 최소 크기 설정 (필요에 따라 조정)
-                      tapTargetSize:
-                          MaterialTapTargetSize.shrinkWrap, // 버튼 크기를 최소화
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size(50, 30),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                     child: Text(
                       '지정안함',
@@ -92,12 +92,34 @@ class ReportsPage extends StatelessWidget {
                 ),
                 Positioned(
                   right: 0,
-                  top: 3, // 화면 높이의 50%
+                  top: 3,
                   child: Transform.translate(
-                    offset: Offset(0, 0), // 아이콘 높이의 절반만큼 위로 이동
+                    offset: Offset(0, 0),
                     child: GestureDetector(
                       onTap: () {
-                        // 닫기 버튼 클릭 시 동작할 코드 작성
+                        Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    ReportRegistrationScreen(),
+                            transitionsBuilder: (context, animation,
+                                secondaryAnimation, child) {
+                              const begin = Offset(1.0, 0.0);
+                              const end = Offset.zero;
+                              const curve = Curves.easeInOut;
+
+                              var tween = Tween(begin: begin, end: end)
+                                  .chain(CurveTween(curve: curve));
+                              var offsetAnimation = animation.drive(tween);
+
+                              return SlideTransition(
+                                position: offsetAnimation,
+                                child: child,
+                              );
+                            },
+                          ),
+                        );
                       },
                       child: Icon(
                         Icons.add,
@@ -108,7 +130,7 @@ class ReportsPage extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: 20), // 검색 및 필터 기능과의 간격
+            SizedBox(height: 20),
             GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -126,7 +148,7 @@ class ReportsPage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SvgPicture.asset(
-                      'assets/icons/set.svg', // Path to your SVG asset
+                      'assets/icons/set.svg',
                       height: 16,
                       colorFilter: ColorFilter.mode(
                         Colors.white,
@@ -149,9 +171,7 @@ class ReportsPage extends StatelessWidget {
         ),
       ),
       body: Padding(
-        padding: EdgeInsets.only(
-            bottom:
-                70), // Add padding to avoid being hidden by the BottomNavigationBar
+        padding: EdgeInsets.only(bottom: 70),
         child: ListView.builder(
           padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
           itemCount: dummyData.length,
@@ -182,7 +202,139 @@ class CustomCard extends StatelessWidget {
     required this.amount,
   });
 
-  // Define a method to determine the color based on the status
+  @override
+  Widget build(BuildContext context) {
+    Color statusColor = _getStatusColor(status); // Get color based on status
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                ReportRegistrationScreen(
+              title: title,
+              amount: amount,
+              totalExpenses: totalExpenses,
+            ),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              const begin = Offset(1.0, 0.0);
+              const end = Offset.zero;
+              const curve = Curves.easeInOut;
+
+              var tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              var offsetAnimation = animation.drive(tween);
+
+              return SlideTransition(
+                position: offsetAnimation,
+                child: child,
+              );
+            },
+          ),
+        );
+      },
+      child: Container(
+        margin: EdgeInsets.only(bottom: 15.0),
+        padding: EdgeInsets.only(right: 15.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.3),
+              spreadRadius: 1,
+              blurRadius: 5,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 10,
+              height: 71, // Adjust as needed
+              decoration: BoxDecoration(
+                color: statusColor,
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(8),
+                    bottomLeft: Radius.circular(8)),
+              ),
+            ),
+            SizedBox(
+                width: 10), // Space between the colored strip and the content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 10.0, vertical: 2.0),
+                        decoration: BoxDecoration(
+                          color: statusColor, // Use the color based on status
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        child: Text(
+                          status,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ),
+                      Spacer(),
+                      Text(
+                        totalExpenses,
+                        style: TextStyle(
+                          color: Color(0xFF666666),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SvgPicture.asset(
+                        'assets/icons/file_folder.svg', // Placeholder path
+                        width: 20,
+                        height: 26,
+                        color: statusColor, // Use the color based on status
+                      ),
+                      SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF333333),
+                          ),
+                        ),
+                      ),
+                      Text(
+                        amount,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF333333),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Color _getStatusColor(String status) {
     switch (status) {
       case '작성 중':
@@ -196,107 +348,5 @@ class CustomCard extends StatelessWidget {
       default:
         return Colors.grey;
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    Color statusColor = _getStatusColor(status); // Get color based on status
-
-    return Container(
-      margin: EdgeInsets.only(bottom: 15.0),
-      padding: EdgeInsets.only(right: 15.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 10,
-            height: 71, // Adjust as needed
-            decoration: BoxDecoration(
-              color: statusColor,
-              borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
-            ),
-          ),
-          SizedBox(
-              width: 10), // Space between the colored strip and the content
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 10.0, vertical: 2.0),
-                      decoration: BoxDecoration(
-                        color: statusColor, // Use the color based on status
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      child: Text(
-                        status,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ),
-                    Spacer(),
-                    Text(
-                      totalExpenses,
-                      style: TextStyle(
-                        color: Color(0xFF666666),
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 10),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    SvgPicture.asset(
-                      'assets/icons/file_folder.svg', // Placeholder path
-                      width: 20,
-                      height: 26,
-                      color: statusColor, // Use the color based on status
-                    ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF333333),
-                        ),
-                      ),
-                    ),
-                    Text(
-                      amount,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF333333),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }

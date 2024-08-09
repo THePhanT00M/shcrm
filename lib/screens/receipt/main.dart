@@ -149,9 +149,7 @@ class ReceiptsPage extends StatelessWidget {
         ),
       ),
       body: Padding(
-        padding: EdgeInsets.only(
-            bottom:
-                70), // Add padding to avoid being hidden by the BottomNavigationBar
+        padding: EdgeInsets.only(bottom: 70),
         child: ListView.builder(
           padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
           itemCount: dummyData.length,
