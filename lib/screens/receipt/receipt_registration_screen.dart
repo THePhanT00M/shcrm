@@ -44,8 +44,8 @@ class ReceiptRegistrationScreen extends StatelessWidget {
                   ),
                 ),
                 Positioned(
-                  left: 0,
-                  top: 6.5,
+                  left: -7,
+                  top: -1.5,
                   child: Center(
                     child: GestureDetector(
                       onTap: () {
@@ -53,7 +53,7 @@ class ReceiptRegistrationScreen extends StatelessWidget {
                             context); // Navigate back to the previous screen
                       },
                       child: Padding(
-                        padding: EdgeInsets.all(0), // Remove padding
+                        padding: EdgeInsets.all(8), // Remove padding
                         child: Icon(
                           Icons.arrow_back_ios_new,
                           color: Colors.white,
