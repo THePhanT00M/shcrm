@@ -11,7 +11,7 @@ class MyPage extends StatelessWidget {
         automaticallyImplyLeading: false,
         backgroundColor: Color(0xFF10D9B5),
         elevation: 0,
-        toolbarHeight: 240,
+        toolbarHeight: 200,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -20,14 +20,13 @@ class MyPage extends StatelessWidget {
               end: Alignment.bottomCenter,
             ),
           ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
+        ),
+        title: Column(
+          children: [
+            Stack(
               children: [
-                Container(
-                  margin:
-                      EdgeInsets.only(top: 30, right: 10, left: 10, bottom: 5),
+                Align(
+                  alignment: Alignment.center,
                   child: Text(
                     'MY',
                     style: TextStyle(
@@ -37,110 +36,106 @@ class MyPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 60,
-                        height: 60,
-                        child: CircleAvatar(
-                          backgroundImage: AssetImage('assets/avatar_man.png'),
-                        ),
-                      ),
-                      SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '회사 아이콘',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            Text(
-                              '이름',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.white,
-                              ),
-                            ),
-                            Text(
-                              '이메일',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            '계정',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.white,
-                            ),
-                          ),
-                          Text(''),
-                          Text(''),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 10),
-                Container(
-                  margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-                  padding:
-                      EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                  decoration: BoxDecoration(
-                    color: Color(0xFF028490),
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'little',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'subtitle',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Icon(
-                        Icons.chevron_right,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ],
-                  ),
-                ),
               ],
             ),
-          ),
+            Container(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 60,
+                    height: 60,
+                    child: CircleAvatar(
+                      backgroundImage: AssetImage('assets/avatar_man.png'),
+                    ),
+                  ),
+                  SizedBox(width: 20),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '회사 아이콘',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          '이름',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          '이메일',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '계정',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(''),
+                      Text(''),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 10),
+            Container(
+              padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+              decoration: BoxDecoration(
+                color: Color(0xFF028490),
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '폴리시',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        '지정안함',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Icon(
+                    Icons.chevron_right,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
       body: Padding(

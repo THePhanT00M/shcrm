@@ -153,7 +153,7 @@ class ReportsPage extends StatelessWidget {
             bottom:
                 70), // Add padding to avoid being hidden by the BottomNavigationBar
         child: ListView.builder(
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
           itemCount: dummyData.length,
           itemBuilder: (context, index) {
             return CustomCard(
@@ -204,7 +204,7 @@ class CustomCard extends StatelessWidget {
 
     return Container(
       margin: EdgeInsets.only(bottom: 15.0),
-      padding: EdgeInsets.only(right: 20.0),
+      padding: EdgeInsets.only(right: 15.0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8.0),
@@ -221,7 +221,7 @@ class CustomCard extends StatelessWidget {
         children: [
           Container(
             width: 10,
-            height: 120, // Adjust as needed
+            height: 71, // Adjust as needed
             decoration: BoxDecoration(
               color: statusColor,
               borderRadius: BorderRadius.only(
@@ -238,7 +238,7 @@ class CustomCard extends StatelessWidget {
                   children: [
                     Container(
                       padding:
-                          EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                          EdgeInsets.symmetric(horizontal: 10.0, vertical: 2.0),
                       decoration: BoxDecoration(
                         color: statusColor, // Use the color based on status
                         borderRadius: BorderRadius.circular(8.0),
@@ -247,7 +247,7 @@ class CustomCard extends StatelessWidget {
                         status,
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 12,
+                          fontSize: 10,
                         ),
                       ),
                     ),
@@ -261,14 +261,14 @@ class CustomCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: 10),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     SvgPicture.asset(
                       'assets/icons/file_folder.svg', // Placeholder path
-                      width: 30,
-                      height: 36,
+                      width: 20,
+                      height: 26,
                       color: statusColor, // Use the color based on status
                     ),
                     SizedBox(width: 16),
@@ -276,7 +276,7 @@ class CustomCard extends StatelessWidget {
                       child: Text(
                         title,
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF333333),
                         ),
