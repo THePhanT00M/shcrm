@@ -15,9 +15,44 @@ class ReportRegistrationScreen extends StatelessWidget {
         title != null && amount != null && totalExpenses != null;
 
     return Scaffold(
+      backgroundColor: Color(0xFFf0f0f0),
       appBar: AppBar(
-        title: Text(isEditMode ? '보고서 수정' : '보고서 등록'),
-        backgroundColor: Color(0xFF10D9B5),
+        backgroundColor: Colors.transparent,
+        toolbarHeight: 120,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: Text(
+            '<',
+            style: TextStyle(
+              fontSize: 24, // Adjust size as needed
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          onPressed: () {
+            Navigator.pop(context); // Go back to the previous screen
+          },
+        ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF10D9B5), Color(0xFF009EB4)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: Center(
+            child: Text(
+              '보고서',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
