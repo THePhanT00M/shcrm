@@ -144,18 +144,80 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 제목 입력 필드
-                  TextFormField(
-                    initialValue: widget.title, // 수정 시 초기 값으로 설정
-                    decoration: InputDecoration(
-                      labelText: '금액',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return '제목을 입력하세요'; // 제목 입력 필수
-                      }
-                      return null;
-                    },
+                  // 금액 입력 필드
+                  // 금액 입력 필드와 KRW 표시
+                  // 금액 입력 필드와 KRW 표시
+                  // 금액 입력 필드
+                  // 금액 입력 필드
+                  // 금액 입력 필드와 KRW 표시
+                  // 금액 입력 필드
+                  // 금액 입력 필드
+                  // 금액 입력 필드
+                  Stack(
+                    children: [
+                      TextFormField(
+                        initialValue: widget.amount, // 수정 시 초기 값으로 설정
+                        decoration: InputDecoration(
+                          labelText: '금액',
+                          hintText: '0', // 힌트 텍스트 설정
+                        ),
+                        keyboardType: TextInputType.number,
+                        style: TextStyle(
+                          fontSize: 30, // 글자 크기 설정
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return '금액을 입력하세요'; // 금액 입력 필수
+                          }
+                          return null;
+                        },
+                      ),
+                      Positioned(
+                        right: 0,
+                        bottom: 8,
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 4.0, horizontal: 8.0), // 텍스트 주위 여백
+                              decoration: BoxDecoration(
+                                color: Colors.white, // 배경색을 흰색으로 설정
+                                borderRadius:
+                                    BorderRadius.circular(8.0), // 모서리를 둥글게
+                                border: Border.all(
+                                  color: Colors.black, // 외곽선을 검은색으로 설정
+                                  width: 1.0, // 외곽선 두께 설정
+                                ),
+                              ),
+                              child: Text(
+                                'KRW',
+                                style: TextStyle(
+                                  fontSize: 16, // 글자 크기
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 8.0), // KRW 텍스트와 아이콘 사이의 간격
+                            Container(
+                              width: 50, // 아이콘 크기
+                              height: 50, // 아이콘 크기
+                              child: Icon(
+                                Icons.camera_alt, // 카메라 아이콘
+                                size: 30, // 아이콘 크기 설정 (아이콘 내 패딩을 고려하여 약간 작게 설정)
+                                color: Colors.black87,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[300], // 아이콘 배경색 (필요시)
+                                borderRadius:
+                                    BorderRadius.circular(8.0), // 모서리를 둥글게
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
+
                   SizedBox(height: 16.0),
                   // 금액 입력 필드
                   TextFormField(
@@ -164,6 +226,9 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
                       labelText: '상호',
                     ),
                     keyboardType: TextInputType.number,
+                    style: TextStyle(
+                      fontSize: 18, // 글자 크기 설정
+                    ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return '금액을 입력하세요'; // 금액 입력 필수
