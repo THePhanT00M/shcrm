@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:image_picker/image_picker.dart';
 import 'feed/main.dart';
 import 'receipt/main.dart';
 import 'report/main.dart';
@@ -13,6 +14,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   bool _isOverlayVisible = false;
+  final ImagePicker _picker = ImagePicker();
 
   void _onItemTapped(int index) {
     setState(() {
@@ -24,6 +26,15 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _isOverlayVisible = !_isOverlayVisible;
     });
+  }
+
+  Future<void> _openCamera() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+    if (image != null) {
+      // Handle the captured image here
+      print('Image Path: ${image.path}');
+      // You can also navigate to another page to display the image or process it further
+    }
   }
 
   BottomNavigationBarItem _buildNavItem(
@@ -62,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         ElevatedButton.icon(
-          onPressed: () {},
+          onPressed: _openCamera,
           icon: const Icon(
             Icons.camera_alt,
             size: 14,
