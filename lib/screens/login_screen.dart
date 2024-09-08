@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -15,15 +17,11 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscureText = true;
   String _errorMessage = '';
 
-  final Map<String, String> _dummyUsers = {
-    '20212155@shcrm.com': 'shinhan24!',
-    '20212156@shcrm.com': 'shinhan24!',
-    '20211525@shcrm.com': 'shinhan24!',
-    '20212159@shcrm.com': 'shinhan24!',
-    '20212224@shcrm.com': 'shinhan24!',
-  };
+  // Create an instance of FlutterSecureStorage
+  final _secureStorage = const FlutterSecureStorage();
 
   void _showAlertDialog(String message) {
+    if (!mounted) return; // Check if the widget is still mounted
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -72,17 +70,17 @@ class _LoginScreenState extends State<LoginScreen> {
     final id = _idController.text;
     final password = _passwordController.text;
 
-    // Regex pattern for validating an email address
-    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+    // Regex pattern for validating only digits
+    final numberRegex = RegExp(r'^\d+$');
 
     if (id.isEmpty) {
-      _showAlertDialog('이메일을 입력해 주세요.');
+      _showAlertDialog('아이디를 입력해 주세요.');
       _idFocusNode.requestFocus();
       return;
     }
 
-    if (!emailRegex.hasMatch(id)) {
-      _showAlertDialog('올바른 이메일 형식을 입력해 주세요.');
+    if (!numberRegex.hasMatch(id)) {
+      _showAlertDialog('숫자만 입력해 주세요.');
       _idFocusNode.requestFocus();
       return;
     }
@@ -93,14 +91,40 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    if (_dummyUsers.containsKey(id) && _dummyUsers[id] == password) {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('jwt_token', 'dummy_token'); // Save the token
-      Navigator.pushReplacementNamed(context, '/home');
-    } else {
-      setState(() {
-        _errorMessage = '아이디 또는 비밀번호가 일치하지 않습니다.';
-      });
+    final url = Uri.parse('http://10.0.2.2:8080/login');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'employeeId': id, 'password': password}),
+      );
+
+      if (!mounted) return; // Check if the widget is still mounted
+
+      if (response.statusCode == 200) {
+        // Extract token from response headers
+        final token = response.headers[
+            'authorization']; // Assume token is in the 'authorization' header
+        print(token);
+
+        if (token != null) {
+          // Store the token securely using FlutterSecureStorage
+          await _secureStorage.write(key: 'jwt_token', value: token);
+
+          Navigator.pushReplacementNamed(context, '/home');
+        } else {
+          setState(() {
+            _errorMessage = '로그인 응답에서 토큰을 찾을 수 없습니다.';
+          });
+        }
+      } else {
+        _showAlertDialog('아이디 또는 비밀번호가 일치하지 않습니다.');
+      }
+    } catch (e) {
+      if (mounted) {
+        _showAlertDialog('네트워크 오류가 발생했습니다. 인터넷 연결을 확인해 주세요.');
+      }
     }
   }
 
@@ -146,8 +170,8 @@ class _LoginScreenState extends State<LoginScreen> {
               controller: _idController,
               focusNode: _idFocusNode,
               decoration: InputDecoration(
-                labelText: '이메일',
-                hintText: 'abc@example.com',
+                labelText: '아이디',
+                hintText: '숫자만 입력해 주세요',
                 border: OutlineInputBorder(),
               ),
               textInputAction: TextInputAction.next,

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 
 class LoadingScreen extends StatefulWidget {
   @override
@@ -10,6 +11,9 @@ class LoadingScreen extends StatefulWidget {
 
 class _LoadingScreenState extends State<LoadingScreen> {
   bool _isConnected = true;
+
+  // Create an instance of FlutterSecureStorage
+  final _secureStorage = const FlutterSecureStorage();
 
   @override
   void initState() {
@@ -29,12 +33,32 @@ class _LoadingScreenState extends State<LoadingScreen> {
   }
 
   Future<void> _checkToken() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('jwt_token');
+    // Get token from secure storage
+    String? token = await _secureStorage.read(key: 'jwt_token');
 
     if (token != null) {
-      _navigateToHome();
+      try {
+        // Decode the JWT
+        final jwt = JWT.decode(token);
+
+        // Get the current time
+        final currentTime =
+            DateTime.now().millisecondsSinceEpoch ~/ 1000; // In seconds
+
+        // Check the 'exp' field from the token payload
+        if (jwt.payload['exp'] != null && jwt.payload['exp'] > currentTime) {
+          // Token is still valid, navigate to home
+          _navigateToHome();
+        } else {
+          // Token is expired, navigate to auth selection
+          _navigateToAuthSelection();
+        }
+      } catch (e) {
+        // In case of any error (invalid token or other), navigate to auth selection
+        _navigateToAuthSelection();
+      }
     } else {
+      // No token found, navigate to auth selection
       _navigateToAuthSelection();
     }
   }
