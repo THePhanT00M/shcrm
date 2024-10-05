@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1020390356152",
+    "project_id": "shcrm-shinhan",
+    "storage_bucket": "shcrm-shinhan.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1020390356152:android:7ba04ce5e105627f47f04d",
+        "android_client_info": {
+          "package_name": "com.example.shcrm"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzhpmIpooYhHyqmVlr8W4GNQYaA3Zc2nQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

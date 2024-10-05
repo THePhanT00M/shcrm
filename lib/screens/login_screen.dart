@@ -10,6 +10,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  // 텍스트 컨트롤러 및 포커스 노드 선언
   final _idController = TextEditingController();
   final _passwordController = TextEditingController();
   final _idFocusNode = FocusNode();
@@ -17,11 +18,12 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscureText = true;
   String _errorMessage = '';
 
-  // Create an instance of FlutterSecureStorage
+  // FlutterSecureStorage 인스턴스 생성
   final _secureStorage = const FlutterSecureStorage();
 
+  // 경고 대화상자 표시 함수
   void _showAlertDialog(String message) {
-    if (!mounted) return; // Check if the widget is still mounted
+    if (!mounted) return; // 위젯이 여전히 마운트되어 있는지 확인
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -66,11 +68,12 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // 로그인 함수
   Future<void> _login() async {
     final id = _idController.text;
     final password = _passwordController.text;
 
-    // Regex pattern for validating only digits
+    // 숫자만 입력되었는지 확인하는 정규 표현식
     final numberRegex = RegExp(r'^\d+$');
 
     if (id.isEmpty) {
@@ -91,25 +94,30 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    final url = Uri.parse('http://10.0.2.2:8080/login');
+    final url = Uri.parse('http://api.shcrm.site:8080/login');
 
     try {
       final response = await http.post(
         url,
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Apikey': '4sfItxEd9YHjpTS96jxFnZoKseT5PdDM'
+        },
         body: jsonEncode({'employeeId': id, 'password': password}),
       );
 
-      if (!mounted) return; // Check if the widget is still mounted
+      // 응답 출력
+      print('Response 출력: ${response.body}');
+
+      if (!mounted) return; // 위젯이 여전히 마운트되어 있는지 확인
 
       if (response.statusCode == 200) {
-        // Extract token from response headers
-        final token = response.headers[
-            'authorization']; // Assume token is in the 'authorization' header
+        // 응답 헤더에서 토큰 추출
+        final token = response.headers['authorization'];
         print(token);
 
         if (token != null) {
-          // Store the token securely using FlutterSecureStorage
+          // 토큰을 FlutterSecureStorage에 안전하게 저장
           await _secureStorage.write(key: 'jwt_token', value: token);
 
           Navigator.pushReplacementNamed(context, '/home');
@@ -275,6 +283,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
+    // 텍스트 컨트롤러 및 포커스 노드 해제
     _idController.dispose();
     _passwordController.dispose();
     _idFocusNode.dispose();
