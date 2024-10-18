@@ -43,19 +43,10 @@ class ReceiptsPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Color(0xFFf0f0f0),
       appBar: AppBar(
-        backgroundColor: Colors.transparent, // 그라데이션을 위해 투명색 설정
+        backgroundColor: Color(0xFF009EB4),
         toolbarHeight: 120,
         elevation: 0,
         automaticallyImplyLeading: false,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF10D9B5), Color(0xFF009EB4)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-        ),
         title: Column(
           children: [
             Stack(
@@ -100,26 +91,9 @@ class ReceiptsPage extends StatelessWidget {
                       onTap: () {
                         Navigator.push(
                           context,
-                          PageRouteBuilder(
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) =>
-                                    ReceiptRegistrationScreen(),
-                            transitionsBuilder: (context, animation,
-                                secondaryAnimation, child) {
-                              const begin = Offset(1.0, 0.0);
-                              const end = Offset.zero;
-                              const curve = Curves.easeInOut;
-
-                              var tween = Tween(begin: begin, end: end)
-                                  .chain(CurveTween(curve: curve));
-                              var offsetAnimation = animation.drive(tween);
-
-                              return SlideTransition(
-                                position: offsetAnimation,
-                                child: child,
-                              );
-                            },
-                          ),
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  ReceiptRegistrationScreen()),
                         );
                       },
                       child: Icon(
@@ -211,11 +185,7 @@ class CustomCard extends StatelessWidget {
           context,
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
-                ReceiptRegistrationScreen(
-              title: title,
-              amount: amount,
-              iconPath: iconPath,
-            ),
+                ReceiptRegistrationScreen(),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
               const begin = Offset(1.0, 0.0);

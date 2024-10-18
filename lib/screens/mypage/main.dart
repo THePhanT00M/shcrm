@@ -9,130 +9,20 @@ class MyPage extends StatelessWidget {
           Color(0xFFf0f0f0), // Set the background color of the Scaffold
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: Color(0xFF10D9B5),
+        backgroundColor: Color(0xFF009EB4),
         elevation: 0,
-        toolbarHeight: 200,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF10D9B5), Color(0xFF009EB4)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-        ),
-        title: Column(
+        toolbarHeight: 65,
+        title: Stack(
           children: [
-            Stack(
-              children: [
-                Align(
-                  alignment: Alignment.center,
-                  child: Text(
-                    'MY',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
+            Align(
+              alignment: Alignment.center,
+              child: Text(
+                'MY',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
-              ],
-            ),
-            Container(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 60,
-                    height: 60,
-                    child: CircleAvatar(
-                      backgroundImage: AssetImage('assets/avatar_man.png'),
-                    ),
-                  ),
-                  SizedBox(width: 20),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '회사 아이콘',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        Text(
-                          '이름',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.white,
-                          ),
-                        ),
-                        Text(
-                          '이메일',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '계정',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Text(''),
-                      Text(''),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 10),
-            Container(
-              padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-              decoration: BoxDecoration(
-                color: Color(0xFF028490),
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '폴리시',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        '지정안함',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Icon(
-                    Icons.chevron_right,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                ],
               ),
             ),
           ],
@@ -148,136 +38,121 @@ class MyPage extends StatelessWidget {
                 0xFFf0f0f0), // Set the background color of the scrollable area
             child: Column(
               children: [
-                FeatureSettingSection2(),
+                Container(
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF009EB4),
+                  ),
+                  padding:
+                      EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
+                  child: Column(
+                    children: [
+                      Container(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 60,
+                              height: 60,
+                              child: CircleAvatar(
+                                backgroundImage:
+                                    AssetImage('assets/avatar_man.png'),
+                              ),
+                            ),
+                            SizedBox(width: 20),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '회사 이름',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  Text(
+                                    '이름',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  Text(
+                                    '이메일',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  ' ',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                Text(''),
+                                Text(''),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            vertical: 8.0, horizontal: 16.0),
+                        decoration: BoxDecoration(
+                          color: Color(0xFF028490),
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '폴리시',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  '지정안함',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Icon(
+                              Icons.chevron_right,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 FeatureSettingSection3(),
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class FeatureSettingSection2 extends StatefulWidget {
-  @override
-  _FeatureSettingSection2State createState() => _FeatureSettingSection2State();
-}
-
-class _FeatureSettingSection2State extends State<FeatureSettingSection2> {
-  bool _isWiFiUploadOnly = false;
-  bool _isImageAutoSave = false;
-  bool _isStartWithCameraMode = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      color: Colors.white,
-      padding: EdgeInsets.all(20),
-      margin: EdgeInsets.only(bottom: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '기능설정',
-            style: TextStyle(fontSize: 12, color: Color(0xFF333333)),
-          ),
-          SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.0),
-                child: Text(
-                  'wi-fi upload only',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              CustomSwitch(
-                value: _isWiFiUploadOnly,
-                onChanged: (bool newValue) {
-                  setState(() {
-                    _isWiFiUploadOnly = newValue;
-                  });
-                },
-              ),
-            ],
-          ),
-          Divider(color: Color.fromARGB(255, 241, 241, 241)),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.0),
-                child: Text(
-                  '이미지 자동 저장',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              CustomSwitch(
-                value: _isImageAutoSave,
-                onChanged: (bool newValue) {
-                  setState(() {
-                    _isImageAutoSave = newValue;
-                  });
-                },
-              ),
-            ],
-          ),
-          Divider(color: Color.fromARGB(255, 241, 241, 241)),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.0),
-                child: Text(
-                  '카메라 모드로 시작',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              CustomSwitch(
-                value: _isStartWithCameraMode,
-                onChanged: (bool newValue) {
-                  setState(() {
-                    _isStartWithCameraMode = newValue;
-                  });
-                },
-              ),
-            ],
-          ),
-          Divider(color: Color.fromARGB(255, 241, 241, 241)),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.0),
-                child: Text(
-                  '이미지 자동 저장',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              IconButton(
-                icon: Icon(Icons.chevron_right), // 화살표 아이콘
-                onPressed: () {
-                  // 여기에 버튼 클릭 시 실행할 코드를 작성하세요.
-                },
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }

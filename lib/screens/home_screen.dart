@@ -45,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
         height: 24,
         width: 24,
         colorFilter: ColorFilter.mode(
-          _selectedIndex == index ? Color(0xFF10D9B5) : Color(0xFF666666),
+          _selectedIndex == index ? Color(0xFF009EB4) : Color(0xFF666666),
           BlendMode.srcIn,
         ),
       ),
@@ -100,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
           label: const Text('셀프'),
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 15),
-            backgroundColor: const Color(0xFF0CCEAB), // background color
+            backgroundColor: const Color(0xFF009EB4), // background color
             foregroundColor: Colors.white, // text color
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.only(
@@ -133,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: BottomNavigationBar(
                   type: BottomNavigationBarType.fixed,
                   backgroundColor: Colors.white, // BottomNavigationBar 배경 색상
-                  selectedItemColor: Color(0xFF10D9B5), // 선택된 항목 색상
+                  selectedItemColor: Color(0xFF009EB4), // 선택된 항목 색상
                   unselectedItemColor: Color(0xFF666666), // 선택되지 않은 항목 색상
                   selectedFontSize: 12, // 선택된 항목의 폰트 크기
                   unselectedFontSize: 12, // 선택되지 않은 항목의 폰트 크기
@@ -159,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
-                      color: Color(0xFF10D9B5), // 배경 색상
+                      color: Color(0xFF009EB4), // 배경 색상
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -180,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         _buildFloatingButtons(),
-                        SizedBox(height: 160),
+                        SizedBox(height: 130),
                       ],
                     ),
                   ),

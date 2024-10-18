@@ -7,17 +7,8 @@ class NotificationsPage extends StatelessWidget {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         toolbarHeight: 60,
-        backgroundColor: Color(0xFF10D9B5),
+        backgroundColor: Color(0xFF009EB4),
         elevation: 0,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF10D9B5), Color(0xFF009EB4)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-        ),
         title: Column(
           children: [
             Stack(
