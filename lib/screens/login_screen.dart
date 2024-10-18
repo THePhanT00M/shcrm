@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
@@ -10,7 +11,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // 텍스트 컨트롤러 및 포커스 노드 선언
+  // 텍스트 켄트롤리 및 포컨스 노드 선정
   final _idController = TextEditingController();
   final _passwordController = TextEditingController();
   final _idFocusNode = FocusNode();
@@ -23,46 +24,21 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // 경고 대화상자 표시 함수
   void _showAlertDialog(String message) {
-    if (!mounted) return; // 위젯이 여전히 마운트되어 있는지 확인
+    if (!mounted) return; // 위저이 여유도이 되어 있는지 확인
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(20.0)),
-          ),
-          child: Container(
-            padding: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.all(Radius.circular(20.0)),
-              color: Colors.white,
+        return CupertinoAlertDialog(
+          title: Text('알림'),
+          content: Text(message),
+          actions: [
+            CupertinoDialogAction(
+              child: Text('확인'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Flexible(
-                  child: Text(
-                    message,
-                    style: TextStyle(fontSize: 18),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                SizedBox(height: 20),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text(
-                    '확인',
-                    style: TextStyle(
-                      color: Colors.blue,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          ],
         );
       },
     );
@@ -109,7 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
       // 응답 출력
       print('Response 출력: ${response.body}');
 
-      if (!mounted) return; // 위젯이 여전히 마운트되어 있는지 확인
+      if (!mounted) return; // 위저이 여유도이 되어 있는지 확인
 
       if (response.statusCode == 200) {
         // 응답 헤더에서 토큰 추출
@@ -117,7 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
         print(token);
 
         if (token != null) {
-          // 토큰을 FlutterSecureStorage에 안전하게 저장
+          // 토큰을 FlutterSecureStorage에 안전히 저장
           await _secureStorage.write(key: 'jwt_token', value: token);
 
           Navigator.pushReplacementNamed(context, '/home');
@@ -131,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       if (mounted) {
-        _showAlertDialog('네트워크 오류가 발생했습니다. 인터넷 연결을 확인해 주세요.');
+        _showAlertDialog('네트워크 오류가 발생했습니다.\n인터넷 연결을 확인해 주세요.');
       }
     }
   }
@@ -158,7 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SvgPicture.asset(
-                  'assets/logo.svg', // 로고 이미지 경로를 올바르게 설정하세요.
+                  'assets/logo.svg', // 로고 이미지 경로를 올바른까지 설정하세요.
                   width: 80,
                   height: 80,
                 ),
@@ -188,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
               },
             ),
             SizedBox(height: 16),
-            // 비밀번호 텍스트 필드
+            // 비밀로 텍스트 필드
             TextField(
               controller: _passwordController,
               focusNode: _passwordFocusNode,
@@ -224,7 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: () {
-                  // 비밀번호 찾기 페이지로 이동하는 코드 추가
+                  // 비밀로 찾기 페이지로 이동하는 코드 추가
                 },
                 child: Text(
                   '비밀번호 찾기',
@@ -283,7 +259,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
-    // 텍스트 컨트롤러 및 포커스 노드 해제
+    // 텍스트 켄트롤리 및 포컨스 노드 해제
     _idController.dispose();
     _passwordController.dispose();
     _idFocusNode.dispose();
