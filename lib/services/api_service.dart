@@ -25,7 +25,7 @@ class ApiService {
         };
       }).toList();
     } else {
-      throw Exception('Failed to load reports');
+      throw Exception(response.body);
     }
   }
 }
