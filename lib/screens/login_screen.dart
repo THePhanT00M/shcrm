@@ -88,20 +88,16 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return; // 위저이 여유도이 되어 있는지 확인
 
       if (response.statusCode == 200) {
-        // 응답 헤더에서 토큰 추출
-        final token = response.headers['authorization'];
-        print(token);
+        // 응답 바디에서 JSON 데이터 추출
+        final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+        final employeeId = jsonResponse['employeeId'];
+        final email = jsonResponse['email'];
 
-        if (token != null) {
-          // 토큰을 FlutterSecureStorage에 안전히 저장
-          await _secureStorage.write(key: 'jwt_token', value: token);
+        // JSON 데이터를 저장
+        final userData = jsonEncode({'employeeId': employeeId, 'email': email});
+        await _secureStorage.write(key: 'user_data', value: userData);
 
-          Navigator.pushReplacementNamed(context, '/home');
-        } else {
-          setState(() {
-            _errorMessage = '로그인 응답에서 토큰을 찾을 수 없습니다.';
-          });
-        }
+        Navigator.pushReplacementNamed(context, '/home');
       } else {
         _showAlertDialog('아이디 또는 비밀번호가 일치하지 않습니다.');
       }
@@ -110,6 +106,15 @@ class _LoginScreenState extends State<LoginScreen> {
         _showAlertDialog('네트워크 오류가 발생했습니다.\n인터넷 연결을 확인해 주세요.');
       }
     }
+  }
+
+  // 저장된 사용자 데이터를 불러오는 함수
+  Future<Map<String, dynamic>?> _getUserData() async {
+    final userData = await _secureStorage.read(key: 'user_data');
+    if (userData != null) {
+      return jsonDecode(userData);
+    }
+    return null;
   }
 
   @override

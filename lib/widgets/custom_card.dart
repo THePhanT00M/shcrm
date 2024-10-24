@@ -1,52 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import '../../screens/report/report_registration_screen.dart';
 
 class CustomCard extends StatelessWidget {
   final String status;
-  final String totalExpenses;
   final String title;
-  final String amount;
 
   CustomCard({
     required this.status,
-    required this.totalExpenses,
     required this.title,
-    required this.amount,
   });
 
   @override
   Widget build(BuildContext context) {
-    Color statusColor = _getStatusColor(status); // Get color based on status
+    Color statusColor = _getStatusColor(status); // 상태에 따라 색상 결정
 
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                ReportRegistrationScreen(
-              title: title,
-              amount: amount,
-              totalExpenses: totalExpenses,
-            ),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.easeInOut;
-
-              var tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              var offsetAnimation = animation.drive(tween);
-
-              return SlideTransition(
-                position: offsetAnimation,
-                child: child,
-              );
-            },
-          ),
-        );
+        // 클릭 시 이동하는 로직 구현 (필요에 따라 추가)
       },
       child: Container(
         margin: EdgeInsets.only(bottom: 15.0),
@@ -67,7 +36,7 @@ class CustomCard extends StatelessWidget {
           children: [
             Container(
               width: 10,
-              height: 71, // Adjust as needed
+              height: 71,
               decoration: BoxDecoration(
                 color: statusColor,
                 borderRadius: BorderRadius.only(
@@ -75,8 +44,7 @@ class CustomCard extends StatelessWidget {
                     bottomLeft: Radius.circular(8)),
               ),
             ),
-            SizedBox(
-                width: 10), // Space between the colored strip and the content
+            SizedBox(width: 10), // 공간 확보
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,11 +55,11 @@ class CustomCard extends StatelessWidget {
                         padding: EdgeInsets.symmetric(
                             horizontal: 10.0, vertical: 2.0),
                         decoration: BoxDecoration(
-                          color: statusColor, // Use the color based on status
+                          color: statusColor, // 상태에 따라 색상 적용
                           borderRadius: BorderRadius.circular(8.0),
                         ),
                         child: Text(
-                          status,
+                          _getStatusText(status), // 한글 상태 텍스트
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 10,
@@ -99,26 +67,12 @@ class CustomCard extends StatelessWidget {
                         ),
                       ),
                       Spacer(),
-                      Text(
-                        totalExpenses,
-                        style: TextStyle(
-                          color: Color(0xFF666666),
-                          fontSize: 12,
-                        ),
-                      ),
                     ],
                   ),
                   SizedBox(height: 10),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      SvgPicture.asset(
-                        'assets/icons/file_folder.svg', // Placeholder path
-                        width: 20,
-                        height: 26,
-                        color: statusColor, // Use the color based on status
-                      ),
-                      SizedBox(width: 16),
                       Expanded(
                         child: Text(
                           title,
@@ -127,14 +81,6 @@ class CustomCard extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF333333),
                           ),
-                        ),
-                      ),
-                      Text(
-                        amount,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF333333),
                         ),
                       ),
                     ],
@@ -150,16 +96,27 @@ class CustomCard extends StatelessWidget {
 
   Color _getStatusColor(String status) {
     switch (status) {
-      case '작성 중':
-        return Colors.blue;
-      case '완료':
-        return Colors.green;
-      case '검토 중':
-        return Colors.orange;
-      case '반려':
-        return Colors.red;
+      case 'PENDING':
+        return Colors.orange; // "작성 중"으로 해석
+      case 'COMPLETE':
+        return Colors.green; // "완료"로 해석
+      case 'REJECTED':
+        return Colors.red; // "반려"로 해석
       default:
         return Colors.grey;
+    }
+  }
+
+  String _getStatusText(String status) {
+    switch (status) {
+      case 'PENDING':
+        return '작성 중'; // 한글로 변환
+      case 'COMPLETE':
+        return '완료'; // 한글로 변환
+      case 'REJECTED':
+        return '반려'; // 한글로 변환
+      default:
+        return '알 수 없음'; // 기본 값
     }
   }
 }

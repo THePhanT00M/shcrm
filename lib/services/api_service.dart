@@ -8,24 +8,51 @@ class ApiService {
     'Apikey': '4sfItxEd9YHjpTS96jxFnZoKseT5PdDM'
   };
 
-  static Future<List<Map<String, dynamic>>> fetchReportsData() async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/report/all'),
-      headers: _headers,
-    );
+  static Future<List<Map<String, dynamic>>> fetchReportsData(
+      String employeeId) async {
+    try {
+      // 요청 본문에 employeeId 포함
+      final body = json.encode({'employeeId': employeeId});
 
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      return data.map<Map<String, dynamic>>((item) {
-        return {
-          'status': item['status'] ?? '알 수 없음',
-          'totalExpenses': item['totalExpenses'] ?? '총 지출 정보 없음',
-          'title': item['title'] ?? '제목 없음',
-          'amount': item['amount'] ?? '₩ 0',
-        };
-      }).toList();
-    } else {
-      throw Exception(response.body);
+      final response = await http.post(
+        Uri.parse('$_baseUrl/report/all'),
+        headers: _headers,
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        // 응답을 UTF-8로 디코딩
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final responseData = json.decode(decodedBody);
+
+        // 결과값 확인
+        if (responseData['resultCode'] == 'SUCCESS' &&
+            responseData['result'] != null) {
+          final List<dynamic> results = responseData['result'];
+
+          // status와 title만 추출
+          return results.map<Map<String, dynamic>>((item) {
+            return {
+              'status': item['status'] ?? '알 수 없음',
+              'title': item['title'] ?? '제목 없음',
+            };
+          }).toList();
+        } else {
+          throw Exception('Error: ${responseData['resultMsg']}');
+        }
+      } else {
+        // 에러 메시지 UTF-8 디코딩 처리
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final responseJson = json.decode(decodedBody);
+        final resultMsgBytes = (responseJson['resultMsg'] as String).codeUnits;
+        final decodedResultMsg = utf8.decode(resultMsgBytes);
+
+        throw Exception(
+            'Error: ${response.statusCode}, Message: $decodedResultMsg');
+      }
+    } catch (e) {
+      print('Failed to fetch reports data: $e');
+      throw Exception('Error fetching reports data');
     }
   }
 }

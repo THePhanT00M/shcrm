@@ -88,7 +88,7 @@ class _FilterScreenState extends State<FilterScreen> {
                   SizedBox(height: 20),
                   _buildDateRangePicker('기간', context),
                   SizedBox(height: 20),
-                  _buildDropdown('플러시', '모든 Policy'),
+                  _buildDropdown('플러시', '일반결제'),
                   SizedBox(height: 20),
                   _buildExpenseReportButtons(),
                 ],

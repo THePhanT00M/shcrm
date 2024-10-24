@@ -1,85 +1,135 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'dart:convert';
 
-class MyPage extends StatelessWidget {
+class MyPage extends StatefulWidget {
+  @override
+  _MyPageState createState() => _MyPageState();
+}
+
+class _MyPageState extends State<MyPage> {
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+  String email = 'Loading...';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadEmail();
+  }
+
+  Future<void> _loadEmail() async {
+    try {
+      final userData = await _secureStorage.read(key: 'user_data');
+      if (userData != null) {
+        final userJson = jsonDecode(userData) as Map<String, dynamic>;
+        setState(() {
+          email = userJson['email'] ?? 'No Email';
+        });
+      }
+    } catch (e) {
+      print("Error loading email: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    const appBarColor = Color(0xFF009EB4);
+    const policyColor = Color(0xFF028490);
+    const whiteText = TextStyle(color: Colors.white);
+    const boldWhiteText = TextStyle(
+      color: Colors.white,
+      fontWeight: FontWeight.bold,
+    );
+
     return Scaffold(
-      backgroundColor:
-          Color(0xFFf0f0f0), // Set the background color of the Scaffold
+      backgroundColor: const Color(0xFFf0f0f0), // Scaffold 배경색 설정
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: Color(0xFF009EB4),
+        backgroundColor: appBarColor,
         elevation: 0,
         toolbarHeight: 65,
-        title: Stack(
-          children: [
-            Align(
-              alignment: Alignment.center,
-              child: Text(
-                'MY',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
+        title: const Center(
+          child: Text(
+            'MY',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
-          ],
+          ),
         ),
       ),
-      body: Padding(
-        padding: EdgeInsets.only(
-            bottom:
-                70), // Add padding to avoid being hidden by the BottomNavigationBar
-        child: SingleChildScrollView(
-          child: Container(
-            color: Color(
-                0xFFf0f0f0), // Set the background color of the scrollable area
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 70),
+          child: SingleChildScrollView(
             child: Column(
               children: [
                 Container(
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF009EB4),
-                  ),
-                  padding:
-                      EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
+                  color: appBarColor,
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 16.0, horizontal: 20.0),
                   child: Column(
                     children: [
-                      Container(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: 60,
-                              height: 60,
-                              child: CircleAvatar(
-                                backgroundImage:
-                                    AssetImage('assets/avatar_man.png'),
-                              ),
+                      Row(
+                        children: [
+                          const CircleAvatar(
+                            radius: 30,
+                            backgroundImage:
+                                AssetImage('assets/avatar_man.png'),
+                          ),
+                          const SizedBox(width: 20),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'CRM',
+                                  style: boldWhiteText,
+                                ),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  '이름',
+                                  style: whiteText,
+                                ),
+                                Text(
+                                  email,
+                                  style: whiteText,
+                                ),
+                              ],
                             ),
-                            SizedBox(width: 20),
-                            Expanded(
-                              child: Column(
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      GestureDetector(
+                        onTap: () {
+                          // 폴리시 섹션을 클릭했을 때의 동작을 여기에 추가
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 8.0, horizontal: 16.0),
+                          decoration: BoxDecoration(
+                            color: policyColor,
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: const [
+                              Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    '회사 이름',
+                                    '폴리시',
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                     ),
                                   ),
+                                  SizedBox(height: 4),
                                   Text(
-                                    '이름',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  Text(
-                                    '이메일',
+                                    '일반결제',
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: Colors.white,
@@ -87,68 +137,19 @@ class MyPage extends StatelessWidget {
                                   ),
                                 ],
                               ),
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  ' ',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                Text(''),
-                                Text(''),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                            vertical: 8.0, horizontal: 16.0),
-                        decoration: BoxDecoration(
-                          color: Color(0xFF028490),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '폴리시',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                SizedBox(height: 4),
-                                Text(
-                                  '지정안함',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Icon(
-                              Icons.chevron_right,
-                              color: Colors.white,
-                              size: 24,
-                            ),
-                          ],
+                              Icon(
+                                Icons.chevron_right,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                FeatureSettingSection3(),
+                const FeatureSettingSection3(),
               ],
             ),
           ),
@@ -159,95 +160,77 @@ class MyPage extends StatelessWidget {
 }
 
 class FeatureSettingSection3 extends StatelessWidget {
+  const FeatureSettingSection3({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
+    const dividerColor = Color(0xFFF1F1F1);
     return Container(
       width: double.infinity,
-      color: Colors.white,
-      padding: EdgeInsets.all(20),
-      margin: EdgeInsets.only(bottom: 10),
-      child: const Column(
+      color: Colors.white, // 이 섹션의 배경색을 흰색으로 유지
+      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.only(bottom: 10),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             '앱 정보',
             style: TextStyle(fontSize: 12, color: Color(0xFF333333)),
           ),
-          SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.0),
-                child: Text(
-                  '버전',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.0),
-                child: Text(
-                  '1.0.0',
-                  style: TextStyle(
-                    fontSize: 15,
-                  ),
-                ),
-              ),
-            ],
+          const SizedBox(height: 20),
+          _buildInfoRow('버전', '1.0.0'),
+          const Divider(color: dividerColor),
+          _buildNavigationRow('Help & Feedback'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String title, String subtitle) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-          Divider(color: Color.fromARGB(255, 241, 241, 241)),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.0),
-                child: Text(
-                  'Help & Feedback',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              Icon(
-                Icons.chevron_right,
-                size: 24,
-                color: Colors.grey,
-              ),
-            ],
+          Text(
+            subtitle,
+            style: const TextStyle(
+              fontSize: 15,
+            ),
           ),
         ],
       ),
     );
   }
-}
 
-class CustomSwitch extends StatelessWidget {
-  final bool value;
-  final ValueChanged<bool> onChanged;
-  final double scale;
-
-  const CustomSwitch({
-    required this.value,
-    required this.onChanged,
-    this.scale = 1, // Default scale is 1.0
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Transform.scale(
-        scale: scale,
-        child: CupertinoSwitch(
-          value: value,
-          onChanged: onChanged,
-          activeColor: Color(0xFF10D9B5),
-          trackColor: Color(0xFFE1E1E1),
-        ),
+  Widget _buildNavigationRow(String title) {
+    return GestureDetector(
+      onTap: () {
+        // 해당 섹션을 클릭했을 때의 동작을 여기에 추가
+      },
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const Icon(
+            Icons.chevron_right,
+            size: 24,
+            color: Colors.grey,
+          ),
+        ],
       ),
     );
   }

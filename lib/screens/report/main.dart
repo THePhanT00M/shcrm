@@ -4,6 +4,8 @@ import 'report_registration_screen.dart'; // Import the registration screen
 import 'filter_screen.dart'; // Import the filter screen
 import '../../services/api_service.dart'; // Import API service
 import '../../widgets/custom_card.dart'; // Import CustomCard widget
+import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Import FlutterSecureStorage
+import 'dart:convert'; // For JSON decoding
 
 class ReportsPage extends StatefulWidget {
   @override
@@ -15,17 +17,57 @@ class _ReportsPageState extends State<ReportsPage> {
   bool isLoading = true;
   bool hasError = false;
 
+  // FlutterSecureStorage 인스턴스 생성
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+
   @override
   void initState() {
     super.initState();
-    fetchReportsData();
+    fetchEmployeeIdAndReportsData();
   }
 
-  Future<void> fetchReportsData() async {
+  // user_data에서 employeeId를 불러와 데이터를 가져오는 함수
+  Future<void> fetchEmployeeIdAndReportsData() async {
     try {
-      final data = await ApiService.fetchReportsData();
+      // FlutterSecureStorage에서 저장된 user_data 불러오기
+      String? userData = await _secureStorage.read(key: 'user_data');
+
+      if (userData != null) {
+        // JSON 디코딩하여 employeeId 추출
+        Map<String, dynamic> userJson = jsonDecode(userData);
+        String employeeId = userJson['employeeId'].toString();
+
+        // API 호출하여 보고서 데이터 가져오기
+        await fetchReportsData(employeeId);
+      } else {
+        setState(() {
+          isLoading = false;
+          hasError = true;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('로그인 정보가 없습니다. 다시 로그인 해주세요.')),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+        hasError = true;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('오류가 발생했습니다: $e')),
+      );
+      print('Error: $e');
+    }
+  }
+
+  // employeeId를 받아서 보고서 데이터를 가져오는 함수
+  Future<void> fetchReportsData(String employeeId) async {
+    try {
+      final data =
+          await ApiService.fetchReportsData(employeeId); // employeeId 전달
       setState(() {
         reportsData = data;
+        print(reportsData);
         isLoading = false;
         hasError = false;
       });
@@ -64,25 +106,6 @@ class _ReportsPageState extends State<ReportsPage> {
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
-                    ),
-                  ),
-                ),
-                Positioned(
-                  left: 0,
-                  child: TextButton(
-                    onPressed: () {
-                      // 지정안함 버튼 클릭 시 동작할 코드 작성
-                    },
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: Size(50, 30),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: Text(
-                      '지정안함',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
                     ),
                   ),
                 ),
@@ -173,7 +196,7 @@ class _ReportsPageState extends State<ReportsPage> {
                       Text('데이터를 불러오지 못했습니다.'),
                       SizedBox(height: 10),
                       ElevatedButton(
-                        onPressed: fetchReportsData,
+                        onPressed: fetchEmployeeIdAndReportsData,
                         child: Text('다시 시도'),
                       ),
                     ],
@@ -187,9 +210,7 @@ class _ReportsPageState extends State<ReportsPage> {
                     itemBuilder: (context, index) {
                       return CustomCard(
                         status: reportsData[index]['status']!,
-                        totalExpenses: reportsData[index]['totalExpenses']!,
                         title: reportsData[index]['title']!,
-                        amount: reportsData[index]['amount']!,
                       );
                     },
                   ),
