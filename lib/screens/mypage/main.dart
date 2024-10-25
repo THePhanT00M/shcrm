@@ -10,20 +10,23 @@ class MyPage extends StatefulWidget {
 class _MyPageState extends State<MyPage> {
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
   String email = 'Loading...';
+  String name = 'Loading...';
 
   @override
   void initState() {
     super.initState();
-    _loadEmail();
+    _userData();
   }
 
-  Future<void> _loadEmail() async {
+  Future<void> _userData() async {
     try {
       final userData = await _secureStorage.read(key: 'user_data');
       if (userData != null) {
         final userJson = jsonDecode(userData) as Map<String, dynamic>;
+        print(userJson);
         setState(() {
           email = userJson['email'] ?? 'No Email';
+          name = userJson['name'] ?? 'No name';
         });
       }
     } catch (e) {
@@ -88,8 +91,8 @@ class _MyPageState extends State<MyPage> {
                                   style: boldWhiteText,
                                 ),
                                 const SizedBox(height: 4),
-                                const Text(
-                                  '이름',
+                                Text(
+                                  name,
                                   style: whiteText,
                                 ),
                                 Text(
@@ -100,51 +103,6 @@ class _MyPageState extends State<MyPage> {
                             ),
                           ),
                         ],
-                      ),
-                      const SizedBox(height: 10),
-                      GestureDetector(
-                        onTap: () {
-                          // 폴리시 섹션을 클릭했을 때의 동작을 여기에 추가
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 8.0, horizontal: 16.0),
-                          decoration: BoxDecoration(
-                            color: policyColor,
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: const [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '폴리시',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  SizedBox(height: 4),
-                                  Text(
-                                    '일반결제',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Icon(
-                                Icons.chevron_right,
-                                color: Colors.white,
-                                size: 24,
-                              ),
-                            ],
-                          ),
-                        ),
                       ),
                     ],
                   ),

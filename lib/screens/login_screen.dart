@@ -90,11 +90,14 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response.statusCode == 200) {
         // 응답 바디에서 JSON 데이터 추출
         final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+        print(jsonResponse);
         final employeeId = jsonResponse['employeeId'];
         final email = jsonResponse['email'];
+        final name = jsonResponse['name'];
 
         // JSON 데이터를 저장
-        final userData = jsonEncode({'employeeId': employeeId, 'email': email});
+        final userData = jsonEncode(
+            {'employeeId': employeeId, 'email': email, 'name': name});
         await _secureStorage.write(key: 'user_data', value: userData);
 
         Navigator.pushReplacementNamed(context, '/home');

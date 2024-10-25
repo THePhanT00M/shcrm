@@ -11,7 +11,6 @@ class ApiService {
   static Future<List<Map<String, dynamic>>> fetchReportsData(
       String employeeId) async {
     try {
-      // 요청 본문에 employeeId 포함
       final body = json.encode({'employeeId': employeeId});
 
       final response = await http.post(
@@ -21,16 +20,13 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
-        // 응답을 UTF-8로 디코딩
         final decodedBody = utf8.decode(response.bodyBytes);
         final responseData = json.decode(decodedBody);
 
-        // 결과값 확인
         if (responseData['resultCode'] == 'SUCCESS' &&
             responseData['result'] != null) {
           final List<dynamic> results = responseData['result'];
 
-          // status와 title만 추출
           return results.map<Map<String, dynamic>>((item) {
             return {
               'status': item['status'] ?? '알 수 없음',
@@ -41,7 +37,6 @@ class ApiService {
           throw Exception('Error: ${responseData['resultMsg']}');
         }
       } else {
-        // 에러 메시지 UTF-8 디코딩 처리
         final decodedBody = utf8.decode(response.bodyBytes);
         final responseJson = json.decode(decodedBody);
         final resultMsgBytes = (responseJson['resultMsg'] as String).codeUnits;
@@ -53,6 +48,52 @@ class ApiService {
     } catch (e) {
       print('Failed to fetch reports data: $e');
       throw Exception('Error fetching reports data');
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> fetchExpensesData(
+      String employeeId) async {
+    try {
+      final body = json.encode({'employeeId': employeeId});
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/expense/all'),
+        headers: _headers,
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final responseData = json.decode(decodedBody);
+
+        if (responseData['resultCode'] == 'SUCCESS' &&
+            responseData['result'] != null) {
+          final List<dynamic> results = responseData['result'];
+
+          return results.map<Map<String, dynamic>>((item) {
+            return {
+              'expenseId': item['expenseId'],
+              'amount': item['amount'],
+              'merchantName': item['merchantName'] ?? '알 수 없음',
+              'expenseDate': item['expenseDate'],
+              'categoryName': item['categoryId']?['description'] ?? '알 수 없음',
+            };
+          }).toList();
+        } else {
+          throw Exception('Error: ${responseData['resultMsg']}');
+        }
+      } else {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final responseJson = json.decode(decodedBody);
+        final resultMsgBytes = (responseJson['resultMsg'] as String).codeUnits;
+        final decodedResultMsg = utf8.decode(resultMsgBytes);
+
+        throw Exception(
+            'Error: ${response.statusCode}, Message: $decodedResultMsg');
+      }
+    } catch (e) {
+      print('Failed to fetch expenses data: $e');
+      throw Exception('Error fetching expenses data');
     }
   }
 }

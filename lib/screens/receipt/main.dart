@@ -1,179 +1,186 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'filter_screen.dart'; // Import the filter screen
-import 'receipt_registration_screen.dart'; // Import the receipt registration screen
+import 'filter_screen.dart';
+import 'receipt_registration_screen.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'dart:convert';
+import '../../services/api_service.dart';
 
-class ReceiptsPage extends StatelessWidget {
-  final List<Map<String, String>> dummyData = [
-    {
-      'status': '작성 중',
-      'totalExpenses': '총 지출 1건',
-      'title': '6월 경비 지출 건',
-      'amount': '₩ 645,250'
-    },
-    {
-      'status': '완료',
-      'totalExpenses': '총 지출 3건',
-      'title': '7월 경비 지출 건',
-      'amount': '₩ 1,150,000'
-    },
-    {
-      'status': '검토 중',
-      'totalExpenses': '총 지출 1건',
-      'title': '8월 경비 지출 건',
-      'amount': '₩ 300,750'
-    },
-    {
-      'status': '작성 중',
-      'totalExpenses': '총 지출 2건',
-      'title': '9월 경비 지출 건',
-      'amount': '₩ 850,500'
-    },
-    {
-      'status': '반려',
-      'totalExpenses': '총 지출 1건',
-      'title': '10월 경비 지출 건',
-      'amount': '₩ 400,000'
-    },
-    // Add more dummy data as needed
-  ];
+class ReceiptsPage extends StatefulWidget {
+  @override
+  _ReceiptsPageState createState() => _ReceiptsPageState();
+}
+
+class _ReceiptsPageState extends State<ReceiptsPage> {
+  List<Map<String, dynamic>> receiptData = [];
+  bool isLoading = true;
+  bool hasError = false;
+
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    try {
+      final employeeId = await _fetchEmployeeId();
+      if (employeeId != null) {
+        await _loadReceiptData(employeeId);
+      } else {
+        _showError('로그인 정보가 없습니다. 다시 로그인 해주세요.');
+      }
+    } catch (e) {
+      _showError('오류가 발생했습니다: $e');
+    }
+  }
+
+  Future<String?> _fetchEmployeeId() async {
+    final userData = await _secureStorage.read(key: 'user_data');
+    if (userData != null) {
+      final userJson = jsonDecode(userData);
+      return userJson['employeeId']?.toString();
+    }
+    return null;
+  }
+
+  Future<void> _loadReceiptData(String employeeId) async {
+    try {
+      final data = await ApiService.fetchExpensesData(employeeId);
+      setState(() {
+        receiptData = data;
+        isLoading = false;
+      });
+    } catch (e) {
+      _showError('데이터를 불러오지 못했습니다: $e');
+    }
+  }
+
+  void _showError(String message) {
+    setState(() {
+      isLoading = false;
+      hasError = true;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFf0f0f0),
-      appBar: AppBar(
-        backgroundColor: Color(0xFF009EB4),
-        toolbarHeight: 120,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        title: Column(
-          children: [
-            Stack(
-              children: [
-                Align(
-                  alignment: Alignment.center,
-                  child: Text(
-                    '지출',
-                    style: TextStyle(
+      appBar: _buildAppBar(),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : _buildReceiptList(),
+    );
+  }
+
+  AppBar _buildAppBar() {
+    return AppBar(
+      backgroundColor: Color(0xFF009EB4),
+      toolbarHeight: 120,
+      elevation: 0,
+      automaticallyImplyLeading: false,
+      title: Column(
+        children: [
+          Stack(
+            children: [
+              Align(
+                alignment: Alignment.center,
+                child: Text(
+                  '지출',
+                  style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                Positioned(
-                  left: 0, // 왼쪽에 위치
-                  child: TextButton(
-                    onPressed: () {
-                      // 지정안함 버튼 클릭 시 동작할 코드 작성
-                    },
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero, // 여백 제거
-                      minimumSize: Size(50, 30), // 버튼 최소 크기 설정 (필요에 따라 조정)
-                      tapTargetSize:
-                          MaterialTapTargetSize.shrinkWrap, // 버튼 크기를 최소화
-                    ),
-                    child: Text(
-                      '지정안함',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  right: 0,
-                  top: 3, // 화면 높이의 50%
-                  child: Transform.translate(
-                    offset: Offset(0, 0), // 아이콘 높이의 절반만큼 위로 이동
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  ReceiptRegistrationScreen()),
-                        );
-                      },
-                      child: Icon(
-                        Icons.add,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 20), // 검색 및 필터 기능과의 간격
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => FilterScreen()),
-                );
-              },
-              child: Container(
-                padding: EdgeInsets.symmetric(vertical: 8.0),
-                decoration: BoxDecoration(
-                  color: Color(0xFF028490),
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SvgPicture.asset(
-                      'assets/icons/set.svg', // Path to your SVG asset
-                      height: 16,
-                      colorFilter: ColorFilter.mode(
-                        Colors.white,
-                        BlendMode.srcIn,
-                      ),
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      '검색 및 필터',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
+                      color: Colors.white),
                 ),
               ),
+              Positioned(
+                left: 0,
+                top: 6,
+                child: Text('지정안함',
+                    style: TextStyle(color: Colors.white, fontSize: 14)),
+              ),
+              Positioned(
+                right: 0,
+                top: 3,
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ReceiptRegistrationScreen()),
+                    );
+                  },
+                  child: Icon(Icons.add, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 20),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => FilterScreen()));
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(vertical: 8.0),
+              decoration: BoxDecoration(
+                  color: Color(0xFF028490),
+                  borderRadius: BorderRadius.circular(8.0)),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SvgPicture.asset('assets/icons/set.svg',
+                      height: 16,
+                      colorFilter:
+                          ColorFilter.mode(Colors.white, BlendMode.srcIn)),
+                  SizedBox(width: 8),
+                  Text('검색 및 필터',
+                      style: TextStyle(color: Colors.white, fontSize: 16)),
+                ],
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-      body: Padding(
-        padding: EdgeInsets.only(bottom: 70),
-        child: ListView.builder(
-          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-          itemCount: dummyData.length,
-          itemBuilder: (context, index) {
-            return CustomCard(
-              iconPath: 'assets/icons/none_picture.svg', // Placeholder path
-              text1: dummyData[index]['status']!,
-              title: dummyData[index]['title']!,
-              amount: dummyData[index]['amount']!,
-            );
-          },
-        ),
+    );
+  }
+
+  Widget _buildReceiptList() {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 70),
+      child: ListView.builder(
+        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+        itemCount: receiptData.length,
+        itemBuilder: (context, index) {
+          final receipt = receiptData[index];
+          return ReceiptCard(
+            iconPath: 'assets/icons/none_picture.svg',
+            status: receipt['status'] ?? '알 수 없음',
+            merchantName: receipt['merchantName'] ?? '제목 없음',
+            amount: receipt['amount']?.toString() ?? '금액 없음',
+          );
+        },
       ),
     );
   }
 }
 
-class CustomCard extends StatelessWidget {
+class ReceiptCard extends StatelessWidget {
   final String iconPath;
-  final String text1;
-  final String title;
+  final String status;
+  final String merchantName;
   final String amount;
 
-  CustomCard({
+  ReceiptCard({
     required this.iconPath,
-    required this.text1,
-    required this.title,
+    required this.status,
+    required this.merchantName,
     required this.amount,
   });
 
@@ -191,15 +198,10 @@ class CustomCard extends StatelessWidget {
               const begin = Offset(1.0, 0.0);
               const end = Offset.zero;
               const curve = Curves.easeInOut;
-
-              var tween =
+              final tween =
                   Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              var offsetAnimation = animation.drive(tween);
-
               return SlideTransition(
-                position: offsetAnimation,
-                child: child,
-              );
+                  position: animation.drive(tween), child: child);
             },
           ),
         );
@@ -221,61 +223,24 @@ class CustomCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            SvgPicture.asset(
-              iconPath,
-              height: 50,
-              width: 50,
-            ),
+            SvgPicture.asset(iconPath, height: 50, width: 50),
             SizedBox(width: 16),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  text1,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF009EB4),
-                  ),
-                ),
+                Text(status,
+                    style: TextStyle(fontSize: 12, color: Color(0xFF009EB4))),
                 SizedBox(height: 8),
-                Row(
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF009EB4),
-                      ),
-                    ),
-                    SizedBox(width: 16),
-                  ],
-                ),
+                Text(merchantName,
+                    style: TextStyle(fontSize: 16, color: Color(0xFF009EB4))),
               ],
             ),
             Spacer(),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                SvgPicture.asset(
-                  'assets/icons/re_icon.svg',
-                  height: 20,
-                  width: 14,
-                ),
-                SizedBox(height: 8),
-                Row(
-                  children: [
-                    Text(
-                      amount,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF333333),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+            Text(amount,
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF333333))),
           ],
         ),
       ),
