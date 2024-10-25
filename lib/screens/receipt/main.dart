@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'filter_screen.dart';
 import 'receipt_registration_screen.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'dart:convert';
 import '../../services/api_service.dart';
 
@@ -107,16 +108,11 @@ class _ReceiptsPageState extends State<ReceiptsPage> {
               ),
               Positioned(
                 right: 0,
-                top: 3,
+                top: 5,
                 child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => ReceiptRegistrationScreen()),
-                    );
-                  },
-                  child: Icon(Icons.add, color: Colors.white),
+                  onTap: () {},
+                  child: FaIcon(FontAwesomeIcons.chartPie,
+                      color: Colors.white, size: 18),
                 ),
               ),
             ],
@@ -161,7 +157,7 @@ class _ReceiptsPageState extends State<ReceiptsPage> {
           final receipt = receiptData[index];
           return ReceiptCard(
             iconPath: 'assets/icons/none_picture.svg',
-            status: receipt['status'] ?? '알 수 없음',
+            status: receipt['status'] ?? ' ',
             merchantName: receipt['merchantName'] ?? '제목 없음',
             amount: receipt['amount']?.toString() ?? '금액 없음',
           );
@@ -236,11 +232,19 @@ class ReceiptCard extends StatelessWidget {
               ],
             ),
             Spacer(),
-            Text(amount,
-                style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF333333))),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                SvgPicture.asset(
+                  'assets/icons/money.svg',
+                  height: 20,
+                  width: 20,
+                ),
+                SizedBox(height: 2),
+                Text("₩" + amount,
+                    style: TextStyle(fontSize: 16, color: Color(0xFF333333))),
+              ],
+            ),
           ],
         ),
       ),
