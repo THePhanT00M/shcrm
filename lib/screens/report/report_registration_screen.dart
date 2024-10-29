@@ -44,7 +44,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
     return Scaffold(
       backgroundColor: Color(0xFFf0f0f0),
       appBar: AppBar(
-        backgroundColor: Color(0xFF10D9B5), // AppBar 배경색 설정
+        backgroundColor: Color(0xFF009EB4), // AppBar 배경색 설정
         toolbarHeight: 60, // 높이 조정
         elevation: 0,
         automaticallyImplyLeading: false,
@@ -78,7 +78,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
                 right: 16.0,
                 bottom: 10.0), // 하단 패딩을 추가하여 배경색 확장
             decoration: BoxDecoration(
-              color: Color(0xFF10D9B5), // 배경색 설정
+              color: Color(0xFF009EB4), // 배경색 설정
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,7 +214,8 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
                       _selectedSection = 0; // 첫 번째 화면 선택
                     });
                   },
-                  color: _selectedSection == 0 ? Colors.teal : Colors.grey,
+                  color:
+                      _selectedSection == 0 ? Color(0xFF007792) : Colors.grey,
                 ),
                 IconButton(
                   icon: Icon(Icons.attach_file),
@@ -223,7 +224,8 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
                       _selectedSection = 1; // 두 번째 화면 선택
                     });
                   },
-                  color: _selectedSection == 1 ? Colors.teal : Colors.grey,
+                  color:
+                      _selectedSection == 1 ? Color(0xFF007792) : Colors.grey,
                 ),
                 IconButton(
                   icon: Icon(Icons.access_time),
@@ -232,7 +234,8 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
                       _selectedSection = 2; // 세 번째 화면 선택
                     });
                   },
-                  color: _selectedSection == 2 ? Colors.teal : Colors.grey,
+                  color:
+                      _selectedSection == 2 ? Color(0xFF007792) : Colors.grey,
                 ),
                 IconButton(
                   icon: Icon(Icons.chat_bubble),
@@ -241,7 +244,8 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
                       _selectedSection = 3; // 네 번째 화면 선택
                     });
                   },
-                  color: _selectedSection == 3 ? Colors.teal : Colors.grey,
+                  color:
+                      _selectedSection == 3 ? Color(0xFF007792) : Colors.grey,
                 ),
               ],
             ),
