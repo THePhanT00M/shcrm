@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'feed/main.dart';
 import 'receipt/main.dart';
 import 'report/main.dart';
@@ -28,12 +31,43 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Future<bool> storagePermission() async {
+    final DeviceInfoPlugin info = DeviceInfoPlugin();
+    final AndroidDeviceInfo androidInfo = await info.androidInfo;
+    final int androidVersion = int.parse(androidInfo.version.release);
+    bool havePermission = false;
+
+    if (androidVersion >= 13) {
+      final request = await [
+        Permission.videos,
+        Permission.photos,
+      ].request();
+      havePermission =
+          request.values.every((status) => status == PermissionStatus.granted);
+    } else {
+      final status = await Permission.storage.request();
+      havePermission = status.isGranted;
+    }
+
+    if (!havePermission) {
+      await openAppSettings();
+    }
+
+    return havePermission;
+  }
+
   Future<void> _openCamera() async {
+    final bool permissionGranted = await storagePermission();
+    if (!permissionGranted) return;
+
     final XFile? image = await _picker.pickImage(source: ImageSource.camera);
     if (image != null) {
-      // Handle the captured image here
-      print('Image Path: ${image.path}');
-      // You can also navigate to another page to display the image or process it further
+      // SHCRM 폴더에 이미지 저장
+      final result = await ImageGallerySaverPlus.saveFile(
+        image.path,
+        name: "SHCRM/${image.name}",
+      );
+      print('Image saved to SHCRM folder: $result');
     }
   }
 
@@ -74,15 +108,12 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         ElevatedButton.icon(
           onPressed: _openCamera,
-          icon: const Icon(
-            Icons.camera_alt,
-            size: 14,
-          ),
+          icon: const Icon(Icons.camera_alt, size: 14),
           label: const Text('촬영'),
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 15),
-            backgroundColor: const Color(0xFF0088D4), // background color
-            foregroundColor: Colors.white, // text color
+            backgroundColor: const Color(0xFF0088D4),
+            foregroundColor: Colors.white,
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(20),
@@ -93,15 +124,12 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         ElevatedButton.icon(
           onPressed: () {},
-          icon: const Icon(
-            Icons.edit,
-            size: 14,
-          ),
+          icon: const Icon(Icons.edit, size: 14),
           label: const Text('셀프'),
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 15),
-            backgroundColor: const Color(0xFF009EB4), // background color
-            foregroundColor: Colors.white, // text color
+            backgroundColor: const Color(0xFF009EB4),
+            foregroundColor: Colors.white,
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.only(
                 topRight: Radius.circular(20),
@@ -117,9 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: Theme.of(context).copyWith(
-        splashFactory: NoSplash.splashFactory,
-      ),
+      data: Theme.of(context).copyWith(splashFactory: NoSplash.splashFactory),
       child: Scaffold(
         body: Stack(
           children: [
@@ -129,15 +155,15 @@ class _HomeScreenState extends State<HomeScreen> {
               left: 0,
               right: 0,
               child: Container(
-                height: 70, // Set your desired height here
+                height: 70,
                 child: BottomNavigationBar(
                   type: BottomNavigationBarType.fixed,
-                  backgroundColor: Colors.white, // BottomNavigationBar 배경 색상
-                  selectedItemColor: Color(0xFF009EB4), // 선택된 항목 색상
-                  unselectedItemColor: Color(0xFF666666), // 선택되지 않은 항목 색상
-                  selectedFontSize: 12, // 선택된 항목의 폰트 크기
-                  unselectedFontSize: 12, // 선택되지 않은 항목의 폰트 크기
-                  iconSize: 24, // 아이콘 크기
+                  backgroundColor: Colors.white,
+                  selectedItemColor: Color(0xFF009EB4),
+                  unselectedItemColor: Color(0xFF666666),
+                  selectedFontSize: 12,
+                  unselectedFontSize: 12,
+                  iconSize: 24,
                   currentIndex: _selectedIndex,
                   onTap: _onItemTapped,
                   items: [
@@ -159,13 +185,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
-                      color: Color(0xFF009EB4), // 배경 색상
+                      color: Color(0xFF009EB4),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.edit,
-                      color: Colors.white, // 아이콘 색상
-                      size: 30, // 아이콘 크기
+                      color: Colors.white,
+                      size: 30,
                     ),
                   ),
                 ),
