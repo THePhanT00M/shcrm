@@ -74,8 +74,8 @@ class _MyPageState extends State<MyPage> {
                 children: [
                   Container(
                     color: appBarColor,
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 16.0, horizontal: 20.0),
+                    padding: const EdgeInsets.only(
+                        bottom: 16.0, left: 20.0, right: 20.0), // 위쪽 여백 제거
                     child: Column(
                       children: [
                         Row(
@@ -90,9 +90,10 @@ class _MyPageState extends State<MyPage> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    'CRM',
-                                    style: boldWhiteText,
+                                  const Icon(
+                                    Icons.business, // CRM 텍스트 대신 아이콘 추가
+                                    color: Colors.white,
+                                    size: 20,
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
