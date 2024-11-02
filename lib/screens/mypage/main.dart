@@ -37,7 +37,7 @@ class _MyPageState extends State<MyPage> {
   @override
   Widget build(BuildContext context) {
     const appBarColor = Color(0xFF009EB4);
-    const policyColor = Color(0xFF028490);
+
     const whiteText = TextStyle(color: Colors.white);
     const boldWhiteText = TextStyle(
       color: Colors.white,
@@ -45,7 +45,7 @@ class _MyPageState extends State<MyPage> {
     );
 
     return Scaffold(
-      backgroundColor: const Color(0xFFf0f0f0), // Scaffold 배경색 설정
+      backgroundColor: appBarColor, // Scaffold 배경색 설정
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: appBarColor,
@@ -63,52 +63,57 @@ class _MyPageState extends State<MyPage> {
         ),
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(bottom: 70),
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                Container(
-                  color: appBarColor,
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 16.0, horizontal: 20.0),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          const CircleAvatar(
-                            radius: 30,
-                            backgroundImage:
-                                AssetImage('assets/avatar_man.png'),
-                          ),
-                          const SizedBox(width: 20),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'CRM',
-                                  style: boldWhiteText,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  name,
-                                  style: whiteText,
-                                ),
-                                Text(
-                                  email,
-                                  style: whiteText,
-                                ),
-                              ],
+        child: Container(
+          color: const Color(0xFFf0f0f0), // 여기에 원하는 배경색을 설정하세요
+          height:
+              MediaQuery.of(context).size.height - 70, // 높이를 100% - 70px로 설정
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 0),
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Container(
+                    color: appBarColor,
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 16.0, horizontal: 20.0),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            const CircleAvatar(
+                              radius: 30,
+                              backgroundImage:
+                                  AssetImage('assets/avatar_man.png'),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                            const SizedBox(width: 20),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'CRM',
+                                    style: boldWhiteText,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    name,
+                                    style: whiteText,
+                                  ),
+                                  Text(
+                                    email,
+                                    style: whiteText,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const FeatureSettingSection3(),
-              ],
+                  const FeatureSettingSection3(),
+                ],
+              ),
             ),
           ),
         ),
@@ -138,7 +143,7 @@ class FeatureSettingSection3 extends StatelessWidget {
           const SizedBox(height: 20),
           _buildInfoRow('버전', '1.0.0'),
           const Divider(color: dividerColor),
-          _buildNavigationRow('Help & Feedback'),
+          //_buildNavigationRow('Help & Feedback'),
         ],
       ),
     );

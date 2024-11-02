@@ -124,6 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: true, // 키보드가 올라올 때 화면이 자동으로 조정되도록 설정
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -132,134 +133,137 @@ class _LoginScreenState extends State<LoginScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // 로고와 텍스트 APP
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SvgPicture.asset(
-                  'assets/logo.svg', // 로고 이미지 경로를 올바른까지 설정하세요.
-                  width: 80,
-                  height: 80,
-                ),
-                SizedBox(width: 16),
-                Text(
-                  'APP',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+      body: SingleChildScrollView(
+        // 스크롤 가능하도록 설정
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // 로고와 텍스트 APP
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SvgPicture.asset(
+                    'assets/logo.svg', // 로고 이미지 경로를 올바르게 설정하세요.
+                    width: 80,
+                    height: 80,
                   ),
-                ),
-              ],
-            ),
-            SizedBox(height: 100),
-            // 아이디 텍스트 필드
-            TextField(
-              controller: _idController,
-              focusNode: _idFocusNode,
-              decoration: InputDecoration(
-                labelText: '아이디',
-                hintText: '숫자만 입력해 주세요',
-                border: OutlineInputBorder(),
+                  SizedBox(width: 16),
+                  Text(
+                    'APP',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
-              textInputAction: TextInputAction.next,
-              onSubmitted: (_) {
-                FocusScope.of(context).requestFocus(_passwordFocusNode);
-              },
-            ),
-            SizedBox(height: 16),
-            // 비밀로 텍스트 필드
-            TextField(
-              controller: _passwordController,
-              focusNode: _passwordFocusNode,
-              obscureText: _obscureText,
-              decoration: InputDecoration(
-                labelText: '비밀번호',
-                hintText: '영문, 숫자를 포함한 12글자 이내',
-                border: OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscureText ? Icons.visibility : Icons.visibility_off,
+              SizedBox(height: 100),
+              // 아이디 텍스트 필드
+              TextField(
+                controller: _idController,
+                focusNode: _idFocusNode,
+                decoration: InputDecoration(
+                  labelText: '아이디',
+                  hintText: '숫자만 입력해 주세요',
+                  border: OutlineInputBorder(),
+                ),
+                textInputAction: TextInputAction.next,
+                onSubmitted: (_) {
+                  FocusScope.of(context).requestFocus(_passwordFocusNode);
+                },
+              ),
+              SizedBox(height: 16),
+              // 비밀번호 텍스트 필드
+              TextField(
+                controller: _passwordController,
+                focusNode: _passwordFocusNode,
+                obscureText: _obscureText,
+                decoration: InputDecoration(
+                  labelText: '비밀번호',
+                  hintText: '영문, 숫자를 포함한 12글자 이내',
+                  border: OutlineInputBorder(),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureText ? Icons.visibility : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscureText = !_obscureText;
+                      });
+                    },
                   ),
+                ),
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => _login(),
+              ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  '영문, 숫자를 포함한 12글자 이내',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
                   onPressed: () {
-                    setState(() {
-                      _obscureText = !_obscureText;
-                    });
+                    // 비밀번호 찾기 페이지로 이동하는 코드 추가
                   },
+                  child: Text(
+                    '비밀번호 찾기',
+                    style: TextStyle(color: Colors.black),
+                  ),
                 ),
               ),
-              textInputAction: TextInputAction.done,
-              onSubmitted: (_) => _login(),
-            ),
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                '영문, 숫자를 포함한 12글자 이내',
-                style: TextStyle(color: Colors.grey),
+              if (_errorMessage.isNotEmpty) ...[
+                Text(
+                  _errorMessage,
+                  style: TextStyle(color: Colors.red),
+                ),
+                SizedBox(height: 8),
+              ],
+              SizedBox(height: 16),
+              // 로그인 버튼
+              ElevatedButton(
+                onPressed: _login,
+                child: Text(
+                  '로그인',
+                  style: TextStyle(fontSize: 16),
+                ),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: Size(double.infinity, 50),
+                  backgroundColor: Color(0xFF10D9B5),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
+              SizedBox(height: 16),
+              // 회원가입 버튼 (현재 주석 처리됨)
+              OutlinedButton(
                 onPressed: () {
-                  // 비밀로 찾기 페이지로 이동하는 코드 추가
+                  // 회원가입 페이지로 이동하는 코드 추가
                 },
                 child: Text(
-                  '비밀번호 찾기',
-                  style: TextStyle(color: Colors.black),
+                  '회원가입',
+                  style: TextStyle(fontSize: 16),
+                ),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: Size(double.infinity, 50),
+                  foregroundColor: Color(0xFF10D9B5),
+                  side: BorderSide(color: Color(0xFF10D9B5)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               ),
-            ),
-            if (_errorMessage.isNotEmpty) ...[
-              Text(
-                _errorMessage,
-                style: TextStyle(color: Colors.red),
-              ),
-              SizedBox(height: 8),
             ],
-            SizedBox(height: 16),
-            // 로그인 버튼
-            ElevatedButton(
-              onPressed: _login,
-              child: Text(
-                '로그인',
-                style: TextStyle(fontSize: 16),
-              ),
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 50),
-                backgroundColor: Color(0xFF10D9B5),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
-            SizedBox(height: 16),
-            // 회원가입 버튼
-            OutlinedButton(
-              onPressed: () {
-                // 회원가입 페이지로 이동하는 코드 추가
-              },
-              child: Text(
-                '회원가입',
-                style: TextStyle(fontSize: 16),
-              ),
-              style: OutlinedButton.styleFrom(
-                minimumSize: Size(double.infinity, 50),
-                foregroundColor: Color(0xFF10D9B5),
-                side: BorderSide(color: Color(0xFF10D9B5)),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

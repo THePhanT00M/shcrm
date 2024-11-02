@@ -75,8 +75,10 @@ class _LoadingScreenState extends State<LoadingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appBarHeight = AppBar().preferredSize.height; // 앱바 기본 높이 가져오기
+
     return Scaffold(
-      backgroundColor: Colors.white, // 배경색을 화이트로 설정
+      backgroundColor: Colors.white,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
@@ -84,37 +86,40 @@ class _LoadingScreenState extends State<LoadingScreen> {
         toolbarHeight: 0,
       ),
       body: Center(
-        child: _isConnected
-            ? Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SvgPicture.asset(
-                    'assets/logo.svg',
-                    width: 60,
-                    height: 60,
-                  ),
-                  const SizedBox(width: 20), // 로고와 텍스트 사이의 간격
-                  const Text(
-                    'APP',
-                    style: TextStyle(
-                      fontSize: 40, // 텍스트 크기 조절
-                      fontWeight: FontWeight.bold, // 텍스트 굵기 조절
-                      color: Colors.black, // 텍스트 색상 조절
+        child: Padding(
+          padding: EdgeInsets.only(bottom: appBarHeight),
+          child: _isConnected
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SvgPicture.asset(
+                      'assets/logo.svg',
+                      width: 60,
+                      height: 60,
                     ),
-                  ),
-                ],
-              )
-            : Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('인터넷 연결이 필요합니다.'),
-                  SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: _checkConnectivity,
-                    child: Text('새로고침'),
-                  ),
-                ],
-              ),
+                    const SizedBox(width: 20),
+                    const Text(
+                      'APP',
+                      style: TextStyle(
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
+                )
+              : Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('인터넷 연결이 필요합니다.'),
+                    SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: _checkConnectivity,
+                      child: Text('새로고침'),
+                    ),
+                  ],
+                ),
+        ),
       ),
     );
   }

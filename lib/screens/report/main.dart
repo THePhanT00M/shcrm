@@ -29,30 +29,30 @@ class _ReportsPageState extends State<ReportsPage> {
   // user_data에서 employeeId를 불러와 데이터를 가져오는 함수
   Future<void> fetchEmployeeIdAndReportsData() async {
     try {
-      // FlutterSecureStorage에서 저장된 user_data 불러오기
       String? userData = await _secureStorage.read(key: 'user_data');
 
       if (userData != null) {
-        // JSON 디코딩하여 employeeId 추출
         Map<String, dynamic> userJson = jsonDecode(userData);
         String employeeId = userJson['employeeId'].toString();
-
-        // API 호출하여 보고서 데이터 가져오기
         await fetchReportsData(employeeId);
       } else {
-        setState(() {
-          isLoading = false;
-          hasError = true;
-        });
+        if (mounted) {
+          setState(() {
+            isLoading = false;
+            hasError = true;
+          });
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('로그인 정보가 없습니다. 다시 로그인 해주세요.')),
         );
       }
     } catch (e) {
-      setState(() {
-        isLoading = false;
-        hasError = true;
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+          hasError = true;
+        });
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('오류가 발생했습니다: $e')),
       );
@@ -60,27 +60,26 @@ class _ReportsPageState extends State<ReportsPage> {
     }
   }
 
-  // employeeId를 받아서 보고서 데이터를 가져오는 함수
   Future<void> fetchReportsData(String employeeId) async {
     try {
-      final data =
-          await ApiService.fetchReportsData(employeeId); // employeeId 전달
-      setState(() {
-        reportsData = data;
-        print(reportsData);
-        isLoading = false;
-        hasError = false;
-      });
+      final data = await ApiService.fetchReportsData(employeeId);
+      if (mounted) {
+        setState(() {
+          reportsData = data;
+          isLoading = false;
+          hasError = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        isLoading = false;
-        hasError = true;
-      });
-
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+          hasError = true;
+        });
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('데이터를 불러오지 못했습니다: $e')),
       );
-
       print('Error: $e');
     }
   }

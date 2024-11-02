@@ -49,24 +49,24 @@ class AuthSelectionScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    SizedBox(height: 20),
-                    OutlinedButton(
-                      onPressed: () {
-                        // 회원가입 페이지로 이동하는 코드 추가
-                      },
-                      child: Text(
-                        '회원가입',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: Size(double.infinity, 47),
-                        foregroundColor: Colors.white,
-                        side: BorderSide(color: Colors.white),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                      ),
-                    ),
+                    //SizedBox(height: 20),
+                    //OutlinedButton(
+                    //  onPressed: () {
+                    //    // 회원가입 페이지로 이동하는 코드 추가
+                    //  },
+                    //  child: Text(
+                    //    '회원가입',
+                    //    style: TextStyle(fontSize: 16),
+                    //  ),
+                    //  style: OutlinedButton.styleFrom(
+                    //    minimumSize: Size(double.infinity, 47),
+                    //    foregroundColor: Colors.white,
+                    //    side: BorderSide(color: Colors.white),
+                    //    shape: RoundedRectangleBorder(
+                    //      borderRadius: BorderRadius.circular(5),
+                    //    ),
+                    //  ),
+                    //),
                   ],
                 ),
               ),
