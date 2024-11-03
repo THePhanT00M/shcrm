@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:image_picker/image_picker.dart';
 import 'expense_method_selection_screen.dart';
 import '../receipt/option_tile.dart';
 import '../../services/api_service.dart';
@@ -21,6 +23,8 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
   final TextEditingController _businessNameController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
 
+  String? _employeeId;
+
   String _selectedCategory = '카테고리 선택';
   int? _categoryId;
 
@@ -34,18 +38,15 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
   String? _receiptImage;
 
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
-    if (widget.expenseId != null) {
-      _fetchData();
-    } else {
-      _initializeNewExpense();
-    }
+    _fetchData();
   }
 
-  void _initializeNewExpense() {
+  void _initializeNewExpense(String employeeId) {
     setState(() {
       _amountController.text = '';
       _businessNameController.text = '';
@@ -64,8 +65,15 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
   Future<void> _fetchData() async {
     try {
       final employeeId = await _fetchEmployeeId();
+      _employeeId = employeeId;
       if (employeeId != null) {
-        await _loadReceiptData(employeeId);
+        if (widget.expenseId != null) {
+          print('지출 업데이트');
+          await _loadReceiptData(employeeId);
+        } else {
+          print('신규 지출');
+          _initializeNewExpense(employeeId);
+        }
       } else {
         _showError('로그인 정보가 없습니다. 다시 로그인 해주세요.');
       }
@@ -138,6 +146,15 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
     });
   }
 
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _receiptImage = pickedFile.path;
+      });
+    }
+  }
+
   @override
   void dispose() {
     _amountController.dispose();
@@ -177,17 +194,24 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
               onPressed: () {
                 // 입력된 데이터를 확인
                 final amount = _amountController.text;
-                final businessName = _businessNameController.text;
-                final date = _dateController.text;
-                final category = _selectedCategory;
+                final merchantName = _businessNameController.text;
+                final address = null;
+
+                final expenseDate = _dateController.text;
+                final categoryId = _selectedCategory;
                 final expenseMethod = _expenseMethod;
+
+                final reimbursement = 'N';
+                final attachmentId = null;
+
+                final employeeId = _employeeId;
 
                 print('저장 버튼 클릭');
                 print('금액: $amount');
-                print('상호: $businessName');
-                print('날짜: $date');
-                print('카테고리: $category');
-                print('지출 방법: $expenseMethod');
+                print('상호: $merchantName');
+                print('날짜: $expenseDate');
+                print('카테고리: $categoryId');
+                print('지출 방법: $employeeId');
 
                 // 추가적으로 API 호출로 데이터를 저장하고 싶다면 아래와 같이 진행할 수 있습니다.
                 //_saveExpenseData();
@@ -273,27 +297,43 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
                                   ),
                                 ),
                                 SizedBox(width: 16),
-                                Container(
-                                  width: 64,
-                                  height: 64,
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[200],
-                                    borderRadius: BorderRadius.circular(8),
+                                GestureDetector(
+                                  onTap: _pickImage,
+                                  child: Container(
+                                    width: 64,
+                                    height: 64,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[200],
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: _receiptImage != null &&
+                                            _receiptImage!.isNotEmpty
+                                        ? (_receiptImage!.startsWith('http')
+                                            ? Image.network(
+                                                _receiptImage!,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (context, error,
+                                                    stackTrace) {
+                                                  return Icon(
+                                                      Icons.broken_image,
+                                                      size: 40,
+                                                      color: Colors.grey[400]);
+                                                },
+                                              )
+                                            : Image.file(
+                                                File(_receiptImage!),
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (context, error,
+                                                    stackTrace) {
+                                                  return Icon(
+                                                      Icons.broken_image,
+                                                      size: 40,
+                                                      color: Colors.grey[400]);
+                                                },
+                                              ))
+                                        : Icon(Icons.image,
+                                            size: 40, color: Colors.grey[400]),
                                   ),
-                                  child: _receiptImage != null &&
-                                          _receiptImage!.isNotEmpty
-                                      ? Image.network(
-                                          _receiptImage!,
-                                          fit: BoxFit.cover,
-                                          errorBuilder:
-                                              (context, error, stackTrace) {
-                                            return Icon(Icons.broken_image,
-                                                size: 40,
-                                                color: Colors.grey[400]);
-                                          },
-                                        )
-                                      : Icon(Icons.image,
-                                          size: 40, color: Colors.grey[400]),
                                 ),
                               ],
                             ),
