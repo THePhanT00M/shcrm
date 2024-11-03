@@ -323,12 +323,30 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
                               initialDate: _selectedDate,
                               firstDate: DateTime(2000),
                               lastDate: DateTime(2101),
+                              initialEntryMode:
+                                  DatePickerEntryMode.calendarOnly,
                               builder: (BuildContext context, Widget? child) {
                                 return Theme(
                                   data: Theme.of(context).copyWith(
+                                    inputDecorationTheme: InputDecorationTheme(
+                                      border: UnderlineInputBorder(
+                                        borderSide: BorderSide(
+                                          width: 0.5,
+                                          color: Colors.blue,
+                                        ),
+                                      ),
+                                    ),
                                     colorScheme: ColorScheme.light(
                                       onPrimary: Colors.white,
                                       primary: Colors.blue,
+                                      background: Colors.white,
+                                    ),
+                                    datePickerTheme: DatePickerThemeData(
+                                      headerBackgroundColor: Colors.blue,
+                                      backgroundColor: Colors.white,
+                                      headerForegroundColor: Colors.white,
+                                      surfaceTintColor: Colors.white,
+                                      dividerColor: Colors.blue,
                                     ),
                                   ),
                                   child: child!,
