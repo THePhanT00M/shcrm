@@ -1,4 +1,3 @@
-// lib/screens/expense_method_selection_screen.dart
 import 'package:flutter/material.dart';
 
 class ExpenseMethodSelectionScreen extends StatelessWidget {
@@ -16,25 +15,56 @@ class ExpenseMethodSelectionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xFFf0f0f0),
       appBar: AppBar(
-        title: Text('지출 방법 선택'),
         backgroundColor: Color(0xFF009EB4),
-      ),
-      body: ListView.builder(
-        itemCount: methods.length,
-        itemBuilder: (context, index) {
-          final method = methods[index];
-          return ListTile(
-            leading: _getMethodIcon(method),
-            title: Text(method),
-            trailing: method == currentMethod
-                ? Icon(Icons.check, color: Colors.blue)
-                : null,
-            onTap: () {
-              Navigator.pop(context, method); // 선택한 방법 반환
+        toolbarHeight: 50,
+        elevation: 0,
+        centerTitle: true,
+        leading: Container(
+          alignment: Alignment.centerLeft,
+          child: IconButton(
+            icon: Icon(Icons.chevron_left, size: 24, color: Colors.white),
+            onPressed: () {
+              // 뒤로가기 액션 처리
+              Navigator.pop(context);
             },
-          );
-        },
+          ),
+        ),
+        title: Text(
+          '지출방법',
+          style: TextStyle(
+              fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+      ),
+      body: SafeArea(
+        child: Container(
+          color: const Color(0xFFffffff),
+          child: ListView.builder(
+            itemCount: methods.length,
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemBuilder: (context, index) {
+              final method = methods[index];
+              return ListTile(
+                leading: _getMethodIcon(method),
+                title: Transform.translate(
+                  offset: Offset(-8, 0),
+                  child: Text(method),
+                ),
+                trailing: method == currentMethod
+                    ? Icon(Icons.check, color: Colors.blue)
+                    : null,
+                onTap: () {
+                  Navigator.pop(context, {
+                    'method': method,
+                    'icon': _getMethodIcon(method),
+                  });
+                },
+              );
+            },
+          ),
+        ),
       ),
     );
   }
@@ -42,11 +72,11 @@ class ExpenseMethodSelectionScreen extends StatelessWidget {
   Widget _getMethodIcon(String method) {
     switch (method) {
       case '현금':
-        return Icon(Icons.money, color: Colors.green);
+        return Icon(Icons.money, color: Colors.grey);
       case '카드':
-        return Icon(Icons.credit_card, color: Colors.blue);
+        return Icon(Icons.credit_card, color: Colors.grey);
       case '계좌이체':
-        return Icon(Icons.account_balance, color: Colors.orange);
+        return Icon(Icons.account_balance, color: Colors.grey);
       case '기타':
         return Icon(Icons.more_horiz, color: Colors.grey);
       default:
