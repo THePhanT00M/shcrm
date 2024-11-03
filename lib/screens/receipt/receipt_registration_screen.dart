@@ -155,6 +155,28 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
     }
   }
 
+  Future<void> _saveExpenseData() async {
+    try {
+      final data = {
+        'expenseId': widget.expenseId,
+        'amount': _amountController.text,
+        'merchantName': _businessNameController.text,
+        'address': null,
+        'expenseDate': _dateController.text,
+        'categoryId': _categoryId,
+        'reimbursement': 'N',
+        'attachmentId': null,
+        'employeeId': _employeeId,
+      };
+      await ApiService.updateExpenseData(data);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('지출 데이터가 저장되었습니다.')),
+      );
+    } catch (e) {
+      _showError('지출 데이터를 저장하지 못했습니다: $e');
+    }
+  }
+
   @override
   void dispose() {
     _amountController.dispose();
@@ -199,7 +221,6 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
 
                 final expenseDate = _dateController.text;
                 final categoryId = _selectedCategory;
-                final expenseMethod = _expenseMethod;
 
                 final reimbursement = 'N';
                 final attachmentId = null;
@@ -213,8 +234,7 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
                 print('카테고리: $categoryId');
                 print('지출 방법: $employeeId');
 
-                // 추가적으로 API 호출로 데이터를 저장하고 싶다면 아래와 같이 진행할 수 있습니다.
-                //_saveExpenseData();
+                _saveExpenseData();
               },
               child: Text(
                 '저장',
