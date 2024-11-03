@@ -6,6 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'dart:convert';
 import '../../services/api_service.dart';
+import 'statistics.dart';
 
 class ReceiptsPage extends StatefulWidget {
   @override
@@ -109,11 +110,22 @@ class _ReceiptsPageState extends State<ReceiptsPage> {
               ),
               Positioned(
                 right: 0,
-                top: 5,
-                child: GestureDetector(
-                  onTap: () {},
-                  child: FaIcon(FontAwesomeIcons.chartPie,
-                      color: Colors.white, size: 18),
+                top: -4,
+                child: Padding(
+                  padding: EdgeInsets.all(8.0), // 원하는 만큼 여백을 조정
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => Statistics()),
+                      );
+                    },
+                    child: FaIcon(
+                      FontAwesomeIcons.chartPie,
+                      color: Colors.white,
+                      size: 21,
+                    ),
+                  ),
                 ),
               ),
             ],
