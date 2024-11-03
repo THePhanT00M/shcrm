@@ -29,11 +29,20 @@ class _LoginScreenState extends State<LoginScreen> {
       context: context,
       builder: (BuildContext context) {
         return CupertinoAlertDialog(
-          title: Text('알림'),
-          content: Text(message),
+          title: Text(
+            '알림',
+            style: TextStyle(color: Colors.black),
+          ),
+          content: Text(
+            message,
+            style: TextStyle(color: Color(0xFFF7a7a7a)),
+          ),
           actions: [
             CupertinoDialogAction(
-              child: Text('확인'),
+              child: Text(
+                '확인',
+                style: TextStyle(color: Colors.blue),
+              ),
               onPressed: () {
                 Navigator.of(context).pop();
               },

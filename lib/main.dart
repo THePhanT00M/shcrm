@@ -19,9 +19,25 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'SHCRM',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFF767676),
+        ).copyWith(
+          primary: const Color(0xFFF767676),
+          primaryContainer: const Color(0xFFF767676),
+          secondary: const Color(0xFFF767676),
+          secondaryContainer: const Color(0xFFF767676),
+          background: const Color(0xFFF767676),
+          surface: const Color(0xFFF767676),
+          error: const Color(0xFFF767676),
+          onPrimary: const Color(0xFFF767676),
+          onSecondary: const Color(0xFFF767676),
+          onBackground: const Color(0xFFF767676),
+          onSurface: const Color(0xFFF000000),
+          onError: const Color(0xFFF767676),
+        ),
       ),
       localizationsDelegates: [
         GlobalMaterialLocalizations.delegate,
