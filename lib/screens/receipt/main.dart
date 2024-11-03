@@ -52,6 +52,7 @@ class _ReceiptsPageState extends State<ReceiptsPage> {
       final data = await ApiService.fetchExpensesData(employeeId);
       setState(() {
         receiptData = data;
+        print(receiptData);
         isLoading = false;
       });
     } catch (e) {
@@ -156,6 +157,7 @@ class _ReceiptsPageState extends State<ReceiptsPage> {
         itemBuilder: (context, index) {
           final receipt = receiptData[index];
           return ReceiptCard(
+            expenseId: receipt['expenseId'],
             iconPath: 'assets/icons/none_picture.svg',
             status: receipt['status'] ?? ' ',
             merchantName: receipt['merchantName'] ?? '제목 없음',
@@ -168,12 +170,14 @@ class _ReceiptsPageState extends State<ReceiptsPage> {
 }
 
 class ReceiptCard extends StatelessWidget {
+  final int expenseId;
   final String iconPath;
   final String status;
   final String merchantName;
   final String amount;
 
   ReceiptCard({
+    required this.expenseId,
     required this.iconPath,
     required this.status,
     required this.merchantName,
@@ -188,7 +192,7 @@ class ReceiptCard extends StatelessWidget {
           context,
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
-                ReceiptRegistrationScreen(),
+                ReceiptRegistrationScreen(expenseId: expenseId),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
               const begin = Offset(1.0, 0.0);

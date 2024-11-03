@@ -8,6 +8,7 @@ import 'feed/main.dart';
 import 'receipt/main.dart';
 import 'report/main.dart';
 import 'mypage/main.dart';
+import '../screens/receipt/receipt_registration_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -123,7 +124,25 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         ElevatedButton.icon(
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    ReceiptRegistrationScreen(expenseId: null),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                  const begin = Offset(1.0, 0.0);
+                  const end = Offset.zero;
+                  const curve = Curves.easeInOut;
+                  final tween = Tween(begin: begin, end: end)
+                      .chain(CurveTween(curve: curve));
+                  return SlideTransition(
+                      position: animation.drive(tween), child: child);
+                },
+              ),
+            );
+          },
           icon: const Icon(Icons.edit, size: 14),
           label: const Text('셀프'),
           style: ElevatedButton.styleFrom(
