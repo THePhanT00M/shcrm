@@ -71,12 +71,21 @@ class ApiService {
           final List<dynamic> results = responseData['result'];
 
           return results.map<Map<String, dynamic>>((item) {
+            print(item);
             return {
               'expenseId': item['expenseId'],
               'amount': item['amount'],
               'merchantName': item['merchantName'] ?? '알 수 없음',
               'expenseDate': item['expenseDate'],
-              'categoryName': item['categoryId']?['description'] ?? '알 수 없음',
+              'categoryId': item['categoryId'] ?? '',
+              'categoryName': (item['categoryId'] != null)
+                  ? item['categoryId']['categoryName'] ?? '알 수 없음'
+                  : '알 수 없음',
+              'image': (item['attachmentId'] != null &&
+                      item['attachmentId'] is Map &&
+                      item['attachmentId']!['fileUrl'] != null)
+                  ? item['attachmentId']['fileUrl']
+                  : null,
             };
           }).toList();
         } else {
@@ -130,8 +139,8 @@ class ApiService {
                 : '',
             'categoryId':
                 responseData['result']['categoryId']['categoryId'] ?? '',
-            'description':
-                responseData['result']['categoryId']['description'] ?? '',
+            'categoryName':
+                responseData['result']['categoryId']['categoryName'] ?? '',
           };
         } else {
           throw Exception('Error: ${responseData['resultMsg']}');
@@ -148,6 +157,46 @@ class ApiService {
     } catch (e) {
       print('Failed to fetch expense details: $e');
       throw Exception('Error fetching expense details');
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> fetchCategoriesData() async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/category/all'),
+        headers: _headers,
+      );
+
+      if (response.statusCode == 200) {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final responseData = json.decode(decodedBody);
+
+        if (responseData['resultCode'] == 'SUCCESS' &&
+            responseData['result'] != null) {
+          // Assuming responseData['result'] is a list of categories
+          final List<dynamic> categoriesList = responseData['result'];
+
+          return categoriesList.map<Map<String, dynamic>>((item) {
+            return {
+              'categoryId': item['categoryId'] ?? '알 수 없음',
+              'categoryName': item['categoryName'] ?? '이름 없음',
+            };
+          }).toList();
+        } else {
+          throw Exception('Error: ${responseData['resultMsg']}');
+        }
+      } else {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final responseJson = json.decode(decodedBody);
+        final resultMsgBytes = (responseJson['resultMsg'] as String).codeUnits;
+        final decodedResultMsg = utf8.decode(resultMsgBytes);
+
+        throw Exception(
+            'Error: ${response.statusCode}, Message: $decodedResultMsg');
+      }
+    } catch (e) {
+      print('Failed to fetch categories data: $e');
+      throw Exception('Error fetching categories data');
     }
   }
 }

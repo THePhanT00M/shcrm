@@ -46,21 +46,28 @@ class ExpenseMethodSelectionScreen extends StatelessWidget {
             physics: NeverScrollableScrollPhysics(),
             itemBuilder: (context, index) {
               final method = methods[index];
-              return ListTile(
-                leading: _getMethodIcon(method),
-                title: Transform.translate(
-                  offset: Offset(-8, 0),
-                  child: Text(method),
+              return Container(
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: Color(0xFFF1F1F1)), // 보더 색과 두께 설정
+                  ),
                 ),
-                trailing: method == currentMethod
-                    ? Icon(Icons.check, color: Colors.blue)
-                    : null,
-                onTap: () {
-                  Navigator.pop(context, {
-                    'method': method,
-                    'icon': _getMethodIcon(method),
-                  });
-                },
+                child: ListTile(
+                  leading: _getMethodIcon(method),
+                  title: Transform.translate(
+                    offset: Offset(-8, 0),
+                    child: Text(method),
+                  ),
+                  trailing: method == currentMethod
+                      ? Icon(Icons.check, color: Colors.blue)
+                      : null,
+                  onTap: () {
+                    Navigator.pop(context, {
+                      'method': method,
+                      'icon': _getMethodIcon(method),
+                    });
+                  },
+                ),
               );
             },
           ),

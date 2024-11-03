@@ -158,7 +158,7 @@ class _ReceiptsPageState extends State<ReceiptsPage> {
           final receipt = receiptData[index];
           return ReceiptCard(
             expenseId: receipt['expenseId'],
-            iconPath: 'assets/icons/none_picture.svg',
+            iconPath: receipt['image'] ?? 'assets/icons/none_picture.svg',
             status: receipt['status'] ?? ' ',
             merchantName: receipt['merchantName'] ?? '제목 없음',
             amount: receipt['amount']?.toString() ?? '금액 없음',
@@ -223,7 +223,9 @@ class ReceiptCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            SvgPicture.asset(iconPath, height: 50, width: 50),
+            iconPath.endsWith('.svg')
+                ? SvgPicture.asset(iconPath, height: 50, width: 50)
+                : Image.network(iconPath, height: 50, width: 50),
             SizedBox(width: 16),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,

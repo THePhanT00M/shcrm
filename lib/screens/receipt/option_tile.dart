@@ -27,9 +27,7 @@ class OptionTile extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: TextStyle(
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(fontSize: 13, color: Colors.grey[500]),
                 ),
                 Icon(
                   Icons.chevron_right,

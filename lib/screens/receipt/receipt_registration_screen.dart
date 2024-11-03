@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'expense_method_selection_screen.dart';
 import '../receipt/option_tile.dart';
 import '../../services/api_service.dart';
+import '../../services/category.dart';
 
 class ReceiptRegistrationScreen extends StatefulWidget {
   final int? expenseId; // 선택적 expenseId로 변경
@@ -19,6 +20,9 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _businessNameController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
+
+  String _selectedCategory = '카테고리 선택';
+  int? _categoryId;
 
   DateTime _selectedDate = DateTime.now();
   String _expenseMethod = '현금';
@@ -48,6 +52,11 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
       _selectedDate = DateTime.now();
       _dateController.text =
           '${_selectedDate.year}.${_selectedDate.month.toString().padLeft(2, '0')}.${_selectedDate.day.toString().padLeft(2, '0')}';
+
+      // 기본값 설정
+      _categoryId = null;
+      _selectedCategory = '카테고리 선택';
+
       isLoading = false;
     });
   }
@@ -81,17 +90,17 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
         employeeId,
       );
 
-      print(employeeId);
-      print(data);
-
       setState(() {
         _amountController.text = data['amount'].toString();
         _businessNameController.text = data['merchantName'];
         _selectedDate = DateTime.parse(data['expenseDate']);
         _dateController.text =
             '${_selectedDate.year}.${_selectedDate.month.toString().padLeft(2, '0')}.${_selectedDate.day.toString().padLeft(2, '0')}';
-
         _receiptImage = data['image'];
+
+        // 카테고리 데이터 업데이트
+        _categoryId = data['categoryId'];
+        _selectedCategory = data['categoryName'] ?? '카테고리 선택';
 
         isLoading = false;
       });
@@ -163,9 +172,25 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
-            child: TextButton(
+            child: // 저장 버튼의 onPressed 콜백 수정
+                TextButton(
               onPressed: () {
-                // 저장 로직 추가
+                // 입력된 데이터를 확인
+                final amount = _amountController.text;
+                final businessName = _businessNameController.text;
+                final date = _dateController.text;
+                final category = _selectedCategory;
+                final expenseMethod = _expenseMethod;
+
+                print('저장 버튼 클릭');
+                print('금액: $amount');
+                print('상호: $businessName');
+                print('날짜: $date');
+                print('카테고리: $category');
+                print('지출 방법: $expenseMethod');
+
+                // 추가적으로 API 호출로 데이터를 저장하고 싶다면 아래와 같이 진행할 수 있습니다.
+                //_saveExpenseData();
               },
               child: Text(
                 '저장',
@@ -314,7 +339,7 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
                         Text(
                           '날짜 *',
                           style:
-                              TextStyle(fontSize: 14, color: Colors.grey[500]),
+                              TextStyle(fontSize: 13, color: Colors.grey[500]),
                         ),
                         GestureDetector(
                           onTap: () async {
@@ -388,8 +413,32 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
                         ),
                         OptionTile(
                           title: '카테고리',
-                          onTap: () {
-                            // 카테고리 선택 로직
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                _selectedCategory,
+                                style: TextStyle(
+                                    fontSize: 15, color: Colors.black),
+                              ),
+                            ],
+                          ),
+                          onTap: () async {
+                            final selectedCategory = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => CategoryScreen(
+                                    selectedCategoryId: _categoryId),
+                              ),
+                            );
+
+                            if (selectedCategory != null) {
+                              setState(() {
+                                _selectedCategory =
+                                    selectedCategory['categoryName'];
+                                _categoryId = selectedCategory['categoryId'];
+                              });
+                            }
                           },
                         ),
                         OptionTile(
@@ -402,7 +451,7 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
                               Text(
                                 _expenseMethod,
                                 style: TextStyle(
-                                    fontSize: 14, color: Colors.black),
+                                    fontSize: 15, color: Colors.black),
                               ),
                             ],
                           ),

@@ -194,7 +194,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            if (_selectedIndex != 2 && _selectedIndex != 3)
+            if (_selectedIndex != 0 &&
+                _selectedIndex != 2 &&
+                _selectedIndex != 3)
               Positioned(
                 bottom: 45,
                 left: MediaQuery.of(context).size.width / 2 - 25,
