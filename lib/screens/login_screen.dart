@@ -243,25 +243,25 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 16),
-              // 회원가입 버튼 (현재 주석 처리됨)
-              OutlinedButton(
-                onPressed: () {
-                  // 회원가입 페이지로 이동하는 코드 추가
-                },
-                child: Text(
-                  '회원가입',
-                  style: TextStyle(fontSize: 16),
-                ),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: Size(double.infinity, 50),
-                  foregroundColor: Color(0xFF10D9B5),
-                  side: BorderSide(color: Color(0xFF10D9B5)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
+              //SizedBox(height: 16),
+              //// 회원가입 버튼 (현재 주석 처리됨)
+              //OutlinedButton(
+              //  onPressed: () {
+              //    // 회원가입 페이지로 이동하는 코드 추가
+              //  },
+              //  child: Text(
+              //    '회원가입',
+              //    style: TextStyle(fontSize: 16),
+              //  ),
+              //  style: OutlinedButton.styleFrom(
+              //    minimumSize: Size(double.infinity, 50),
+              //    foregroundColor: Color(0xFF10D9B5),
+              //    side: BorderSide(color: Color(0xFF10D9B5)),
+              //    shape: RoundedRectangleBorder(
+              //      borderRadius: BorderRadius.circular(8),
+              //    ),
+              //  ),
+              //),
             ],
           ),
         ),
