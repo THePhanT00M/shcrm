@@ -158,7 +158,7 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
   Future<void> _saveExpenseData() async {
     try {
       final data = {
-        'expenseId': widget.expenseId,
+        if (widget.expenseId != null) 'expenseId': widget.expenseId,
         'amount': _amountController.text,
         'merchantName': _businessNameController.text,
         'address': null,
@@ -168,7 +168,13 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
         'attachmentId': null,
         'employeeId': _employeeId,
       };
-      await ApiService.updateExpenseData(data);
+
+      if (widget.expenseId != null) {
+        await ApiService.updateExpenseData(data);
+      } else {
+        await ApiService.createExpenseData(data);
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('지출 데이터가 저장되었습니다.')),
       );

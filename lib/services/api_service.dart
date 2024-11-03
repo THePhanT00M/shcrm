@@ -200,6 +200,34 @@ class ApiService {
     }
   }
 
+  static Future<void> createExpenseData(Map<String, dynamic> data) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$_baseUrl/expense/create'),
+        headers: _headers,
+        body: json.encode(data),
+      );
+
+      print(data);
+      print(response.statusCode);
+
+      if (response.statusCode == 200) {
+        // 성공적으로 업데이트된 경우 처리
+      } else {
+        // 오류 처리
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final responseJson = json.decode(decodedBody);
+        final resultMsgBytes = (responseJson['resultMsg'] as String).codeUnits;
+        final decodedResultMsg = utf8.decode(resultMsgBytes);
+        throw Exception(
+            'Error: ${response.statusCode}, Message: $decodedResultMsg');
+      }
+    } catch (e) {
+      print('Failed to update expense data: $e');
+      throw Exception('Error updating expense data');
+    }
+  }
+
   static Future<void> updateExpenseData(Map<String, dynamic> data) async {
     try {
       final response = await http.put(
