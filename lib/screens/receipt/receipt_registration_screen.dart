@@ -103,7 +103,7 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
         _businessNameController.text = data['merchantName'];
         _selectedDate = DateTime.parse(data['expenseDate']);
         _dateController.text =
-            '${_selectedDate.year}.${_selectedDate.month.toString().padLeft(2, '0')}.${_selectedDate.day.toString().padLeft(2, '0')}';
+            '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
         _receiptImage = data['image'];
 
         // 카테고리 데이터 업데이트
@@ -142,7 +142,7 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
     setState(() {
       _selectedDate = selectedDate;
       _dateController.text =
-          '${selectedDate.year}.${selectedDate.month.toString().padLeft(2, '0')}.${selectedDate.day.toString().padLeft(2, '0')}';
+          '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}';
     });
   }
 
@@ -159,6 +159,8 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
     try {
       final data = {
         if (widget.expenseId != null) 'expenseId': widget.expenseId,
+        'employeeId': _employeeId,
+        'reportId': null,
         'amount': _amountController.text,
         'merchantName': _businessNameController.text,
         'address': null,
@@ -166,7 +168,8 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
         'categoryId': _categoryId,
         'reimbursement': 'N',
         'attachmentId': null,
-        'employeeId': _employeeId,
+        'isDeleted': "N",
+        'paymentMethod': "CARD"
       };
 
       if (widget.expenseId != null) {
@@ -178,6 +181,9 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('지출 데이터가 저장되었습니다.')),
       );
+
+      // 저장 완료 후 부모 페이지로 true 값을 전달하며 돌아가기
+      Navigator.pop(context, true);
     } catch (e) {
       _showError('지출 데이터를 저장하지 못했습니다: $e');
     }

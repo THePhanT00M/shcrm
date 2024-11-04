@@ -39,6 +39,13 @@ class _ReceiptsPageState extends State<ReceiptsPage> {
     }
   }
 
+  Future<void> _refreshData() async {
+    setState(() {
+      isLoading = true;
+    });
+    await _fetchData();
+  }
+
   Future<String?> _fetchEmployeeId() async {
     final userData = await _secureStorage.read(key: 'user_data');
     if (userData != null) {
@@ -199,8 +206,8 @@ class ReceiptCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
+      onTap: () async {
+        final result = await Navigator.push(
           context,
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
@@ -217,6 +224,11 @@ class ReceiptCard extends StatelessWidget {
             },
           ),
         );
+
+        // 새로 고침 실행
+        if (result == true) {
+          context.findAncestorStateOfType<_ReceiptsPageState>()?._refreshData();
+        }
       },
       child: Container(
         margin: EdgeInsets.only(bottom: 15.0),
