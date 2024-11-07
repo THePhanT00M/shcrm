@@ -257,6 +257,8 @@ class ApiService {
   static Future<Map<String, dynamic>> fetchReportDetails(
       int reportId, String employeeId) async {
     try {
+      print(reportId);
+
       final body = json.encode({
         'reportId': reportId,
         'employeeId': employeeId,
@@ -272,12 +274,13 @@ class ApiService {
         final decodedBody = utf8.decode(response.bodyBytes);
         final responseData = json.decode(decodedBody);
 
-        print(responseData['result']);
-
         if (responseData['resultCode'] == 'SUCCESS' &&
             responseData['result'] != null) {
           return {
-            'reportId': responseData['result']['reportId'],
+            'reportData': responseData['result']['report'],
+            'expensesData': responseData['result']['expenses'],
+            'attachmentsData': responseData['result']['attachments'],
+            'commentsData': responseData['result']['comments'],
           };
         } else {
           throw Exception('Error: ${responseData['resultMsg']}');
