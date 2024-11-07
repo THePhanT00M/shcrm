@@ -107,6 +107,14 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
     return expensesByDate.values.fold(0, (sum, list) => sum + list.length);
   }
 
+  // 총 지출 금액 계산
+  double get totalAmount {
+    return expensesByDate.values
+        .expand((list) => list)
+        .map((e) => e['amount'] is num ? e['amount'] as num : 0)
+        .fold(0, (sum, amt) => sum + amt.toDouble());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -183,6 +191,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              // 총 보고 금액
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -195,7 +204,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
                                     ),
                                   ),
                                   Text(
-                                    '₩1111',
+                                    '₩${_formatNumber(totalAmount)}',
                                     style: TextStyle(
                                       fontSize: 13,
                                       color: Colors.black87,
@@ -205,6 +214,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
                                 ],
                               ),
                               SizedBox(height: 8),
+                              // 경비 환급 금액
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -217,7 +227,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
                                     ),
                                   ),
                                   Text(
-                                    '₩1111',
+                                    '₩0',
                                     style: TextStyle(
                                       fontSize: 13,
                                       color: Colors.blueAccent,
@@ -400,7 +410,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
                                         ),
                                         // 오른쪽 영역: 금액
                                         Text(
-                                          '₩${expense['amount'].toString()}',
+                                          '₩${_formatNumber(expense['amount'] ?? 0)}',
                                           style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w700,
@@ -515,5 +525,11 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
         ),
       ),
     );
+  }
+
+  /// 금액을 천 단위로 콤마를 추가하여 문자열로 반환하는 함수
+  String _formatNumber(num number) {
+    return number.toString().replaceAllMapped(
+        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},');
   }
 }
