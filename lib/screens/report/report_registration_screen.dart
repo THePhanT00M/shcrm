@@ -124,11 +124,15 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
         toolbarHeight: 60,
         elevation: 0,
         centerTitle: true,
-        leading: IconButton(
-          icon: Icon(Icons.chevron_left, size: 24, color: Colors.white),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+        leading: Container(
+          alignment: Alignment.centerLeft,
+          child: IconButton(
+            icon: Icon(Icons.chevron_left, size: 24, color: Colors.white),
+            onPressed: () {
+              // 뒤로가기 액션 처리
+              Navigator.pop(context);
+            },
+          ),
         ),
         title: Text(
           '보고서',
