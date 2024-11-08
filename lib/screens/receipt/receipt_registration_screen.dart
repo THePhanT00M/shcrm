@@ -3,10 +3,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'expense_method_selection_screen.dart';
 import '../receipt/option_tile.dart';
 import '../../services/api_service.dart';
 import '../../services/category.dart';
+import '../../services/report.dart';
 
 class ReceiptRegistrationScreen extends StatefulWidget {
   final int? expenseId; // 선택적 expenseId로 변경
@@ -33,6 +35,9 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
   String _expenseValue = 'CASH';
   Icon? _expenseIcon = Icon(Icons.money, color: Colors.grey);
 
+  String _selectedReport = '보고서 선택';
+  int? _reportId;
+
   bool isLoading = true;
   bool hasError = false;
 
@@ -45,6 +50,37 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
   void initState() {
     super.initState();
     _fetchData();
+  }
+
+  // 경고 대화상자 표시 함수
+  void _showAlertDialog(String message) {
+    if (!mounted) return; // 위젯이 여전히 트리에 있는지 확인
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CupertinoAlertDialog(
+          title: Text(
+            '알림',
+            style: TextStyle(color: Colors.black),
+          ),
+          content: Text(
+            message,
+            style: TextStyle(color: Color(0xFFF7a7a7a)),
+          ),
+          actions: [
+            CupertinoDialogAction(
+              child: Text(
+                '확인',
+                style: TextStyle(color: Colors.blue),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _initializeNewExpense(String employeeId) {
@@ -151,7 +187,7 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
       final data = {
         if (widget.expenseId != null) 'expenseId': widget.expenseId,
         'employeeId': _employeeId,
-        'reportId': null,
+        'reportId': _reportId,
         'amount': _amountController.text,
         'merchantName': _businessNameController.text,
         'address': null,
@@ -160,7 +196,7 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
         'reimbursement': 'N',
         'attachmentId': null,
         'isDeleted': "N",
-        'paymentMethod': "CARD"
+        'paymentMethod': _expenseValue
       };
 
       if (widget.expenseId != null) {
@@ -214,30 +250,30 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
-            child: // 저장 버튼의 onPressed 콜백 수정
-                TextButton(
+            child: TextButton(
               onPressed: () {
                 // 입력된 데이터를 확인
-                final employeeId = _employeeId;
+                final amount = _amountController.text.trim();
+                final merchantName = _businessNameController.text.trim();
 
-                final amount = _amountController.text;
-                final merchantName = _businessNameController.text;
-                final address = null;
+                // 필수 필드 검증
+                if (amount.isEmpty) {
+                  _showAlertDialog('금액을 입력해주세요.');
+                  return;
+                }
 
-                final expenseDate = _dateController.text;
-                final categoryId = _categoryId;
-                final paymentMethod = _expenseValue;
+                if (merchantName.isEmpty) {
+                  _showAlertDialog('상호를 입력해주세요.');
+                  return;
+                }
 
-                final reimbursement = 'N';
-                final attachmentId = null;
+                // 금액이 숫자인지 확인 (선택 사항)
+                if (double.tryParse(amount) == null) {
+                  _showAlertDialog('유효한 금액을 입력해주세요.');
+                  return;
+                }
 
-                print('저장 버튼 클릭');
-                print('금액: $amount');
-                print('상호: $merchantName');
-                print('날짜: $expenseDate');
-                print('카테고리: $categoryId');
-                print('지출 방법: $paymentMethod');
-
+                // 모든 검증을 통과하면 저장 함수 호출
                 _saveExpenseData();
               },
               child: Text(
@@ -551,7 +587,35 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
                     margin: EdgeInsets.only(bottom: 20),
                     child: Column(
                       children: [
-                        OptionTile(title: '보고서'),
+                        OptionTile(
+                          title: '보고서',
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                _selectedReport,
+                                style: TextStyle(
+                                    fontSize: 15, color: Colors.black),
+                              ),
+                            ],
+                          ),
+                          onTap: () async {
+                            final selectedReport = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ReportScreen(reportId: _reportId),
+                              ),
+                            );
+
+                            if (selectedReport != null) {
+                              setState(() {
+                                _reportId = selectedReport['reportId'];
+                                _selectedReport = selectedReport['title'];
+                              });
+                            }
+                          },
+                        ),
                       ],
                     ),
                   ),

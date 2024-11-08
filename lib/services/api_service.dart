@@ -267,6 +267,54 @@ class ApiService {
         body: body,
       );
 
+      print(response.statusCode);
+
+      if (response.statusCode == 200) {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final responseData = json.decode(decodedBody);
+
+        if (responseData['resultCode'] == 'SUCCESS' &&
+            responseData['result'] != null) {
+          return {
+            'reportData': responseData['result']['report'],
+            'expensesData': responseData['result']['expenses'],
+            'attachmentsData': responseData['result']['attachments'],
+            'commentsData': responseData['result']['comments'],
+          };
+        } else {
+          throw Exception('Error: ${responseData['resultMsg']}');
+        }
+      } else {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final responseJson = json.decode(decodedBody);
+        final resultMsgBytes = (responseJson['resultMsg'] as String).codeUnits;
+        final decodedResultMsg = utf8.decode(resultMsgBytes);
+
+        throw Exception(
+            'Error: ${response.statusCode}, Message: $decodedResultMsg');
+      }
+    } catch (e) {
+      print('Failed to fetch expense details: $e');
+      throw Exception('Error fetching expense details');
+    }
+  }
+
+  static Future<Map<String, dynamic>> submitComment(
+      int reportId, String employeeId, String comment) async {
+    try {
+      print(reportId);
+
+      final body = json.encode({
+        'reportId': reportId,
+        'employeeId': employeeId,
+      });
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/report/find'),
+        headers: _headers,
+        body: body,
+      );
+
       if (response.statusCode == 200) {
         final decodedBody = utf8.decode(response.bodyBytes);
         final responseData = json.decode(decodedBody);
