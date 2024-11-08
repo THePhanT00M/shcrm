@@ -75,9 +75,6 @@ class ApiService {
               'merchantName': item['merchantName'] ?? '알 수 없음',
               'expenseDate': item['expenseDate'],
               'categoryId': item['categoryId'] ?? '',
-              'categoryName': (item['categoryId'] != null)
-                  ? item['categoryId']['categoryName'] ?? '알 수 없음'
-                  : '알 수 없음',
               'image': (item['attachmentId'] != null &&
                       item['attachmentId'] is Map &&
                       item['attachmentId']!['fileUrl'] != null)

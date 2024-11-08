@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
 class ExpenseMethodSelectionScreen extends StatelessWidget {
-  final String currentMethod;
+  final String currentMethodValue; // 선택된 method의 value
 
-  ExpenseMethodSelectionScreen({required this.currentMethod});
+  ExpenseMethodSelectionScreen({required this.currentMethodValue});
 
-  final List<String> methods = [
-    '현금',
-    '카드',
-    '계좌이체',
-    '기타',
+  final List<Map<String, String>> methods = [
+    {'text': '현금', 'value': 'CASH'},
+    {'text': '카드', 'value': 'CARD'},
+    {'text': '계좌이체', 'value': 'TRANFER'},
+    {'text': '기타', 'value': 'OTHER'},
   ];
 
   @override
@@ -46,6 +46,7 @@ class ExpenseMethodSelectionScreen extends StatelessWidget {
             physics: NeverScrollableScrollPhysics(),
             itemBuilder: (context, index) {
               final method = methods[index];
+              final isSelected = method['value'] == currentMethodValue;
               return Container(
                 decoration: BoxDecoration(
                   border: Border(
@@ -53,18 +54,18 @@ class ExpenseMethodSelectionScreen extends StatelessWidget {
                   ),
                 ),
                 child: ListTile(
-                  leading: _getMethodIcon(method),
+                  leading: _getMethodIcon(method['text']!),
                   title: Transform.translate(
                     offset: Offset(-8, 0),
-                    child: Text(method),
+                    child: Text(method['text']!),
                   ),
-                  trailing: method == currentMethod
-                      ? Icon(Icons.check, color: Colors.blue)
-                      : null,
+                  trailing:
+                      isSelected ? Icon(Icons.check, color: Colors.blue) : null,
                   onTap: () {
                     Navigator.pop(context, {
-                      'method': method,
-                      'icon': _getMethodIcon(method),
+                      'method': method['text'],
+                      'value': method['value'],
+                      'icon': _getMethodIcon(method['text']!),
                     });
                   },
                 ),

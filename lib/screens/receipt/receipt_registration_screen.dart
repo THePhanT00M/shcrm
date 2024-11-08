@@ -30,6 +30,7 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
 
   DateTime _selectedDate = DateTime.now();
   String _expenseMethod = '현금';
+  String _expenseValue = 'CASH';
   Icon? _expenseIcon = Icon(Icons.money, color: Colors.grey);
 
   bool isLoading = true;
@@ -109,22 +110,12 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
         // 카테고리 데이터 업데이트
         _categoryId = data['categoryId'];
         _selectedCategory = data['categoryName'] ?? '카테고리 선택';
+        _expenseMethod = data['paymentMethod'] ?? '현금';
 
         isLoading = false;
       });
     } catch (e) {
       _showError('데이터를 불러오지 못했습니다: $e');
-    }
-  }
-
-  Icon _getIconForExpenseMethod(String method) {
-    switch (method) {
-      case '카드':
-        return Icon(Icons.credit_card, color: Colors.grey);
-      case '현금':
-        return Icon(Icons.money, color: Colors.grey);
-      default:
-        return Icon(Icons.help_outline, color: Colors.grey);
     }
   }
 
@@ -227,24 +218,25 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
                 TextButton(
               onPressed: () {
                 // 입력된 데이터를 확인
+                final employeeId = _employeeId;
+
                 final amount = _amountController.text;
                 final merchantName = _businessNameController.text;
                 final address = null;
 
                 final expenseDate = _dateController.text;
-                final categoryId = _selectedCategory;
+                final categoryId = _categoryId;
+                final paymentMethod = _expenseValue;
 
                 final reimbursement = 'N';
                 final attachmentId = null;
-
-                final employeeId = _employeeId;
 
                 print('저장 버튼 클릭');
                 print('금액: $amount');
                 print('상호: $merchantName');
                 print('날짜: $expenseDate');
                 print('카테고리: $categoryId');
-                print('지출 방법: $employeeId');
+                print('지출 방법: $paymentMethod');
 
                 _saveExpenseData();
               },
@@ -533,7 +525,7 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
                               MaterialPageRoute(
                                 builder: (context) =>
                                     ExpenseMethodSelectionScreen(
-                                  currentMethod: _expenseMethod,
+                                  currentMethodValue: _expenseValue,
                                 ),
                               ),
                             );
@@ -541,6 +533,7 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
                             if (selectedData != null) {
                               setState(() {
                                 _expenseMethod = selectedData['method'];
+                                _expenseValue = selectedData['value'];
                                 _expenseIcon = selectedData['icon'];
                               });
                             }
