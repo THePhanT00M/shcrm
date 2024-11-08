@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:collection'; // Ensure this import is present
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -19,7 +20,10 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
   String? _employeeId;
   bool isLoading = true;
   bool hasError = false;
-  Map<String, List<Map<String, dynamic>>> expensesByDate = {};
+
+  // Updated type to LinkedHashMap to maintain order
+  LinkedHashMap<String, List<Map<String, dynamic>>> expensesByDate =
+      LinkedHashMap();
 
   String? _reportTitle;
 
@@ -106,12 +110,15 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
         employeeId,
       );
 
+      print(data);
+
       // Group expenses by date
       final List<Map<String, dynamic>> expensesList =
           List<Map<String, dynamic>>.from(data['expensesData']);
-      expensesByDate = {};
+      expensesByDate = LinkedHashMap(); // Initialize as LinkedHashMap
+
       for (var expense in expensesList) {
-        final date = DateTime.parse(expense['createdAt'])
+        final date = DateTime.parse(expense['expenseDate'])
             .toLocal()
             .toString()
             .split(' ')[0];
@@ -121,6 +128,25 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
           expensesByDate[date] = [expense];
         }
       }
+
+      // --- Sorting Logic Starts Here ---
+
+      // Step 1: Extract and sort the keys (dates) in descending order
+      List<String> sortedDates = expensesByDate.keys.toList()
+        ..sort((a, b) => b.compareTo(a)); // Descending order
+
+      // Step 2: Create a new LinkedHashMap with sorted keys to maintain order
+      LinkedHashMap<String, List<Map<String, dynamic>>> sortedExpensesByDate =
+          LinkedHashMap.fromIterable(
+        sortedDates,
+        key: (date) => date as String,
+        value: (date) => expensesByDate[date]!, // Use null assertion operator
+      );
+
+      // Update the expensesByDate with the sorted map
+      expensesByDate = sortedExpensesByDate;
+
+      // --- Sorting Logic Ends Here ---
 
       // Initialize history list with existing history data if available
       if (data['historyData'] != null) {
@@ -843,7 +869,16 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
                             // 등록 버튼
                             GestureDetector(
                               onTap: _isCommentNotEmpty
-                                  ? null
+                                  ? () {
+                                      // Implement comment submission logic here
+                                      // For example:
+                                      // _submitComment(_commentController.text);
+                                      // After submission, clear the text field
+                                      // setState(() {
+                                      //   _commentController.clear();
+                                      //   // Optionally, add the new comment to commentsList
+                                      // });
+                                    }
                                   : null, // 버튼 활성화 조건 수정
                               child: Container(
                                 height: 35.0, // 입력 필드와 동일한 높이
