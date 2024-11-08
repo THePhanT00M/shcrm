@@ -89,7 +89,7 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
       _businessNameController.text = '';
       _selectedDate = DateTime.now();
       _dateController.text =
-          '${_selectedDate.year}.${_selectedDate.month.toString().padLeft(2, '0')}.${_selectedDate.day.toString().padLeft(2, '0')}';
+          '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
 
       // 기본값 설정
       _categoryId = null;
@@ -148,6 +148,11 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
         _selectedCategory = data['categoryName'] ?? '카테고리 선택';
         _expenseMethod = data['paymentMethod'] ?? '현금';
 
+        _selectedReport = data['reportTitle'] ?? '보고서 선택';
+        _reportId = data['reportId'];
+
+        print(_selectedReport);
+
         isLoading = false;
       });
     } catch (e) {
@@ -187,14 +192,13 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
       final data = {
         if (widget.expenseId != null) 'expenseId': widget.expenseId,
         'employeeId': _employeeId,
-        'reportId': _reportId,
         'amount': _amountController.text,
+        'address': '',
         'merchantName': _businessNameController.text,
-        'address': null,
-        'expenseDate': _dateController.text,
+        'expenseDate': _dateController.text + 'T00:00:00',
         'categoryId': _categoryId,
         'reimbursement': 'N',
-        'attachmentId': null,
+        'reportId': _reportId,
         'isDeleted': "N",
         'paymentMethod': _expenseValue
       };

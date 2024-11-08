@@ -1,12 +1,12 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'filter_screen.dart';
-import 'receipt_registration_screen.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'dart:convert';
-import '../../services/api_service.dart';
+import 'filter_screen.dart';
+import 'receipt_registration_screen.dart';
 import 'statistics.dart';
+import '../../services/api_service.dart';
 
 class ReceiptsPage extends StatefulWidget {
   @override
@@ -40,9 +40,6 @@ class _ReceiptsPageState extends State<ReceiptsPage> {
   }
 
   Future<void> _refreshData() async {
-    setState(() {
-      isLoading = true;
-    });
     await _fetchData();
   }
 
@@ -60,7 +57,6 @@ class _ReceiptsPageState extends State<ReceiptsPage> {
       final data = await ApiService.fetchExpensesData(employeeId);
       setState(() {
         receiptData = data;
-        print(receiptData);
         isLoading = false;
       });
     } catch (e) {
@@ -168,21 +164,26 @@ class _ReceiptsPageState extends State<ReceiptsPage> {
   }
 
   Widget _buildReceiptList() {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 70),
-      child: ListView.builder(
-        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-        itemCount: receiptData.length,
-        itemBuilder: (context, index) {
-          final receipt = receiptData[index];
-          return ReceiptCard(
-            expenseId: receipt['expenseId'],
-            iconPath: receipt['image'] ?? 'assets/icons/none_picture.svg',
-            status: receipt['status'] ?? ' ',
-            merchantName: receipt['merchantName'] ?? '제목 없음',
-            amount: receipt['amount']?.toString() ?? '금액 없음',
-          );
-        },
+    return RefreshIndicator(
+      onRefresh: _refreshData,
+      backgroundColor: Colors.white, // 배경색을 흰색으로 설정
+      color: Color(0xFF009EB4), // 프로그레스 인디케이터의 색상 설정
+      child: Padding(
+        padding: EdgeInsets.only(bottom: 70),
+        child: ListView.builder(
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+          itemCount: receiptData.length,
+          itemBuilder: (context, index) {
+            final receipt = receiptData[index];
+            return ReceiptCard(
+              expenseId: receipt['expenseId'],
+              iconPath: receipt['image'] ?? 'assets/icons/none_picture.svg',
+              status: receipt['status'] ?? ' ',
+              merchantName: receipt['merchantName'] ?? '제목 없음',
+              amount: receipt['amount']?.toString() ?? '금액 없음',
+            );
+          },
+        ),
       ),
     );
   }

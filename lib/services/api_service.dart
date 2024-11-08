@@ -135,6 +135,8 @@ class ApiService {
                 responseData['result']['categoryId']['categoryId'] ?? '',
             'categoryName':
                 responseData['result']['categoryId']['categoryName'] ?? '',
+            'reportId': responseData['result']['reportId']['reportId'] ?? '',
+            'reportTitle': responseData['result']['reportId']['title'] ?? '',
           };
         } else {
           throw Exception('Error: ${responseData['resultMsg']}');
@@ -156,13 +158,13 @@ class ApiService {
 
   static Future<void> createExpenseData(Map<String, dynamic> data) async {
     try {
-      final response = await http.put(
+      final response = await http.post(
         Uri.parse('$_baseUrl/expense/create'),
         headers: _headers,
         body: json.encode(data),
       );
 
-      print(data);
+      print(json.encode(data));
       print(response.statusCode);
 
       if (response.statusCode == 200) {
@@ -266,8 +268,6 @@ class ApiService {
         headers: _headers,
         body: body,
       );
-
-      print(response.statusCode);
 
       if (response.statusCode == 200) {
         final decodedBody = utf8.decode(response.bodyBytes);
