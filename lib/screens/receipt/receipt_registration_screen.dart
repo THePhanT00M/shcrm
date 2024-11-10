@@ -9,6 +9,8 @@ import '../receipt/option_tile.dart';
 import '../../services/api_service.dart';
 import '../../services/category.dart';
 import '../../services/report.dart';
+import 'package:http/http.dart' as http; // 추가
+import 'package:path/path.dart' as path; // 추가
 
 class ReceiptRegistrationScreen extends StatefulWidget {
   final int? expenseId; // 선택적 expenseId로 변경
@@ -41,6 +43,7 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
 
   bool isLoading = true;
   bool hasError = false;
+  bool isUploading = false; // 이미지 업로드 상태 관리
 
   String? _receiptImage;
 
@@ -180,10 +183,95 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
   }
 
   Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
+    try {
+      final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        setState(() {
+          _receiptImage = pickedFile.path;
+          isUploading = true; // 업로드 시작 시 로딩 상태 활성화
+        });
+
+        // Prepare the multipart request
+        var uri = Uri.parse('http://shcrm.ddns.net:5000/extract');
+        var request = http.MultipartRequest('POST', uri);
+
+        // Attach the file with the key 'file'
+        var file = await http.MultipartFile.fromPath(
+          'file',
+          pickedFile.path,
+          filename: path.basename(pickedFile.path),
+        );
+        request.files.add(file);
+
+        // Send the request
+        var response = await request.send();
+
+        // Handle the response
+        if (response.statusCode == 200) {
+          var responseData = await response.stream.bytesToString();
+          print('서버 응답: $responseData');
+          _showAlertDialog('이미지가 성공적으로 업로드되었습니다.');
+
+          // JSON 응답 파싱
+          final Map<String, dynamic> jsonResponse = jsonDecode(responseData);
+
+          // OCR 결과 추출
+          final ocrResult = jsonResponse['OCR_결과'] as Map<String, dynamic>;
+
+          // 금액 추출 및 설정
+          if (ocrResult.containsKey('금액')) {
+            setState(() {
+              _amountController.text = ocrResult['금액'].toString();
+            });
+          }
+
+          // 상호명 추출 및 설정
+          if (ocrResult.containsKey('가맹점명') &&
+              (ocrResult['가맹점명'] as List).isNotEmpty) {
+            setState(() {
+              _businessNameController.text = ocrResult['가맹점명'][0];
+            });
+          } else if (jsonResponse['카테고리_키워드'] != null) {
+            // '카테고리_키워드'에서 '상호명' 추출
+            final categoryKeyword =
+                jsonResponse['카테고리_키워드'] as Map<String, dynamic>;
+            if (categoryKeyword.isNotEmpty) {
+              final firstKey = categoryKeyword.keys.first;
+              final subMap = categoryKeyword[firstKey] as Map<String, dynamic>;
+              if (subMap.containsKey('상호명')) {
+                setState(() {
+                  _businessNameController.text = subMap['상호명'];
+                });
+              }
+            }
+          }
+
+          // 거래일시 추출 및 설정
+          if (ocrResult.containsKey('거래일시')) {
+            List<dynamic> transactionDates = ocrResult['거래일시'];
+            if (transactionDates.isNotEmpty) {
+              String firstDate = transactionDates[0];
+              DateTime parsedDate = DateTime.parse(firstDate);
+              setState(() {
+                _selectedDate = parsedDate;
+                _dateController.text =
+                    '${parsedDate.year}-${parsedDate.month.toString().padLeft(2, '0')}-${parsedDate.day.toString().padLeft(2, '0')}';
+              });
+            }
+          }
+        } else {
+          print('서버 오류: ${response.statusCode}');
+          _showAlertDialog('이미지 업로드에 실패했습니다. 상태 코드: ${response.statusCode}');
+        }
+      } else {
+        print('이미지가 선택되지 않았습니다.');
+      }
+    } catch (e) {
+      print('이미지 업로드 중 오류 발생: $e');
+      _showAlertDialog('이미지 업로드 중 오류가 발생했습니다.');
+    } finally {
       setState(() {
-        _receiptImage = pickedFile.path;
+        isUploading = false; // 업로드 완료 시 로딩 상태 비활성화
       });
     }
   }
@@ -281,6 +369,13 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
                 // 모든 검증을 통과하면 저장 함수 호출
                 _saveExpenseData();
               },
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
               child: Text(
                 '저장',
                 style: TextStyle(
@@ -289,344 +384,370 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
             ),
           ),
         ],
       ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    margin: EdgeInsets.only(bottom: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '금액 *',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[500],
-                          ),
+      body: Stack(
+        children: [
+          isLoading
+              ? Center(child: CircularProgressIndicator())
+              : SingleChildScrollView(
+                  padding: EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        Row(
+                        margin: EdgeInsets.only(bottom: 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              child: TextField(
-                                controller: _amountController,
-                                keyboardType: TextInputType.number,
-                                style: TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF007792),
-                                ),
-                                decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  hintText: '금액을 입력하세요',
-                                  hintStyle: TextStyle(
-                                    fontSize: 18, // 원하는 폰트 크기로 설정
-                                    color: Colors
-                                        .grey, // hintText 색상도 필요에 따라 설정 가능
-                                  ),
-                                ),
+                            Text(
+                              '금액 *',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[500],
                               ),
                             ),
-                            SizedBox(width: 16),
                             Row(
                               children: [
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[100],
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    'KRW',
+                                Expanded(
+                                  child: TextField(
+                                    controller: _amountController,
+                                    keyboardType: TextInputType.number,
                                     style: TextStyle(
-                                        fontSize: 12, color: Colors.black),
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF007792),
+                                    ),
+                                    decoration: InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: '금액을 입력하세요',
+                                      hintStyle: TextStyle(
+                                        fontSize: 18, // 원하는 폰트 크기로 설정
+                                        color: Colors
+                                            .grey, // hintText 색상도 필요에 따라 설정 가능
+                                      ),
+                                    ),
                                   ),
                                 ),
                                 SizedBox(width: 16),
-                                GestureDetector(
-                                  onTap: _pickImage,
-                                  child: Container(
-                                    width: 64,
-                                    height: 64,
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[200],
-                                      borderRadius: BorderRadius.circular(8),
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[100],
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        'KRW',
+                                        style: TextStyle(
+                                            fontSize: 12, color: Colors.black),
+                                      ),
                                     ),
-                                    child: _receiptImage != null &&
-                                            _receiptImage!.isNotEmpty
-                                        ? (_receiptImage!.startsWith('http')
-                                            ? Image.network(
-                                                _receiptImage!,
-                                                fit: BoxFit.cover,
-                                                errorBuilder: (context, error,
-                                                    stackTrace) {
-                                                  return Icon(
-                                                      Icons.broken_image,
-                                                      size: 40,
-                                                      color: Colors.grey[400]);
-                                                },
-                                              )
-                                            : Image.file(
-                                                File(_receiptImage!),
-                                                fit: BoxFit.cover,
-                                                errorBuilder: (context, error,
-                                                    stackTrace) {
-                                                  return Icon(
-                                                      Icons.broken_image,
-                                                      size: 40,
-                                                      color: Colors.grey[400]);
-                                                },
-                                              ))
-                                        : Icon(Icons.image,
-                                            size: 40, color: Colors.grey[400]),
-                                  ),
+                                    SizedBox(width: 16),
+                                    GestureDetector(
+                                      onTap: _pickImage,
+                                      child: Container(
+                                        width: 64,
+                                        height: 64,
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[200],
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                        child: _receiptImage != null &&
+                                                _receiptImage!.isNotEmpty
+                                            ? (_receiptImage!.startsWith('http')
+                                                ? Image.network(
+                                                    _receiptImage!,
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder: (context,
+                                                        error, stackTrace) {
+                                                      return Icon(
+                                                          Icons.broken_image,
+                                                          size: 40,
+                                                          color:
+                                                              Colors.grey[400]);
+                                                    },
+                                                  )
+                                                : Image.file(
+                                                    File(_receiptImage!),
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder: (context,
+                                                        error, stackTrace) {
+                                                      return Icon(
+                                                          Icons.broken_image,
+                                                          size: 40,
+                                                          color:
+                                                              Colors.grey[400]);
+                                                    },
+                                                  ))
+                                            : Icon(Icons.image,
+                                                size: 40,
+                                                color: Colors.grey[400]),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              '상호 *',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                            TextField(
+                              controller: _businessNameController,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF007792),
+                              ),
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
+                                hintText: '상호를 입력하세요',
+                                hintStyle: TextStyle(
+                                  fontSize: 14, // 원하는 폰트 크기로 설정
+                                  color:
+                                      Colors.grey, // hintText 색상도 필요에 따라 설정 가능
+                                ),
+                              ),
                             ),
                           ],
                         ),
-                        SizedBox(height: 16),
-                        Text(
-                          '상호 *',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[500],
-                          ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        TextField(
-                          controller: _businessNameController,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF007792),
-                          ),
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            hintText: '상호를 입력하세요',
-                            hintStyle: TextStyle(
-                              fontSize: 14, // 원하는 폰트 크기로 설정
-                              color: Colors.grey, // hintText 색상도 필요에 따라 설정 가능
+                        margin: EdgeInsets.only(bottom: 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '날짜 *',
+                              style: TextStyle(
+                                  fontSize: 13, color: Colors.grey[500]),
                             ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    margin: EdgeInsets.only(bottom: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '날짜 *',
-                          style:
-                              TextStyle(fontSize: 13, color: Colors.grey[500]),
-                        ),
-                        GestureDetector(
-                          onTap: () async {
-                            DateTime? selectedDate = await showDatePicker(
-                              context: context,
-                              initialDate: _selectedDate,
-                              firstDate: DateTime(2000),
-                              lastDate: DateTime(2101),
-                              initialEntryMode:
-                                  DatePickerEntryMode.calendarOnly,
-                              builder: (BuildContext context, Widget? child) {
-                                return Theme(
-                                  data: Theme.of(context).copyWith(
-                                    inputDecorationTheme: InputDecorationTheme(
-                                      border: UnderlineInputBorder(
-                                        borderSide: BorderSide(
-                                          width: 0.5,
-                                          color: Colors.blue,
+                            GestureDetector(
+                              onTap: () async {
+                                DateTime? selectedDate = await showDatePicker(
+                                  context: context,
+                                  initialDate: _selectedDate,
+                                  firstDate: DateTime(2000),
+                                  lastDate: DateTime(2101),
+                                  initialEntryMode:
+                                      DatePickerEntryMode.calendarOnly,
+                                  builder:
+                                      (BuildContext context, Widget? child) {
+                                    return Theme(
+                                      data: Theme.of(context).copyWith(
+                                        inputDecorationTheme:
+                                            InputDecorationTheme(
+                                          border: UnderlineInputBorder(
+                                            borderSide: BorderSide(
+                                              width: 0.5,
+                                              color: Colors.blue,
+                                            ),
+                                          ),
+                                        ),
+                                        colorScheme: ColorScheme.light(
+                                          onPrimary: Colors.white,
+                                          primary: Colors.blue,
+                                          background: Colors.white,
+                                        ),
+                                        datePickerTheme: DatePickerThemeData(
+                                          headerBackgroundColor: Colors.blue,
+                                          backgroundColor: Colors.white,
+                                          headerForegroundColor: Colors.white,
+                                          surfaceTintColor: Colors.white,
+                                          dividerColor: Colors.blue,
                                         ),
                                       ),
-                                    ),
-                                    colorScheme: ColorScheme.light(
-                                      onPrimary: Colors.white,
-                                      primary: Colors.blue,
-                                      background: Colors.white,
-                                    ),
-                                    datePickerTheme: DatePickerThemeData(
-                                      headerBackgroundColor: Colors.blue,
-                                      backgroundColor: Colors.white,
-                                      headerForegroundColor: Colors.white,
-                                      surfaceTintColor: Colors.white,
-                                      dividerColor: Colors.blue,
-                                    ),
-                                  ),
-                                  child: child!,
+                                      child: child!,
+                                    );
+                                  },
                                 );
-                              },
-                            );
 
-                            if (selectedDate != null &&
-                                selectedDate != _selectedDate) {
-                              _onDateSelected(selectedDate);
-                            }
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(vertical: 12),
-                            decoration: BoxDecoration(
-                              border: Border(
-                                bottom: BorderSide(color: Colors.grey[200]!),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  _dateController.text.isNotEmpty
-                                      ? _dateController.text
-                                      : '날짜를 선택하세요',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: _dateController.text.isNotEmpty
-                                        ? Colors.black
-                                        : Colors.grey,
+                                if (selectedDate != null &&
+                                    selectedDate != _selectedDate) {
+                                  _onDateSelected(selectedDate);
+                                }
+                              },
+                              child: Container(
+                                padding: EdgeInsets.symmetric(vertical: 12),
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    bottom:
+                                        BorderSide(color: Colors.grey[200]!),
                                   ),
                                 ),
-                                Icon(Icons.add,
-                                    color: Colors.grey[400], size: 20),
-                              ],
-                            ),
-                          ),
-                        ),
-                        OptionTile(
-                          title: '카테고리',
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                _selectedCategory,
-                                style: TextStyle(
-                                    fontSize: 15, color: Colors.black),
-                              ),
-                            ],
-                          ),
-                          onTap: () async {
-                            final selectedCategory = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => CategoryScreen(
-                                    selectedCategoryId: _categoryId),
-                              ),
-                            );
-
-                            if (selectedCategory != null) {
-                              setState(() {
-                                _selectedCategory =
-                                    selectedCategory['categoryName'];
-                                _categoryId = selectedCategory['categoryId'];
-                              });
-                            }
-                          },
-                        ),
-                        OptionTile(
-                          title: '지출방법',
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (_expenseIcon != null) _expenseIcon!,
-                              SizedBox(width: 8),
-                              Text(
-                                _expenseMethod,
-                                style: TextStyle(
-                                    fontSize: 15, color: Colors.black),
-                              ),
-                            ],
-                          ),
-                          onTap: () async {
-                            final selectedData = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    ExpenseMethodSelectionScreen(
-                                  currentMethodValue: _expenseValue,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      _dateController.text.isNotEmpty
+                                          ? _dateController.text
+                                          : '날짜를 선택하세요',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: _dateController.text.isNotEmpty
+                                            ? Colors.black
+                                            : Colors.grey,
+                                      ),
+                                    ),
+                                    Icon(Icons.add,
+                                        color: Colors.grey[400], size: 20),
+                                  ],
                                 ),
                               ),
-                            );
-
-                            if (selectedData != null) {
-                              setState(() {
-                                _expenseMethod = selectedData['method'];
-                                _expenseValue = selectedData['value'];
-                                _expenseIcon = selectedData['icon'];
-                              });
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    margin: EdgeInsets.only(bottom: 20),
-                    child: Column(
-                      children: [
-                        OptionTile(
-                          title: '보고서',
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                _selectedReport,
-                                style: TextStyle(
-                                    fontSize: 15, color: Colors.black),
+                            ),
+                            OptionTile(
+                              title: '카테고리',
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    _selectedCategory,
+                                    style: TextStyle(
+                                        fontSize: 15, color: Colors.black),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                          onTap: () async {
-                            final selectedReport = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    ReportScreen(reportId: _reportId),
-                              ),
-                            );
+                              onTap: () async {
+                                final selectedCategory = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => CategoryScreen(
+                                        selectedCategoryId: _categoryId),
+                                  ),
+                                );
 
-                            if (selectedReport != null) {
-                              setState(() {
-                                _reportId = selectedReport['reportId'];
-                                _selectedReport = selectedReport['title'];
-                              });
-                            }
-                          },
+                                if (selectedCategory != null) {
+                                  setState(() {
+                                    _selectedCategory =
+                                        selectedCategory['categoryName'];
+                                    _categoryId =
+                                        selectedCategory['categoryId'];
+                                  });
+                                }
+                              },
+                            ),
+                            OptionTile(
+                              title: '지출방법',
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (_expenseIcon != null) _expenseIcon!,
+                                  SizedBox(width: 8),
+                                  Text(
+                                    _expenseMethod,
+                                    style: TextStyle(
+                                        fontSize: 15, color: Colors.black),
+                                  ),
+                                ],
+                              ),
+                              onTap: () async {
+                                final selectedData = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ExpenseMethodSelectionScreen(
+                                      currentMethodValue: _expenseValue,
+                                    ),
+                                  ),
+                                );
+
+                                if (selectedData != null) {
+                                  setState(() {
+                                    _expenseMethod = selectedData['method'];
+                                    _expenseValue = selectedData['value'];
+                                    _expenseIcon = selectedData['icon'];
+                                  });
+                                }
+                              },
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        margin: EdgeInsets.only(bottom: 20),
+                        child: Column(
+                          children: [
+                            OptionTile(
+                              title: '보고서',
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    _selectedReport,
+                                    style: TextStyle(
+                                        fontSize: 15, color: Colors.black),
+                                  ),
+                                ],
+                              ),
+                              onTap: () async {
+                                final selectedReport = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ReportScreen(reportId: _reportId),
+                                  ),
+                                );
+
+                                if (selectedReport != null) {
+                                  setState(() {
+                                    _reportId = selectedReport['reportId'];
+                                    _selectedReport = selectedReport['title'];
+                                  });
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
+          if (isUploading)
+            Container(
+              color: Colors.black54,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      '업로드 중...',
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ],
+                ),
               ),
             ),
+        ],
+      ),
     );
   }
 }

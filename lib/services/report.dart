@@ -117,7 +117,7 @@ class _ReportScreenState extends State<ReportScreen> {
                         color: _getStatusColor(report['status']),
                         borderRadius: BorderRadius.circular(5.0),
                         border: Border.all(
-                            color: _getStatusColor(report['status'])!),
+                            color: _getStatusColor(report['status'])),
                       ),
                       child: Text(
                         status,
