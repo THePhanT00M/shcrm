@@ -34,7 +34,7 @@ class _StatisticsState extends State<Statistics> {
   // 비용 예측 데이터를 저장할 리스트
   List<_ChartData> predictionData = [];
 
-  bool isLoading = true;
+  bool isInitialLoading = true; // 초기 로딩 상태
   String currentMonth = "2024-11"; // 현재 월을 설정
   final NumberFormat currencyFormat =
       NumberFormat('#,###'); // NumberFormat 인스턴스 생성
@@ -62,7 +62,7 @@ class _StatisticsState extends State<Statistics> {
       if (!mounted) return; // 위젯이 아직 트리에 존재하는지 확인
 
       setState(() {
-        isLoading = false;
+        isInitialLoading = false;
       });
     } catch (e) {
       print('에러 발생: $e');
@@ -70,7 +70,7 @@ class _StatisticsState extends State<Statistics> {
       if (!mounted) return; // 위젯이 아직 트리에 존재하는지 확인
 
       setState(() {
-        isLoading = false;
+        isInitialLoading = false;
       });
 
       // 사용자에게 에러 알리기 (옵션)
@@ -204,6 +204,18 @@ class _StatisticsState extends State<Statistics> {
     }
   }
 
+  // 새로고침을 처리하는 메소드
+  Future<void> _handleRefresh() async {
+    try {
+      await _fetchAllData();
+    } catch (e) {
+      // 에러 발생 시 스낵바로 알림
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('새로고침 중 오류가 발생했습니다.')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -241,174 +253,209 @@ class _StatisticsState extends State<Statistics> {
             ],
           ),
         ),
-        body: isLoading
+        body: isInitialLoading
             ? Center(child: CircularProgressIndicator())
             : TabBarView(
                 children: [
                   // 첫 번째 탭 - 원형 차트 및 막대 그래프
-                  SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.all(0),
-                      child: Column(
-                        children: [
-                          // 원형 차트: categories
-                          SfCircularChart(
-                            backgroundColor: Colors.white,
-                            title: ChartTitle(text: '용도'),
-                            legend: Legend(
-                              isVisible: true,
-                              overflowMode: LegendItemOverflowMode.wrap,
-                            ),
-                            tooltipBehavior: TooltipBehavior(
-                              enable: true,
-                              format: 'point.y ₩',
-                            ),
-                            series: <CircularSeries>[
-                              PieSeries<CategoryData, String>(
-                                dataSource: pieChartData,
-                                xValueMapper: (CategoryData data, _) =>
-                                    data.category,
-                                yValueMapper: (CategoryData data, _) =>
-                                    data.amount,
-                                dataLabelSettings: DataLabelSettings(
-                                  isVisible: true,
-                                  labelPosition: ChartDataLabelPosition.outside,
-                                ),
-                                dataLabelMapper: (CategoryData data, _) =>
-                                    '₩${currencyFormat.format(data.amount)}',
+                  RefreshIndicator(
+                    onRefresh: _handleRefresh, // 새로고침 콜백 연결
+                    backgroundColor: Colors.white, // 배경색을 흰색으로 설정
+                    color: Color(0xFF009EB4), // 프로그레스 인디케이터의 색상 설정
+                    child: SingleChildScrollView(
+                      physics:
+                          AlwaysScrollableScrollPhysics(), // 항상 스크롤 가능하게 설정
+                      child: Padding(
+                        padding: const EdgeInsets.all(0),
+                        child: Column(
+                          children: [
+                            // 원형 차트: categories
+                            SfCircularChart(
+                              backgroundColor: Colors.white,
+                              title: ChartTitle(text: '용도'),
+                              legend: Legend(
+                                isVisible: true,
+                                overflowMode: LegendItemOverflowMode.wrap,
                               ),
-                            ],
-                          ),
-                          SizedBox(height: 20),
-                          // 막대 그래프: payment_method
-                          SfCartesianChart(
-                            backgroundColor: Colors.white,
-                            title: ChartTitle(text: '지출방법'),
-                            primaryXAxis: CategoryAxis(
-                              title: AxisTitle(text: ''),
-                            ),
-                            primaryYAxis: NumericAxis(
-                              title: AxisTitle(text: ''),
-                              numberFormat: NumberFormat.compact(),
-                            ),
-                            tooltipBehavior: TooltipBehavior(
-                              enable: true,
-                              format: 'point.y ₩',
-                            ),
-                            series: <CartesianSeries>[
-                              ColumnSeries<PaymentMethodData, String>(
-                                dataSource: barChartData,
-                                xValueMapper: (PaymentMethodData data, _) =>
-                                    data.method,
-                                yValueMapper: (PaymentMethodData data, _) =>
-                                    data.amount,
-                                pointColorMapper: (PaymentMethodData data, _) =>
-                                    data.color,
-                                dataLabelSettings: DataLabelSettings(
-                                  isVisible: true,
-                                  labelPosition: ChartDataLabelPosition.outside,
-                                  textStyle: TextStyle(
-                                      color: Colors.black, // Changed to black
-                                      fontSize: 10),
-                                ),
-                                dataLabelMapper: (PaymentMethodData data, _) =>
-                                    '₩${currencyFormat.format(data.amount)}',
+                              tooltipBehavior: TooltipBehavior(
+                                enable: true,
+                                format: 'point.y ₩',
                               ),
-                            ],
-                          ),
-                        ],
+                              series: <CircularSeries>[
+                                PieSeries<CategoryData, String>(
+                                  dataSource: pieChartData,
+                                  xValueMapper: (CategoryData data, _) =>
+                                      data.category,
+                                  yValueMapper: (CategoryData data, _) =>
+                                      data.amount,
+                                  dataLabelSettings: DataLabelSettings(
+                                    isVisible: true,
+                                    labelPosition:
+                                        ChartDataLabelPosition.outside,
+                                  ),
+                                  dataLabelMapper: (CategoryData data, _) =>
+                                      '₩${currencyFormat.format(data.amount)}',
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 20),
+                            // 막대 그래프: payment_method
+                            SfCartesianChart(
+                              backgroundColor: Colors.white,
+                              title: ChartTitle(text: '지출방법'),
+                              primaryXAxis: CategoryAxis(
+                                title: AxisTitle(text: ''),
+                              ),
+                              primaryYAxis: NumericAxis(
+                                title: AxisTitle(text: ''),
+                                numberFormat: NumberFormat.compact(),
+                              ),
+                              tooltipBehavior: TooltipBehavior(
+                                enable: true,
+                                format: 'point.y ₩',
+                              ),
+                              series: <CartesianSeries>[
+                                ColumnSeries<PaymentMethodData, String>(
+                                  dataSource: barChartData,
+                                  xValueMapper: (PaymentMethodData data, _) =>
+                                      data.method,
+                                  yValueMapper: (PaymentMethodData data, _) =>
+                                      data.amount,
+                                  pointColorMapper:
+                                      (PaymentMethodData data, _) => data.color,
+                                  dataLabelSettings: DataLabelSettings(
+                                    isVisible: true,
+                                    labelPosition:
+                                        ChartDataLabelPosition.outside,
+                                    textStyle: TextStyle(
+                                        color: Colors.black, // Changed to black
+                                        fontSize: 10),
+                                  ),
+                                  dataLabelMapper: (PaymentMethodData data,
+                                          _) =>
+                                      '₩${currencyFormat.format(data.amount)}',
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                   // 두 번째 탭 - 비용 예측
-                  predictionData.isEmpty
-                      ? Center(
-                          child: Text(
-                            '비용 예측 데이터를 불러오는 중입니다.',
-                            style: TextStyle(fontSize: 16, color: Colors.grey),
-                          ),
-                        )
-                      : Padding(
-                          padding: const EdgeInsets.all(0),
-                          child: SfCartesianChart(
-                            backgroundColor: Colors.white,
-                            title: ChartTitle(text: ''),
-                            primaryXAxis: CategoryAxis(
-                              title: AxisTitle(text: ''),
-                            ),
-                            primaryYAxis: NumericAxis(
-                              title: AxisTitle(text: ''),
-                              numberFormat: NumberFormat.compact(),
-                            ),
-                            axes: <ChartAxis>[
-                              NumericAxis(
-                                name: 'secondaryYAxis',
-                                title: AxisTitle(text: ''),
-                                opposedPosition: true, // Position on the right
-                                numberFormat: NumberFormat.compact(),
-                              ),
-                            ],
-                            tooltipBehavior: TooltipBehavior(
-                              enable: true,
-                              shared: true,
-                              format: 'point.x : ₩point.y',
-                            ),
-                            legend: Legend(
-                              isVisible: true,
-                              position: LegendPosition.bottom,
-                            ),
-                            series: <CartesianSeries<_ChartData, String>>[
-                              // 예측 지출 BarSeries mapped to primaryYAxis
-                              BarSeries<_ChartData, String>(
-                                name: '예측',
-                                dataSource: predictionData
-                                    .where((data) => data.seriesName == '예측')
-                                    .toList(),
-                                xValueMapper: (_ChartData data, _) =>
-                                    data.category,
-                                yValueMapper: (_ChartData data, _) =>
-                                    data.amount,
-                                color: Colors.blue
-                                    .withOpacity(0.8), // Applied opacity
-                                yAxisName:
-                                    'primaryYAxis', // Maps to primary Y-axis
-                                dataLabelSettings: DataLabelSettings(
-                                  isVisible: true,
-                                  labelPosition: ChartDataLabelPosition.outside,
-                                  textStyle: TextStyle(
-                                      color: Colors.black, // Changed to black
-                                      fontSize: 10),
+                  RefreshIndicator(
+                    onRefresh: _handleRefresh, // 새로고침 콜백 연결
+                    backgroundColor: Colors.white, // 배경색을 흰색으로 설정
+                    color: Color(0xFF009EB4), // 프로그레스 인디케이터의 색상 설정
+                    child: predictionData.isEmpty
+                        ? SingleChildScrollView(
+                            physics:
+                                AlwaysScrollableScrollPhysics(), // 항상 스크롤 가능하게 설정
+                            child: Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Text(
+                                  '비용 예측 데이터를 불러오는 중입니다.',
+                                  style: TextStyle(
+                                      fontSize: 16, color: Colors.grey),
+                                  textAlign: TextAlign.center,
                                 ),
-                                dataLabelMapper: (_ChartData data, _) =>
-                                    '₩${currencyFormat.format(data.amount)}',
                               ),
-                              // 실제 지출 BarSeries mapped to secondaryYAxis
-                              BarSeries<_ChartData, String>(
-                                name: '실제',
-                                dataSource: predictionData
-                                    .where((data) => data.seriesName == '실제')
-                                    .toList(),
-                                xValueMapper: (_ChartData data, _) =>
-                                    data.category,
-                                yValueMapper: (_ChartData data, _) =>
-                                    data.amount,
-                                color: Colors.red
-                                    .withOpacity(0.8), // Applied opacity
-                                yAxisName:
-                                    'secondaryYAxis', // Maps to secondary Y-axis
-                                dataLabelSettings: DataLabelSettings(
-                                  isVisible: true,
-                                  labelPosition: ChartDataLabelPosition.outside,
-                                  textStyle: TextStyle(
-                                      color: Colors.black, // Changed to black
-                                      fontSize: 10),
+                            ),
+                          )
+                        : SingleChildScrollView(
+                            physics:
+                                AlwaysScrollableScrollPhysics(), // 항상 스크롤 가능하게 설정
+                            child: Container(
+                              height: MediaQuery.of(context).size.height - 125,
+                              child: Padding(
+                                padding: const EdgeInsets.all(0),
+                                child: SfCartesianChart(
+                                  backgroundColor: Colors.white,
+                                  title: ChartTitle(text: ''),
+                                  primaryXAxis: CategoryAxis(
+                                    title: AxisTitle(text: ''),
+                                  ),
+                                  primaryYAxis: NumericAxis(
+                                    title: AxisTitle(text: ''),
+                                    numberFormat: NumberFormat.compact(),
+                                  ),
+                                  axes: <ChartAxis>[
+                                    NumericAxis(
+                                      name: 'secondaryYAxis',
+                                      title: AxisTitle(text: ''),
+                                      opposedPosition: true, // 오른쪽에 배치
+                                      numberFormat: NumberFormat.compact(),
+                                    ),
+                                  ],
+                                  tooltipBehavior: TooltipBehavior(
+                                    enable: true,
+                                    shared: true,
+                                    format: 'point.x : ₩point.y',
+                                  ),
+                                  legend: Legend(
+                                    isVisible: true,
+                                    position: LegendPosition.bottom,
+                                  ),
+                                  series: <CartesianSeries<_ChartData, String>>[
+                                    // 예측 지출 BarSeries (primaryYAxis에 매핑)
+                                    BarSeries<_ChartData, String>(
+                                      name: '예측',
+                                      dataSource: predictionData
+                                          .where(
+                                              (data) => data.seriesName == '예측')
+                                          .toList(),
+                                      xValueMapper: (_ChartData data, _) =>
+                                          data.category,
+                                      yValueMapper: (_ChartData data, _) =>
+                                          data.amount,
+                                      color: Colors.blue
+                                          .withOpacity(0.8), // 불투명도 적용
+                                      yAxisName: 'primaryYAxis',
+                                      dataLabelSettings: DataLabelSettings(
+                                        isVisible: true,
+                                        labelPosition:
+                                            ChartDataLabelPosition.outside,
+                                        textStyle: TextStyle(
+                                          color: Colors.black, // 텍스트 색상
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                      dataLabelMapper: (_ChartData data, _) =>
+                                          '₩${currencyFormat.format(data.amount)}',
+                                    ),
+                                    // 실제 지출 BarSeries (secondaryYAxis에 매핑)
+                                    BarSeries<_ChartData, String>(
+                                      name: '실제',
+                                      dataSource: predictionData
+                                          .where(
+                                              (data) => data.seriesName == '실제')
+                                          .toList(),
+                                      xValueMapper: (_ChartData data, _) =>
+                                          data.category,
+                                      yValueMapper: (_ChartData data, _) =>
+                                          data.amount,
+                                      color: Colors.red
+                                          .withOpacity(0.8), // 불투명도 적용
+                                      yAxisName: 'secondaryYAxis',
+                                      dataLabelSettings: DataLabelSettings(
+                                        isVisible: true,
+                                        labelPosition:
+                                            ChartDataLabelPosition.outside,
+                                        textStyle: TextStyle(
+                                          color: Colors.black, // 텍스트 색상
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                      dataLabelMapper: (_ChartData data, _) =>
+                                          '₩${currencyFormat.format(data.amount)}',
+                                    ),
+                                  ],
                                 ),
-                                dataLabelMapper: (_ChartData data, _) =>
-                                    '₩${currencyFormat.format(data.amount)}',
                               ),
-                            ],
+                            ),
                           ),
-                        ),
+                  ),
                 ],
               ),
       ),
