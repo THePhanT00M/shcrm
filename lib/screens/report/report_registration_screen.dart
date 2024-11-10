@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:file_picker/file_picker.dart'; // Import file_picker
 import '../../services/api_service.dart';
+import 'titleEdit.dart'; // Import the TitleEditScreen
 
 class ReportRegistrationScreen extends StatefulWidget {
   final int? reportId;
@@ -42,16 +43,22 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
   final TextEditingController _commentController = TextEditingController();
   bool _isCommentNotEmpty = false;
 
+  // New state variable for reportId
+  int? _reportId;
+
   @override
   void initState() {
     super.initState();
+    _reportId = widget.reportId; // Initialize _reportId with widget.reportId
     _fetchData();
 
     // Add listener to the comment controller
     _commentController.addListener(() {
-      setState(() {
-        _isCommentNotEmpty = _commentController.text.trim().isNotEmpty;
-      });
+      if (mounted) {
+        setState(() {
+          _isCommentNotEmpty = _commentController.text.trim().isNotEmpty;
+        });
+      }
     });
   }
 
@@ -61,36 +68,92 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
     super.dispose();
   }
 
-  void _initializeNewReport(String employeeId) {
+  // Updated _initializeNewReport method
+  Future<void> _initializeNewReport(String employeeId) async {
     setState(() {
-      isLoading = false;
-      // Initialize history list with a creation event
-      historyList.add({
-        'createdAt': DateTime.now().toIso8601String(),
-        'employeeId': {
-          'firstName': '홍',
-          'lastName': '길동',
-        },
-        'action': '보고서가 생성되었습니다.',
-      });
+      isLoading = true;
+      hasError = false;
     });
+
+    try {
+      final data = {
+        'title': '새 보고서',
+        'content': '새 보고서',
+        'status': 'PENDING',
+        'categoryId': 1,
+        'employeeId': employeeId,
+        'approvalRequestId': 2,
+      };
+
+      // Call the API to create a new report
+      final response = await ApiService.createReportData(data);
+
+      // Assuming the API returns the new report's ID
+      // Modify this based on your actual API response structure
+      final newReportId = response['reportId']; // Adjust key as necessary
+
+      if (newReportId != null) {
+        setState(() {
+          _reportId = newReportId;
+        });
+
+        // Now fetch the data for the newly created report
+        await _fetchData();
+      } else {
+        throw Exception('보고서 ID를 가져올 수 없습니다.');
+      }
+    } catch (e) {
+      _showError('보고서 생성 중 오류가 발생했습니다: $e');
+
+      // Navigate back to the previous page after showing the error
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
   }
 
   Future<void> _fetchData() async {
+    setState(() {
+      isLoading = true;
+      hasError = false;
+    });
+
     try {
       final employeeId = await _fetchEmployeeId();
       _employeeId = employeeId;
       if (employeeId != null) {
-        if (widget.reportId != null) {
+        if (_reportId != null) {
+          // Use _reportId instead of widget.reportId
           await _loadReportData(employeeId);
         } else {
-          _initializeNewReport(employeeId);
+          await _initializeNewReport(
+              employeeId); // Make sure to await the async method
         }
       } else {
         _showError('로그인 정보가 없습니다. 다시 로그인 해주세요.');
+        // Navigate back only if the widget is still mounted
+        if (mounted) {
+          Navigator.pop(context);
+        }
       }
     } catch (e) {
       _showError('오류가 발생했습니다: $e');
+      // Navigate back only if the widget is still mounted
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 
@@ -104,9 +167,14 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
   }
 
   Future<void> _loadReportData(String employeeId) async {
+    setState(() {
+      isLoading = true;
+      hasError = false;
+    });
+
     try {
       final data = await ApiService.fetchReportDetails(
-        widget.reportId!,
+        _reportId!, // Use _reportId here
         employeeId,
       );
 
@@ -148,17 +216,20 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
 
       // Initialize history list with existing history data if available
       if (data['historyData'] != null) {
+        // **Replace** the existing historyList with new data
         historyList = List<Map<String, dynamic>>.from(data['historyData']);
       } else {
         // 기본적으로 보고서 생성 이벤트 추가
-        historyList.add({
-          'createdAt': data['reportData']['createdAt'],
-          'employeeId': {
-            'firstName': data['reportData']['employeeId']['firstName'],
-            'lastName': data['reportData']['employeeId']['lastName'],
-          },
-          'action': '보고서가 생성되었습니다.',
-        });
+        historyList = [
+          {
+            'createdAt': data['reportData']['createdAt'],
+            'employeeId': {
+              'firstName': data['reportData']['employeeId']['firstName'],
+              'lastName': data['reportData']['employeeId']['lastName'],
+            },
+            'action': '보고서가 생성되었습니다.',
+          }
+        ];
       }
 
       setState(() {
@@ -167,10 +238,21 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
       });
     } catch (e) {
       _showError('데이터를 불러오지 못했습니다: $e');
+      // Navigate back only if the widget is still mounted
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 
   void _showError(String message) {
+    if (!mounted) return; // Ensure the widget is still mounted
     setState(() {
       isLoading = false;
       hasError = true;
@@ -221,6 +303,28 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
     setState(() {
       _selectedFiles.remove(file);
     });
+  }
+
+  // Optional: Implement a method to update the title on the backend
+  Future<void> _saveReportData() async {
+    final data = {
+      'reportId': _reportId, // Use _reportId instead of widget.reportId
+      'employeeId': _employeeId,
+      'title': _reportTitle,
+      'approvalRequestId': 2,
+    };
+
+    try {
+      await ApiService.updateReportData(data);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('보고서 제목이 업데이트되었습니다.')),
+      );
+    } catch (e) {
+      // Handle errors, possibly revert the title change
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('제목 업데이트에 실패했습니다: $e')),
+      );
+    }
   }
 
   @override
@@ -278,11 +382,47 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
                           color: Colors.white,
                         ),
                       ),
-                      SizedBox(width: 8),
-                      Icon(
-                        Icons.edit,
-                        color: Colors.white,
-                        size: 20,
+                      IconButton(
+                        icon: Icon(
+                          Icons.edit,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                        onPressed: () async {
+                          // Navigate to TitleEditScreen and await the result
+                          final updatedTitle = await Navigator.push(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder: (context, animation,
+                                      secondaryAnimation) =>
+                                  TitleEditScreen(currentTitle: _reportTitle),
+                              transitionsBuilder: (context, animation,
+                                  secondaryAnimation, child) {
+                                const begin = Offset(1.0, 0.0);
+                                const end = Offset.zero;
+                                const curve = Curves.easeInOut;
+                                final tween = Tween(begin: begin, end: end)
+                                    .chain(CurveTween(curve: curve));
+                                return SlideTransition(
+                                  position: animation.drive(tween),
+                                  child: child,
+                                );
+                              },
+                            ),
+                          );
+
+                          // If a new title was returned, update the state
+                          if (updatedTitle != null &&
+                              updatedTitle != _reportTitle) {
+                            if (mounted) {
+                              setState(() {
+                                _reportTitle = updatedTitle;
+                              });
+                            }
+                            // Optionally, update the title on the backend
+                            _saveReportData();
+                          }
+                        },
                       ),
                     ],
                   ),
@@ -385,7 +525,16 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
                 indicatorSize: TabBarIndicatorSize.tab,
                 tabs: [
                   Tab(icon: Icon(Icons.description)), // Paper icon
-                  Tab(icon: Icon(Icons.attach_file)), // Attachment icon
+                  Tab(
+                    icon: Transform.rotate(
+                      angle: 45 *
+                          3.1415926535897932 /
+                          180, // Rotate 45 degrees in radians
+                      child: Icon(
+                        Icons.attach_file,
+                      ),
+                    ),
+                  ), // Attachment icon
                   Tab(icon: Icon(Icons.history)), // History icon
                   Tab(icon: Icon(Icons.chat)), // Chat icon
                 ],
@@ -396,258 +545,19 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
               child: TabBarView(
                 children: [
                   // First Tab: Expenses
-                  ListView(
-                    padding: EdgeInsets.zero, // Remove default padding
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          border: Border(
-                            bottom: BorderSide(
-                              color: Colors
-                                  .grey[300]!, // 보더 색상 설정 (원하는 색상으로 변경 가능)
-                              width: 1.0, // 보더 두께 설정
-                            ),
-                          ),
-                        ),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                          vertical: 3.0,
-                        ), // Horizontal padding
-                        width: double.infinity, // Full width
-                        child: Text(
-                          "지출 ${totalExpenses}건",
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ),
-                      // Expenses by Date
-                      Container(
-                        alignment: Alignment.center,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: expensesByDate.keys.map((date) {
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                    vertical: 12.0,
-                                  ), // Vertical padding
-                                  child: Center(
-                                    child: Container(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 16.0,
-                                        vertical: 3.0,
-                                      ), // 패딩
-                                      decoration: BoxDecoration(
-                                        color: Colors
-                                            .grey[300], // 배경색을 보더와 동일하게 설정
-                                        borderRadius:
-                                            BorderRadius.circular(8.0), // 둥근 보더
-                                      ),
-                                      child: Text(
-                                        date.replaceAll('-', '.'),
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.grey[700],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                // List of Expenses for the Date
-                                ...expensesByDate[date]!.map((expense) {
-                                  return Container(
-                                    margin: EdgeInsets.symmetric(
-                                      horizontal: 16.0,
-                                      vertical: 5.0,
-                                    ), // Margin
-                                    padding: EdgeInsets.all(8.0), // 내부 패딩 추가
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(5.0),
-                                      border: Border.all(
-                                        color: Colors.grey[300]!,
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        // 왼쪽 영역: 이미지 및 텍스트
-                                        Row(
-                                          children: [
-                                            // 썸네일 이미지 또는 회색 배경
-                                            Container(
-                                              width: 50,
-                                              height: 50,
-                                              decoration: BoxDecoration(
-                                                color: expense['image'] != null
-                                                    ? Colors.transparent
-                                                    : Colors.grey[300],
-                                                borderRadius:
-                                                    BorderRadius.circular(5.0),
-                                                image: expense['image'] != null
-                                                    ? DecorationImage(
-                                                        image: NetworkImage(
-                                                            expense['image']),
-                                                        fit: BoxFit.cover,
-                                                      )
-                                                    : null,
-                                              ),
-                                            ),
-                                            SizedBox(width: 10),
-                                            // 식대비 및 merchantName
-                                            Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  '식대비', // 필요에 따라 동적으로 변경 가능
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.w500,
-                                                    color: Colors.black87,
-                                                  ),
-                                                ),
-                                                SizedBox(height: 4),
-                                                Text(
-                                                  expense['merchantName'] ??
-                                                      'N/A',
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Colors.black87,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                        // 오른쪽 영역: 금액
-                                        Text(
-                                          '₩${_formatNumber(expense['amount'] ?? 0)}',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w700,
-                                            color: Colors.black87,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }).toList(),
-                              ],
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    ],
-                  ),
-                  // Second Tab: Attachments
-                  ListView(
-                    padding: EdgeInsets.zero,
-                    children: [
-                      Container(
-                        color: Colors.grey[50],
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                          vertical: 3.0,
-                        ),
-                        width: double.infinity,
-                        child: Text(
-                          "첨부파일",
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white, // Background color
-                          border: Border(
-                            top: BorderSide(
-                              color: const Color.fromARGB(
-                                  255, 224, 224, 224), // Top border color
-                              width: 1.0, // Top border width
-                            ),
-                            bottom: BorderSide(
-                              color: const Color.fromARGB(
-                                  255, 224, 224, 224), // Bottom border color
-                              width: 1.0, // Bottom border width
-                            ),
-                          ),
-                        ),
-                        alignment: Alignment.center,
-                        padding: EdgeInsets.symmetric(
-                          vertical: 3.0,
-                        ), // Horizontal padding
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            GestureDetector(
-                              onTap:
-                                  _pickFile, // Function to handle file picking
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Transform.rotate(
-                                    angle: 45 *
-                                        3.1415926535897932 /
-                                        180, // Rotate 45 degrees in radians
-                                    child: Icon(
-                                      Icons.attach_file,
-                                      size: 13,
-                                      color: Colors.blue,
-                                    ),
-                                  ),
-                                  SizedBox(width: 3),
-                                  Text(
-                                    "파일 추가",
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: Colors.blue,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            // Display selected files
-                            ..._selectedFiles.map((file) {
-                              return ListTile(
-                                leading: Icon(Icons.insert_drive_file),
-                                title: Text(file.name),
-                                trailing: IconButton(
-                                  icon: Icon(Icons.delete, color: Colors.red),
-                                  onPressed: () => _removeFile(file),
-                                ),
-                              );
-                            }).toList(),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  // Third Tab: History
-                  ListView.builder(
-                    padding: EdgeInsets.zero,
-                    itemCount: historyList.length + 1, // +1 for header
-                    itemBuilder: (context, index) {
-                      if (index == 0) {
-                        return Container(
+                  RefreshIndicator(
+                    onRefresh: _fetchData,
+                    backgroundColor: Colors.white, // 배경색을 흰색으로 설정
+                    color: Color(0xFF009EB4), // 프로그레스 인디케이터의 색상 설정
+                    child: ListView(
+                      padding: EdgeInsets.zero, // Remove default padding
+                      children: [
+                        Container(
                           decoration: BoxDecoration(
                             color: Colors.grey[50],
                             border: Border(
                               bottom: BorderSide(
-                                color: Colors
-                                    .grey[300]!, // 보더 색상 설정 (원하는 색상으로 변경 가능)
+                                color: Colors.grey[300]!, // 보더 색상 설정
                                 width: 1.0, // 보더 두께 설정
                               ),
                             ),
@@ -655,274 +565,535 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
                           padding: EdgeInsets.symmetric(
                             horizontal: 16.0,
                             vertical: 3.0,
-                          ),
-                          width: double.infinity,
+                          ), // Horizontal padding
+                          width: double.infinity, // Full width
                           child: Text(
-                            "히스토리",
+                            "지출 ${totalExpenses}건",
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
                               color: Colors.grey[600],
                             ),
                           ),
-                        );
-                      }
-                      final history = historyList[index - 1];
-                      final dateTime =
-                          DateTime.parse(history['createdAt']).toLocal();
-
-                      // 연, 월, 일, 시, 분 추출
-                      final year = dateTime.year;
-                      final month = dateTime.month;
-                      final day = dateTime.day;
-                      final hour = dateTime.hour;
-                      final minute = dateTime.minute;
-
-                      // 두 자릿수로 포맷 (필요 시)
-                      String twoDigits(int n) => n.toString().padLeft(2, '0');
-
-                      // 포맷된 문자열 생성
-                      final createdAt =
-                          '$year.${twoDigits(month)}.${twoDigits(day)} ${twoDigits(hour)}:${twoDigits(minute)}';
-
-                      final firstName =
-                          history['employeeId']['firstName'] ?? '';
-                      final lastName = history['employeeId']['lastName'] ?? '';
-                      final action = history['action'] ?? '';
-
-                      return Container(
-                        color: Colors.white, // 각 아이템의 배경색을 흰색으로 설정
-                        child: ListTile(
-                          tileColor: Colors.white, // ListTile의 배경색을 흰색으로 설정
-                          leading: CircleAvatar(
-                            child: Icon(Icons.person, color: Colors.white),
-                            backgroundColor:
-                                const Color.fromARGB(255, 227, 227, 227),
-                          ),
-                          title: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '$createdAt      $firstName$lastName',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.grey[700],
-                                ),
-                              ),
-                              Text(
-                                action,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black,
-                                ),
-                              ),
-                            ],
-                          ),
                         ),
-                      );
-                    },
-                  ),
-
-                  // Fourth Tab: Comments
-                  Column(
-                    children: [
-                      Expanded(
-                        child: ListView.builder(
-                          padding: EdgeInsets.zero,
-                          itemCount: commentsList.length + 1, // +1 for header
-                          itemBuilder: (context, index) {
-                            if (index == 0) {
-                              return Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[50],
-                                  border: Border(
-                                    bottom: BorderSide(
-                                      color: Colors.grey[300]!, // Border color
-                                      width: 1.0, // Border width
-                                    ),
-                                  ),
-                                ),
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 16.0,
-                                  vertical: 3.0,
-                                ),
-                                width: double.infinity,
-                                child: Text(
-                                  "코멘트",
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                              );
-                            }
-
-                            final comment = commentsList[index - 1];
-                            final dateTime =
-                                DateTime.parse(comment['createdAt']).toLocal();
-
-                            // 날짜 및 시간 포맷팅
-                            String twoDigits(int n) =>
-                                n.toString().padLeft(2, '0');
-                            final createdAt =
-                                '${dateTime.year}.${twoDigits(dateTime.month)}.${twoDigits(dateTime.day)} ${twoDigits(dateTime.hour)}:${twoDigits(dateTime.minute)}';
-
-                            final firstName =
-                                comment['employeeId']['firstName'] ?? '';
-                            final lastName =
-                                comment['employeeId']['lastName'] ?? '';
-                            final content = comment['content'] ?? '';
-
-                            return Container(
-                              color: Colors.white,
-                              child: ListTile(
-                                leading: CircleAvatar(
-                                  child:
-                                      Icon(Icons.person, color: Colors.white),
-                                  backgroundColor:
-                                      const Color.fromARGB(255, 227, 227, 227),
-                                ),
-                                title: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '$createdAt      $firstName$lastName',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: Colors.grey[700],
+                        // Expenses by Date
+                        Container(
+                          alignment: Alignment.center,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: expensesByDate.keys.map((date) {
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: 12.0,
+                                    ), // Vertical padding
+                                    child: Center(
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 16.0,
+                                          vertical: 3.0,
+                                        ), // 패딩
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[300], // 배경색 설정
+                                          borderRadius: BorderRadius.circular(
+                                              8.0), // 둥근 보더
+                                        ),
+                                        child: Text(
+                                          date.replaceAll('-', '.'),
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.grey[700],
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                    SizedBox(height: 4),
+                                  ),
+                                  // List of Expenses for the Date
+                                  ...expensesByDate[date]!.map((expense) {
+                                    return Container(
+                                      margin: EdgeInsets.symmetric(
+                                        horizontal: 16.0,
+                                        vertical: 5.0,
+                                      ), // Margin
+                                      padding: EdgeInsets.all(8.0), // 내부 패딩 추가
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius:
+                                            BorderRadius.circular(5.0),
+                                        border: Border.all(
+                                          color: Colors.grey[300]!,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          // 왼쪽 영역: 이미지 및 텍스트
+                                          Row(
+                                            children: [
+                                              // 썸네일 이미지 또는 회색 배경
+                                              Container(
+                                                width: 50,
+                                                height: 50,
+                                                decoration: BoxDecoration(
+                                                  color:
+                                                      expense['image'] != null
+                                                          ? Colors.transparent
+                                                          : Colors.grey[300],
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          5.0),
+                                                  image: expense['image'] !=
+                                                          null
+                                                      ? DecorationImage(
+                                                          image: NetworkImage(
+                                                              expense['image']),
+                                                          fit: BoxFit.cover,
+                                                        )
+                                                      : null,
+                                                ),
+                                              ),
+                                              SizedBox(width: 10),
+                                              // 식대비 및 merchantName
+                                              Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    '식대비', // 필요에 따라 동적으로 변경 가능
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color: Colors.black87,
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 4),
+                                                  Text(
+                                                    expense['merchantName'] ??
+                                                        'N/A',
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      color: Colors.black87,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          // 오른쪽 영역: 금액
+                                          Text(
+                                            '₩${_formatNumber(expense['amount'] ?? 0)}',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w700,
+                                              color: Colors.black87,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
+                                ],
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Second Tab: Attachments
+                  RefreshIndicator(
+                    onRefresh: _fetchData,
+                    backgroundColor: Colors.white, // 배경색을 흰색으로 설정
+                    color: Color(0xFF009EB4), // 프로그레스 인디케이터의 색상 설정
+                    child: ListView(
+                      padding: EdgeInsets.zero,
+                      children: [
+                        Container(
+                          color: Colors.grey[50],
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                            vertical: 3.0,
+                          ),
+                          width: double.infinity,
+                          child: Text(
+                            "첨부파일",
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white, // Background color
+                            border: Border(
+                              top: BorderSide(
+                                color: const Color.fromARGB(
+                                    255, 224, 224, 224), // Top border color
+                                width: 1.0, // Top border width
+                              ),
+                              bottom: BorderSide(
+                                color: const Color.fromARGB(
+                                    255, 224, 224, 224), // Bottom border color
+                                width: 1.0, // Bottom border width
+                              ),
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          padding: EdgeInsets.symmetric(
+                            vertical: 3.0,
+                          ), // Horizontal padding
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              GestureDetector(
+                                onTap:
+                                    _pickFile, // Function to handle file picking
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Transform.rotate(
+                                      angle: 45 *
+                                          3.1415926535897932 /
+                                          180, // Rotate 45 degrees in radians
+                                      child: Icon(
+                                        Icons.attach_file,
+                                        size: 13,
+                                        color: Colors.blue,
+                                      ),
+                                    ),
+                                    SizedBox(width: 3),
                                     Text(
-                                      content,
+                                      "파일 추가",
                                       style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.black,
+                                        fontSize: 11,
+                                        color: Colors.blue,
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                            );
-                          },
+                              // Display selected files
+                              ..._selectedFiles.map((file) {
+                                return ListTile(
+                                  leading: Icon(Icons.insert_drive_file),
+                                  title: Text(file.name),
+                                  trailing: IconButton(
+                                    icon: Icon(Icons.delete, color: Colors.red),
+                                    onPressed: () => _removeFile(file),
+                                  ),
+                                );
+                              }).toList(),
+                            ],
+                          ),
                         ),
-                      ),
+                      ],
+                    ),
+                  ),
+                  // Third Tab: History
+                  RefreshIndicator(
+                    onRefresh: _fetchData,
+                    backgroundColor: Colors.white, // 배경색을 흰색으로 설정
+                    color: Color(0xFF009EB4), // 프로그레스 인디케이터의 색상 설정
+                    child: ListView.builder(
+                      padding: EdgeInsets.zero,
+                      itemCount: historyList.length + 1, // +1 for header
+                      itemBuilder: (context, index) {
+                        if (index == 0) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: Colors.grey[300]!, // 보더 색상 설정
+                                  width: 1.0, // 보더 두께 설정
+                                ),
+                              ),
+                            ),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 3.0,
+                            ),
+                            width: double.infinity,
+                            child: Text(
+                              "히스토리",
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          );
+                        }
+                        final history = historyList[index - 1];
+                        final dateTime =
+                            DateTime.parse(history['createdAt']).toLocal();
 
-                      // 입력 필드와 등록 버튼
-                      Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        child: Row(
-                          children: [
-                            // 입력 필드
-                            Expanded(
-                              child: Container(
-                                height: 35.0, // 입력 필드 높이 축소
-                                decoration: BoxDecoration(
+                        // 연, 월, 일, 시, 분 추출
+                        final year = dateTime.year;
+                        final month = dateTime.month;
+                        final day = dateTime.day;
+                        final hour = dateTime.hour;
+                        final minute = dateTime.minute;
+
+                        // 두 자릿수로 포맷 (필요 시)
+                        String twoDigits(int n) => n.toString().padLeft(2, '0');
+
+                        // 포맷된 문자열 생성
+                        final createdAt =
+                            '$year.${twoDigits(month)}.${twoDigits(day)} ${twoDigits(hour)}:${twoDigits(minute)}';
+
+                        final firstName =
+                            history['employeeId']['firstName'] ?? '';
+                        final lastName =
+                            history['employeeId']['lastName'] ?? '';
+                        final action = history['action'] ?? '';
+
+                        return Container(
+                          color: Colors.white, // 각 아이템의 배경색을 흰색으로 설정
+                          child: ListTile(
+                            tileColor: Colors.white, // ListTile의 배경색을 흰색으로 설정
+                            leading: CircleAvatar(
+                              child: Icon(Icons.person, color: Colors.white),
+                              backgroundColor:
+                                  const Color.fromARGB(255, 227, 227, 227),
+                            ),
+                            title: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '$createdAt      $firstName$lastName',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                                Text(
+                                  action,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  // Fourth Tab: Comments
+                  RefreshIndicator(
+                    onRefresh: _fetchData,
+                    backgroundColor: Colors.white, // 배경색을 흰색으로 설정
+                    color: Color(0xFF009EB4), // 프로그레스 인디케이터의 색상 설정
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: ListView.builder(
+                            padding: EdgeInsets.zero,
+                            itemCount: commentsList.length + 1, // +1 for header
+                            itemBuilder: (context, index) {
+                              if (index == 0) {
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[50],
                                     border: Border(
-                                      top: BorderSide(color: Color(0xFFA3A3A3)),
-                                      bottom:
-                                          BorderSide(color: Color(0xFFA3A3A3)),
-                                      left:
-                                          BorderSide(color: Color(0xFFA3A3A3)),
-                                      // 오른쪽 테두리 제거
+                                      bottom: BorderSide(
+                                        color:
+                                            Colors.grey[300]!, // Border color
+                                        width: 1.0, // Border width
+                                      ),
+                                    ),
+                                  ),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 16.0,
+                                    vertical: 3.0,
+                                  ),
+                                  width: double.infinity,
+                                  child: Text(
+                                    "코멘트",
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              final comment = commentsList[index - 1];
+                              final dateTime =
+                                  DateTime.parse(comment['createdAt'])
+                                      .toLocal();
+
+                              // 날짜 및 시간 포맷팅
+                              String twoDigits(int n) =>
+                                  n.toString().padLeft(2, '0');
+                              final createdAt =
+                                  '${dateTime.year}.${twoDigits(dateTime.month)}.${twoDigits(dateTime.day)} ${twoDigits(dateTime.hour)}:${twoDigits(dateTime.minute)}';
+
+                              final firstName =
+                                  comment['employeeId']['firstName'] ?? '';
+                              final lastName =
+                                  comment['employeeId']['lastName'] ?? '';
+                              final content = comment['content'] ?? '';
+
+                              return Container(
+                                color: Colors.white,
+                                child: ListTile(
+                                  leading: CircleAvatar(
+                                    child:
+                                        Icon(Icons.person, color: Colors.white),
+                                    backgroundColor: const Color.fromARGB(
+                                        255, 227, 227, 227),
+                                  ),
+                                  title: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '$createdAt      $firstName$lastName',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.grey[700],
+                                        ),
+                                      ),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        content,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+
+                        // 입력 필드와 등록 버튼
+                        Padding(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          child: Row(
+                            children: [
+                              // 입력 필드
+                              Expanded(
+                                child: Container(
+                                  height: 35.0, // 입력 필드 높이 축소
+                                  decoration: BoxDecoration(
+                                      border: Border(
+                                        top: BorderSide(
+                                            color: Color(0xFFA3A3A3)),
+                                        bottom: BorderSide(
+                                            color: Color(0xFFA3A3A3)),
+                                        left: BorderSide(
+                                            color: Color(0xFFA3A3A3)),
+                                        // 오른쪽 테두리 제거
+                                      ),
+                                      borderRadius: BorderRadius.only(
+                                        topLeft:
+                                            Radius.circular(5.0), // 왼쪽 상단 곡선
+                                        bottomLeft:
+                                            Radius.circular(5.0), // 왼쪽 하단 곡선
+                                      ),
+                                      color: Colors.white),
+                                  child: TextField(
+                                    controller: _commentController,
+                                    style: TextStyle(
+                                      fontSize: 14.0, // 입력 텍스트 폰트 크기 조절
+                                      decoration:
+                                          TextDecoration.none, // 텍스트 장식 제거
+                                      color: Colors.black, // 텍스트 색상
+                                    ),
+                                    decoration: InputDecoration(
+                                      hintText: '내용을 입력해주세요',
+                                      hintStyle: TextStyle(
+                                        fontSize: 12.0, // hintText 폰트 크기 축소
+                                        color: Colors.grey[600], // hintText 색상
+                                        decoration: TextDecoration
+                                            .none, // hintText 장식 제거
+                                      ),
+                                      border:
+                                          InputBorder.none, // TextField 보더 제거
+                                      contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 10.0,
+                                        vertical: 12.0,
+                                      ), // 패딩 조정
+                                      counterText: '', // 최대 글자 수 카운터 숨기기
+                                    ),
+                                    maxLength: 200, // 최대 200자 입력 제한
+                                  ),
+                                ),
+                              ),
+                              // 등록 버튼
+                              GestureDetector(
+                                onTap: _isCommentNotEmpty
+                                    ? () {
+                                        // Implement comment submission logic here
+                                        _submitComment(_commentController.text);
+                                        // After submission, clear the text field
+                                      }
+                                    : null, // 버튼 활성화 조건 수정
+                                child: Container(
+                                  height: 35.0, // 입력 필드와 동일한 높이
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      top: BorderSide(
+                                        color: _isCommentNotEmpty
+                                            ? Colors.blueAccent
+                                            : Color(0xFFA3A3A3),
+                                      ),
+                                      bottom: BorderSide(
+                                        color: _isCommentNotEmpty
+                                            ? Colors.blueAccent
+                                            : Color(0xFFA3A3A3),
+                                      ),
+                                      right: BorderSide(
+                                        color: _isCommentNotEmpty
+                                            ? Colors.blueAccent
+                                            : Color(0xFFA3A3A3),
+                                      ),
                                     ),
                                     borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(5.0), // 왼쪽 상단 곡선
-                                      bottomLeft:
-                                          Radius.circular(5.0), // 왼쪽 하단 곡선
+                                      topRight:
+                                          Radius.circular(5.0), // 오른쪽 상단 곡선
+                                      bottomRight:
+                                          Radius.circular(5.0), // 오른쪽 하단 곡선
                                     ),
-                                    color: Colors.white),
-                                child: TextField(
-                                  controller: _commentController,
-                                  style: TextStyle(
-                                    fontSize:
-                                        14.0, // 입력 텍스트 폰트 크기 조절 (원하는 크기로 변경 가능)
-                                    decoration:
-                                        TextDecoration.none, // 텍스트 장식 제거
-                                    color: Colors.black, // 텍스트 색상 (필요 시 추가)
+                                    color: _isCommentNotEmpty
+                                        ? Colors.blueAccent // 활성화 시 배경색
+                                        : Colors.grey, // 비활성화 시 회색
                                   ),
-                                  decoration: InputDecoration(
-                                    hintText: '내용을 입력해주세요',
-                                    hintStyle: TextStyle(
-                                      fontSize: 12.0, // hintText 폰트 크기 축소
-                                      color: Colors
-                                          .grey[600], // hintText 색상 (선택 사항)
-                                      decoration: TextDecoration
-                                          .none, // hintText 장식 제거 (필요 시)
-                                    ),
-                                    border: InputBorder.none, // TextField 보더 제거
-                                    contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 10.0,
-                                      vertical: 12.0,
-                                    ), // 패딩 조정
-                                    counterText:
-                                        '', // 최대 글자 수 카운터 숨기기 (maxLength 사용 시)
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
+                                  alignment: Alignment.center, // 텍스트 수직 중앙 정렬
+                                  child: Text(
+                                    '등록',
+                                    style: TextStyle(
+                                        color: Colors.white, // 텍스트 색상 흰색
+                                        fontSize: 12),
                                   ),
-                                  maxLength: 200, // 최대 200자 입력 제한
                                 ),
                               ),
-                            ),
-                            // 등록 버튼
-                            GestureDetector(
-                              onTap: _isCommentNotEmpty
-                                  ? () {
-                                      // Implement comment submission logic here
-                                      // For example:
-                                      // _submitComment(_commentController.text);
-                                      // After submission, clear the text field
-                                      // setState(() {
-                                      //   _commentController.clear();
-                                      //   // Optionally, add the new comment to commentsList
-                                      // });
-                                    }
-                                  : null, // 버튼 활성화 조건 수정
-                              child: Container(
-                                height: 35.0, // 입력 필드와 동일한 높이
-                                decoration: BoxDecoration(
-                                  border: Border(
-                                    top: BorderSide(
-                                      color: _isCommentNotEmpty
-                                          ? Colors.blueAccent
-                                          : Color(0xFFA3A3A3),
-                                    ),
-                                    bottom: BorderSide(
-                                      color: _isCommentNotEmpty
-                                          ? Colors.blueAccent
-                                          : Color(0xFFA3A3A3),
-                                    ),
-                                    right: BorderSide(
-                                      color: _isCommentNotEmpty
-                                          ? Colors.blueAccent
-                                          : Color(0xFFA3A3A3),
-                                    ),
-                                  ),
-                                  borderRadius: BorderRadius.only(
-                                    topRight: Radius.circular(5.0), // 오른쪽 상단 곡선
-                                    bottomRight:
-                                        Radius.circular(5.0), // 오른쪽 하단 곡선
-                                  ),
-                                  color: _isCommentNotEmpty
-                                      ? Colors.blueAccent // 활성화 시 배경색 #adadad
-                                      : Colors.grey, // 비활성화 시 회색
-                                ),
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 5),
-                                alignment: Alignment.center, // 텍스트 수직 중앙 정렬
-                                child: Text(
-                                  '등록',
-                                  style: TextStyle(
-                                      color: Colors.white, // 텍스트 색상 흰색
-
-                                      fontSize: 12),
-                                ),
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -951,5 +1122,50 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
     }
 
     return formattedNumber;
+  }
+
+  // Example comment submission method (optional)
+  Future<void> _submitComment(String content) async {
+    if (content.trim().isEmpty) return;
+
+    setState(() {
+      isLoading = true;
+      hasError = false;
+    });
+
+    try {
+      final data = {
+        'reportId': _reportId,
+        'employeeId': _employeeId,
+        'content': content,
+      };
+
+      await ApiService.submitComment(data);
+
+      // Optionally, fetch the updated comments list
+      await _loadComments();
+
+      // Clear the comment input field
+      if (mounted) {
+        setState(() {
+          _commentController.clear();
+        });
+      }
+    } catch (e) {
+      _showError('코멘트 제출 중 오류가 발생했습니다: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
+  // Optional: Implement a method to load comments
+  Future<void> _loadComments() async {
+    try {} catch (e) {
+      _showError('코멘트를 불러오는 중 오류가 발생했습니다: $e');
+    }
   }
 }

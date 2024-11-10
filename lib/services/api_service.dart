@@ -302,20 +302,77 @@ class ApiService {
     }
   }
 
-  static Future<Map<String, dynamic>> submitComment(
-      int reportId, String employeeId, String comment) async {
+  static Future<Map<String, dynamic>> createReportData(
+      Map<String, dynamic> data) async {
     try {
-      print(reportId);
+      final response = await http.post(
+        Uri.parse('$_baseUrl/report/create'),
+        headers: _headers,
+        body: json.encode(data),
+      );
 
-      final body = json.encode({
-        'reportId': reportId,
-        'employeeId': employeeId,
-      });
+      print('보고서 신규 생성');
 
+      if (response.statusCode == 200) {
+        // 성공적으로 업데이트된 경우 처리
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final responseData = json.decode(decodedBody);
+
+        if (responseData['resultCode'] == 'SUCCESS' &&
+            responseData['result'] != null) {
+          return {
+            'reportId': responseData['result'],
+          };
+        } else {
+          throw Exception('Error: ${responseData['resultMsg']}');
+        }
+      } else {
+        // 오류 처리
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final responseJson = json.decode(decodedBody);
+        final resultMsgBytes = (responseJson['resultMsg'] as String).codeUnits;
+        final decodedResultMsg = utf8.decode(resultMsgBytes);
+        throw Exception(
+            'Error: ${response.statusCode}, Message: $decodedResultMsg');
+      }
+    } catch (e) {
+      print('Failed to update expense data: $e');
+      throw Exception('Error updating expense data');
+    }
+  }
+
+  static Future<void> updateReportData(Map<String, dynamic> data) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/report/update'),
+        headers: _headers,
+        body: json.encode(data),
+      );
+
+      if (response.statusCode == 200) {
+        // 성공적으로 업데이트된 경우 처리
+      } else {
+        // 오류 처리
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final responseJson = json.decode(decodedBody);
+        final resultMsgBytes = (responseJson['resultMsg'] as String).codeUnits;
+        final decodedResultMsg = utf8.decode(resultMsgBytes);
+        throw Exception(
+            'Error: ${response.statusCode}, Message: $decodedResultMsg');
+      }
+    } catch (e) {
+      print('Failed to update expense data: $e');
+      throw Exception('Error updating expense data');
+    }
+  }
+
+  static Future<Map<String, dynamic>> submitComment(
+      Map<String, dynamic> data) async {
+    try {
       final response = await http.post(
         Uri.parse('$_baseUrl/report/find'),
         headers: _headers,
-        body: body,
+        body: json.encode(data),
       );
 
       if (response.statusCode == 200) {

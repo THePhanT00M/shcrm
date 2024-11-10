@@ -38,9 +38,6 @@ class _ReportsPageState extends State<ReportsPage> {
   }
 
   Future<void> _refreshData() async {
-    setState(() {
-      isLoading = true;
-    });
     await _fetchData();
   }
 
@@ -56,6 +53,7 @@ class _ReportsPageState extends State<ReportsPage> {
   Future<void> _loadReportsData(String employeeId) async {
     try {
       final data = await ApiService.fetchReportsData(employeeId);
+      if (!mounted) return; // Ensure the widget is still mounted
       setState(() {
         reportsData = data;
         isLoading = false;
@@ -66,6 +64,7 @@ class _ReportsPageState extends State<ReportsPage> {
   }
 
   void _showError(String message) {
+    if (!mounted) return; // Check if the widget is still mounted
     setState(() {
       isLoading = false;
       hasError = true;
@@ -73,6 +72,12 @@ class _ReportsPageState extends State<ReportsPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
+  }
+
+  @override
+  void dispose() {
+    // Clean up any resources if needed
+    super.dispose();
   }
 
   @override
@@ -186,19 +191,24 @@ class _ReportsPageState extends State<ReportsPage> {
   }
 
   Widget _buildReportsList() {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 70),
-      child: ListView.builder(
-        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-        itemCount: reportsData.length,
-        itemBuilder: (context, index) {
-          final report = reportsData[index];
-          return CustomCard(
-            reportId: report['reportId']!,
-            status: report['status']!,
-            title: report['title']!,
-          );
-        },
+    return RefreshIndicator(
+      onRefresh: _refreshData,
+      backgroundColor: Colors.white, // 배경색을 흰색으로 설정
+      color: Color(0xFF009EB4), // 프로그레스 인디케이터의 색상 설정
+      child: Padding(
+        padding: EdgeInsets.only(bottom: 70),
+        child: ListView.builder(
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+          itemCount: reportsData.length,
+          itemBuilder: (context, index) {
+            final report = reportsData[index];
+            return CustomCard(
+              reportId: report['reportId']!,
+              status: report['status']!,
+              title: report['title']!,
+            );
+          },
+        ),
       ),
     );
   }
@@ -240,7 +250,9 @@ class CustomCard extends StatelessWidget {
         );
 
         // 새로 고침 실행
-        if (result == true) {
+        if (result == true &&
+            context.findAncestorStateOfType<_ReportsPageState>()?.mounted ==
+                true) {
           context.findAncestorStateOfType<_ReportsPageState>()?._refreshData();
         }
       },
