@@ -11,6 +11,15 @@ import '../../services/category.dart';
 import '../../services/report.dart';
 import 'package:http/http.dart' as http; // 추가
 import 'package:path/path.dart' as path; // 추가
+import 'package:intl/intl.dart'; // 추가
+
+// 매핑 상수 정의
+const Map<String, String> paymentMethodMap = {
+  'CASH': '현금',
+  'CARD': '카드',
+  'TRANFER': '계좌이체',
+  'OTHER': '기타',
+};
 
 class ReceiptRegistrationScreen extends StatefulWidget {
   final int? expenseId; // 선택적 expenseId로 변경
@@ -35,7 +44,7 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
   int? _categoryId;
 
   String _expenseMethod = '카드';
-  String _expenseValue = 'CASH';
+  String _expenseValue = 'CARD';
   Icon? _expenseIcon = Icon(Icons.money, color: Colors.grey);
 
   String _selectedReport = '보고서 선택';
@@ -99,6 +108,10 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
       _categoryId = null;
       _selectedCategory = '카테고리 선택';
 
+      // paymentMethod 기본값 설정
+      _expenseValue = 'CARD'; // 'CARD'를 기본값으로 설정
+      _expenseMethod = paymentMethodMap[_expenseValue] ?? '카드';
+
       isLoading = false;
     });
   }
@@ -150,7 +163,11 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
         // 카테고리 데이터 업데이트
         _categoryId = data['categoryId'];
         _selectedCategory = data['categoryName'] ?? '카테고리 선택';
-        _expenseMethod = data['paymentMethod'] ?? '현금';
+
+        // paymentMethod 매핑 적용
+        _expenseValue = data['paymentMethod'] ?? 'CASH'; // 'CASH'를 기본값으로 설정
+        _expenseMethod =
+            paymentMethodMap[_expenseValue] ?? '현금'; // 매핑을 통해 텍스트 설정
 
         _selectedReport = data['reportTitle'] ?? '보고서 선택';
         _reportId = data['reportId'];
@@ -251,13 +268,29 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
             List<dynamic> transactionDates = ocrResult['거래일시'];
             if (transactionDates.isNotEmpty) {
               String firstDate = transactionDates[0];
-              DateTime parsedDate = DateTime.parse(firstDate);
+              // 점(.)을 하이픈(-)으로 교체
+              firstDate = firstDate.replaceAll('.', '-');
+              DateTime parsedDate;
+              try {
+                parsedDate = DateTime.parse(firstDate);
+              } catch (e) {
+                // intl 패키지 사용
+                DateFormat format = DateFormat('yyyy-MM-dd');
+                parsedDate = format.parse(firstDate);
+              }
               setState(() {
                 _selectedDate = parsedDate;
                 _dateController.text =
                     '${parsedDate.year}-${parsedDate.month.toString().padLeft(2, '0')}-${parsedDate.day.toString().padLeft(2, '0')}';
               });
             }
+          }
+
+          // paymentMethod 추출 및 설정 (필요 시)
+          if (jsonResponse.containsKey('paymentMethod')) {
+            _expenseValue = jsonResponse['paymentMethod'] ?? 'CASH';
+            _expenseMethod = paymentMethodMap[_expenseValue] ?? '현금';
+            setState(() {});
           }
         } else {
           print('서버 오류: ${response.statusCode}');

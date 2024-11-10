@@ -118,6 +118,8 @@ class ApiService {
         final decodedBody = utf8.decode(response.bodyBytes);
         final responseData = json.decode(decodedBody);
 
+        print(responseData['result']);
+
         if (responseData['resultCode'] == 'SUCCESS' &&
             responseData['result'] != null) {
           return {
@@ -126,6 +128,7 @@ class ApiService {
             'merchantName': responseData['result']['merchantName'],
             'address': responseData['result']['address'],
             'expenseDate': responseData['result']['expenseDate'],
+            'paymentMethod': responseData['result']['paymentMethod'],
             'image': responseData['result']['attachmentId'] != null &&
                     responseData['result']['attachmentId']
                         is Map<String, dynamic>
