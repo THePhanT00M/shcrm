@@ -32,7 +32,7 @@ class _StatisticsState extends State<Statistics> {
   List<PaymentMethodData> barChartData = [];
 
   // 비용 예측 데이터를 저장할 리스트
-  List<PredictionData> predictionData = [];
+  List<_ChartData> predictionData = [];
 
   bool isLoading = true;
   String currentMonth = "2024-11"; // 현재 월을 설정
@@ -159,15 +159,20 @@ class _StatisticsState extends State<Statistics> {
         final Map<String, dynamic> predictedUsage = data['예측_사용량'];
         final Map<String, dynamic> actualUsage = data['실제_11월_사용량'];
 
-        // Combine predicted and actual usage into PredictionData list
-        List<PredictionData> combinedData = [];
+        // Combine predicted and actual usage into _ChartData list
+        List<_ChartData> combinedData = [];
 
         predictedUsage.forEach((key, value) {
           double actual = actualUsage[key]?.toDouble() ?? 0.0;
-          combinedData.add(PredictionData(
+          combinedData.add(_ChartData(
             category: key,
-            predictedAmount: (value as num).toDouble(),
-            actualAmount: actual,
+            amount: (value as num).toDouble(),
+            seriesName: '예측',
+          ));
+          combinedData.add(_ChartData(
+            category: key,
+            amount: actual,
+            seriesName: '실제',
           ));
         });
 
@@ -285,6 +290,9 @@ class _StatisticsState extends State<Statistics> {
                                 dataLabelSettings: DataLabelSettings(
                                   isVisible: true,
                                   labelPosition: ChartDataLabelPosition.outside,
+                                  textStyle: TextStyle(
+                                      color: Colors.black, // Changed to black
+                                      fontSize: 10),
                                 ),
                                 dataLabelMapper: (PaymentMethodData data, _) =>
                                     '₩${currencyFormat.format(data.amount)}',
@@ -307,14 +315,22 @@ class _StatisticsState extends State<Statistics> {
                           padding: const EdgeInsets.all(0),
                           child: SfCartesianChart(
                             backgroundColor: Colors.white,
-                            title: ChartTitle(text: '비용 예측'),
+                            title: ChartTitle(text: ''),
                             primaryXAxis: CategoryAxis(
                               title: AxisTitle(text: '카테고리'),
                             ),
                             primaryYAxis: NumericAxis(
-                              title: AxisTitle(text: '금액 (₩)'),
+                              title: AxisTitle(text: '예상 지출 (₩)'),
                               numberFormat: NumberFormat.compact(),
                             ),
+                            axes: <ChartAxis>[
+                              NumericAxis(
+                                name: 'secondaryYAxis',
+                                title: AxisTitle(text: '실제 지출 (₩)'),
+                                opposedPosition: true, // Position on the right
+                                numberFormat: NumberFormat.compact(),
+                              ),
+                            ],
                             tooltipBehavior: TooltipBehavior(
                               enable: true,
                               shared: true,
@@ -324,44 +340,54 @@ class _StatisticsState extends State<Statistics> {
                               isVisible: true,
                               position: LegendPosition.bottom,
                             ),
-                            series: <CartesianSeries>[
-                              ColumnSeries<PredictionData, String>(
+                            series: <CartesianSeries<_ChartData, String>>[
+                              // 예측 지출 BarSeries mapped to primaryYAxis
+                              BarSeries<_ChartData, String>(
                                 name: '예측',
-                                dataSource: predictionData,
-                                xValueMapper: (PredictionData data, _) =>
+                                dataSource: predictionData
+                                    .where((data) => data.seriesName == '예측')
+                                    .toList(),
+                                xValueMapper: (_ChartData data, _) =>
                                     data.category,
-                                yValueMapper: (PredictionData data, _) =>
-                                    data.predictedAmount,
-                                color: Colors.blue,
+                                yValueMapper: (_ChartData data, _) =>
+                                    data.amount,
+                                color: Colors.blue
+                                    .withOpacity(0.8), // Applied opacity
+                                yAxisName:
+                                    'primaryYAxis', // Maps to primary Y-axis
                                 dataLabelSettings: DataLabelSettings(
                                   isVisible: true,
                                   labelPosition: ChartDataLabelPosition.outside,
                                   textStyle: TextStyle(
-                                      color: Colors.white, fontSize: 10),
-                                  labelAlignment: ChartDataLabelAlignment
-                                      .middle, // Corrected
+                                      color: Colors.black, // Changed to black
+                                      fontSize: 10),
                                 ),
-                                dataLabelMapper: (PredictionData data, _) =>
-                                    '₩${currencyFormat.format(data.predictedAmount)}',
+                                dataLabelMapper: (_ChartData data, _) =>
+                                    '₩${currencyFormat.format(data.amount)}',
                               ),
-                              ColumnSeries<PredictionData, String>(
+                              // 실제 지출 BarSeries mapped to secondaryYAxis
+                              BarSeries<_ChartData, String>(
                                 name: '실제',
-                                dataSource: predictionData,
-                                xValueMapper: (PredictionData data, _) =>
+                                dataSource: predictionData
+                                    .where((data) => data.seriesName == '실제')
+                                    .toList(),
+                                xValueMapper: (_ChartData data, _) =>
                                     data.category,
-                                yValueMapper: (PredictionData data, _) =>
-                                    data.actualAmount,
-                                color: Colors.red,
+                                yValueMapper: (_ChartData data, _) =>
+                                    data.amount,
+                                color: Colors.red
+                                    .withOpacity(0.8), // Applied opacity
+                                yAxisName:
+                                    'secondaryYAxis', // Maps to secondary Y-axis
                                 dataLabelSettings: DataLabelSettings(
                                   isVisible: true,
                                   labelPosition: ChartDataLabelPosition.outside,
                                   textStyle: TextStyle(
-                                      color: Colors.white, fontSize: 10),
-                                  labelAlignment: ChartDataLabelAlignment
-                                      .middle, // Corrected
+                                      color: Colors.black, // Changed to black
+                                      fontSize: 10),
                                 ),
-                                dataLabelMapper: (PredictionData data, _) =>
-                                    '₩${currencyFormat.format(data.actualAmount)}',
+                                dataLabelMapper: (_ChartData data, _) =>
+                                    '₩${currencyFormat.format(data.amount)}',
                               ),
                             ],
                           ),
@@ -397,15 +423,15 @@ class PaymentMethodData {
   });
 }
 
-// 데이터 모델 클래스 for Prediction Chart
-class PredictionData {
+// 데이터 모델 클래스 for generic Bar Series
+class _ChartData {
   final String category;
-  final double predictedAmount;
-  final double actualAmount;
+  final double amount;
+  final String seriesName; // To distinguish between different series
 
-  PredictionData({
+  _ChartData({
     required this.category,
-    required this.predictedAmount,
-    required this.actualAmount,
+    required this.amount,
+    required this.seriesName,
   });
 }
