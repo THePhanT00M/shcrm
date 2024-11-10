@@ -27,11 +27,12 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
 
   String? _employeeId;
 
+  DateTime _selectedDate = DateTime.now();
+
   String _selectedCategory = '카테고리 선택';
   int? _categoryId;
 
-  DateTime _selectedDate = DateTime.now();
-  String _expenseMethod = '현금';
+  String _expenseMethod = '카드';
   String _expenseValue = 'CASH';
   Icon? _expenseIcon = Icon(Icons.money, color: Colors.grey);
 

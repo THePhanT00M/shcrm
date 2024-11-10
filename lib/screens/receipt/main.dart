@@ -180,7 +180,7 @@ class _ReceiptsPageState extends State<ReceiptsPage> {
               iconPath: receipt['image'] ?? 'assets/icons/none_picture.svg',
               status: receipt['status'] ?? ' ',
               merchantName: receipt['merchantName'] ?? '제목 없음',
-              amount: receipt['amount']?.toString() ?? '금액 없음',
+              amount: receipt['amount'] ?? 0,
             );
           },
         ),
@@ -194,7 +194,7 @@ class ReceiptCard extends StatelessWidget {
   final String iconPath;
   final String status;
   final String merchantName;
-  final String amount;
+  final int amount;
 
   ReceiptCard({
     required this.expenseId,
@@ -272,7 +272,7 @@ class ReceiptCard extends StatelessWidget {
                   width: 20,
                 ),
                 SizedBox(height: 2),
-                Text("₩" + amount,
+                Text('₩${_formatNumber(amount)}',
                     style: TextStyle(fontSize: 16, color: Color(0xFF333333))),
               ],
             ),
@@ -280,5 +280,25 @@ class ReceiptCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// 금액을 천 단위로 콤마를 추가하여 문자열로 반환하는 함수
+  String _formatNumber(num number) {
+    // 숫자를 정수로 변환하여 소수점 제거
+    int integerNumber = number.toInt();
+
+    // 정수 부분을 문자열로 변환하고 천 단위로 콤마 추가
+    String formattedNumber = integerNumber.toString().replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match m) => '${m[1]},',
+        );
+
+    // 마지막에 붙는 불필요한 콤마 제거
+    if (formattedNumber.endsWith(',')) {
+      formattedNumber =
+          formattedNumber.substring(0, formattedNumber.length - 1);
+    }
+
+    return formattedNumber;
   }
 }

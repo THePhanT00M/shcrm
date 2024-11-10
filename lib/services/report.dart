@@ -77,32 +77,6 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
-  String _mapStatus(String status) {
-    switch (status) {
-      case 'PENDING':
-        return '작성 중';
-      case 'COMPLETE':
-        return '완료';
-      case 'REJECTED':
-        return '반려';
-      default:
-        return '알 수 없음';
-    }
-  }
-
-  Color _statusColor(String status) {
-    switch (status) {
-      case 'PENDING':
-        return Colors.blue;
-      case 'COMPLETE':
-        return Colors.green;
-      case 'REJECTED':
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
-  }
-
   Widget _buildReportItem(Map<String, dynamic> report) {
     String status = _mapStatus(report['status']);
     String title = report['title'] ?? '제목 없음';
@@ -140,10 +114,10 @@ class _ReportScreenState extends State<ReportScreen> {
                       padding:
                           EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
                       decoration: BoxDecoration(
-                        color: _statusColor(report['status']),
+                        color: _getStatusColor(report['status']),
                         borderRadius: BorderRadius.circular(5.0),
-                        border:
-                            Border.all(color: _statusColor(report['status'])!),
+                        border: Border.all(
+                            color: _getStatusColor(report['status'])!),
                       ),
                       child: Text(
                         status,
@@ -159,13 +133,13 @@ class _ReportScreenState extends State<ReportScreen> {
                     Row(
                       children: [
                         Icon(Icons.sticky_note_2_outlined,
-                            color: Colors.blueAccent, size: 32),
+                            color: _getStatusColor(report['status']), size: 24),
                         SizedBox(width: 8.0),
                         Expanded(
                           child: Text(
                             title,
                             style: TextStyle(
-                              fontSize: 16.0,
+                              fontSize: 13.0,
                               fontWeight: FontWeight.w500,
                             ),
                             overflow: TextOverflow.ellipsis,
@@ -183,7 +157,7 @@ class _ReportScreenState extends State<ReportScreen> {
                   Text(
                     '총 지출 $expenditureCount',
                     style: TextStyle(
-                      fontSize: 14.0,
+                      fontSize: 13.0,
                       color: Colors.grey[700],
                     ),
                   ),
@@ -191,7 +165,7 @@ class _ReportScreenState extends State<ReportScreen> {
                   Text(
                     amount,
                     style: TextStyle(
-                      fontSize: 16.0,
+                      fontSize: 14.0,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
@@ -235,8 +209,10 @@ class _ReportScreenState extends State<ReportScreen> {
               ? Center(child: Text('데이터를 불러오는 중 오류가 발생했습니다.'))
               : RefreshIndicator(
                   onRefresh: _refreshData,
+                  backgroundColor: Colors.white, // 배경색을 흰색으로 설정
+                  color: Color(0xFF009EB4), // 프로그레스 인디케이터의 색상 설정
                   child: ListView.builder(
-                    padding: EdgeInsets.all(16.0),
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                     itemCount: reportsData.length,
                     itemBuilder: (context, index) {
                       final report = reportsData[index];
@@ -245,5 +221,31 @@ class _ReportScreenState extends State<ReportScreen> {
                   ),
                 ),
     );
+  }
+
+  String _mapStatus(String status) {
+    switch (status) {
+      case 'PENDING':
+        return '작성 중';
+      case 'COMPLETE':
+        return '완료';
+      case 'REJECTED':
+        return '반려';
+      default:
+        return '알 수 없음';
+    }
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'PENDING':
+        return Colors.blue;
+      case 'COMPLETE':
+        return Colors.green;
+      case 'REJECTED':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
   }
 }

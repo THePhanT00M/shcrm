@@ -324,7 +324,7 @@ class CustomCard extends StatelessWidget {
   Color _getStatusColor(String status) {
     switch (status) {
       case 'PENDING':
-        return Colors.orange;
+        return Colors.blue;
       case 'COMPLETE':
         return Colors.green;
       case 'REJECTED':
