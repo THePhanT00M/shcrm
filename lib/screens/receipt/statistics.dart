@@ -45,6 +45,12 @@ class _StatisticsState extends State<Statistics> {
     _fetchAllData();
   }
 
+  @override
+  void dispose() {
+    // 추가적인 정리 작업이 필요하다면 여기에 수행
+    super.dispose();
+  }
+
   // 모든 데이터를 가져오는 메소드
   Future<void> _fetchAllData() async {
     try {
@@ -52,14 +58,21 @@ class _StatisticsState extends State<Statistics> {
         _fetchChartData(),
         _fetchPredictionData(),
       ]);
+
+      if (!mounted) return; // 위젯이 아직 트리에 존재하는지 확인
+
       setState(() {
         isLoading = false;
       });
     } catch (e) {
       print('에러 발생: $e');
+
+      if (!mounted) return; // 위젯이 아직 트리에 존재하는지 확인
+
       setState(() {
         isLoading = false;
       });
+
       // 사용자에게 에러 알리기 (옵션)
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('데이터를 불러오는 중 오류가 발생했습니다.')),
@@ -97,6 +110,8 @@ class _StatisticsState extends State<Statistics> {
             currentMonthData['categories'] as Map<String, dynamic>;
         final Map<String, dynamic> paymentMethod =
             currentMonthData['payment_method'] as Map<String, dynamic>;
+
+        if (!mounted) return; // 위젯이 아직 트리에 존재하는지 확인
 
         setState(() {
           // 원형 차트 데이터: categories
@@ -175,6 +190,8 @@ class _StatisticsState extends State<Statistics> {
             seriesName: '실제',
           ));
         });
+
+        if (!mounted) return; // 위젯이 아직 트리에 존재하는지 확인
 
         setState(() {
           predictionData = combinedData;
@@ -271,7 +288,7 @@ class _StatisticsState extends State<Statistics> {
                               title: AxisTitle(text: ''),
                             ),
                             primaryYAxis: NumericAxis(
-                              title: AxisTitle(text: '지출액 (₩)'),
+                              title: AxisTitle(text: ''),
                               numberFormat: NumberFormat.compact(),
                             ),
                             tooltipBehavior: TooltipBehavior(
@@ -317,16 +334,16 @@ class _StatisticsState extends State<Statistics> {
                             backgroundColor: Colors.white,
                             title: ChartTitle(text: ''),
                             primaryXAxis: CategoryAxis(
-                              title: AxisTitle(text: '카테고리'),
+                              title: AxisTitle(text: ''),
                             ),
                             primaryYAxis: NumericAxis(
-                              title: AxisTitle(text: '예상 지출 (₩)'),
+                              title: AxisTitle(text: ''),
                               numberFormat: NumberFormat.compact(),
                             ),
                             axes: <ChartAxis>[
                               NumericAxis(
                                 name: 'secondaryYAxis',
-                                title: AxisTitle(text: '실제 지출 (₩)'),
+                                title: AxisTitle(text: ''),
                                 opposedPosition: true, // Position on the right
                                 numberFormat: NumberFormat.compact(),
                               ),
