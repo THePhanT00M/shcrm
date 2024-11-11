@@ -451,4 +451,29 @@ class ApiService {
       throw Exception('Error fetching expense details');
     }
   }
+
+  static Future<void> sendMail(Map<String, dynamic> data) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/report/generate-pdf'),
+        headers: _headers,
+        body: json.encode(data),
+      );
+
+      if (response.statusCode == 200) {
+        // 성공적으로 업데이트된 경우 처리
+      } else {
+        // 오류 처리
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final responseJson = json.decode(decodedBody);
+        final resultMsgBytes = (responseJson['resultMsg'] as String).codeUnits;
+        final decodedResultMsg = utf8.decode(resultMsgBytes);
+        throw Exception(
+            'Error: ${response.statusCode}, Message: $decodedResultMsg');
+      }
+    } catch (e) {
+      print('Failed to update expense data: $e');
+      throw Exception('Error updating expense data');
+    }
+  }
 }

@@ -5,12 +5,14 @@ class CommonHeader extends StatelessWidget {
   final String? reportTitle;
   final double totalAmount;
   final VoidCallback onTitleEdit;
+  final VoidCallback onStatistics;
 
   const CommonHeader({
     Key? key,
     required this.reportTitle,
     required this.totalAmount,
     required this.onTitleEdit,
+    required this.onStatistics,
   }) : super(key: key);
 
   String _formatNumber(num number) {
@@ -133,10 +135,13 @@ class CommonHeader extends StatelessWidget {
                       bottomRight: Radius.circular(5.0),
                     ),
                   ),
-                  child: Icon(
-                    FontAwesomeIcons.chartPie,
-                    color: Colors.white,
-                    size: 28,
+                  child: IconButton(
+                    icon: Icon(
+                      FontAwesomeIcons.chartPie,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                    onPressed: onStatistics,
                   ),
                 ),
               ),

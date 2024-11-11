@@ -5,8 +5,10 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter/cupertino.dart';
 
 import 'titleEdit.dart';
+import 'statistics.dart';
 
 import '../../services/api_service.dart';
 import '../report/widgets/expenses_tab.dart';
@@ -53,6 +55,9 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
   final ScrollController _scrollController = ScrollController();
 
   Map<String, List<Map<String, dynamic>>> commentsByDate = {};
+
+  /// New state variable to track mail sending process
+  bool isUploading = false;
 
   @override
   void initState() {
@@ -170,7 +175,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
         }
       }
     } catch (e) {
-      _showError('카테고리를 불러오는 중 오류가 발생했습니다: $e');
+      _showAlertDialog('카테고리를 불러오는 중 오류가 발생했습니다: $e');
     }
   }
 
@@ -243,7 +248,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
         isLoading = false;
       });
     } catch (e) {
-      _showError('데이터를 불러오지 못했습니다: $e');
+      _showAlertDialog('데이터를 불러오지 못했습니다: $e');
       if (mounted) {
         Navigator.pop(context);
       }
@@ -274,7 +279,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
         });
       }
     } catch (e) {
-      _showError('코멘트를 불러오는 중 오류가 발생했습니다: $e');
+      _showAlertDialog('코멘트를 불러오는 중 오류가 발생했습니다: $e');
     }
   }
 
@@ -302,6 +307,37 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
     );
   }
 
+  // 경고 대화상자 표시 함수
+  void _showAlertDialog(String message) {
+    if (!mounted) return; // 위젯이 여전히 트리에 있는지 확인
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CupertinoAlertDialog(
+          title: Text(
+            '알림',
+            style: TextStyle(color: Colors.black),
+          ),
+          content: Text(
+            message,
+            style: TextStyle(color: Color(0xFFF7a7a7a)),
+          ),
+          actions: [
+            CupertinoDialogAction(
+              child: Text(
+                '확인',
+                style: TextStyle(color: Colors.blue),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   int get totalExpenses {
     return expensesByDate.values.fold(0, (sum, list) => sum + list.length);
   }
@@ -326,7 +362,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
       } else {}
     } catch (e) {
       print(e);
-      _showError('파일을 선택하는 중 오류가 발생했습니다: $e');
+      _showAlertDialog('파일을 선택하는 중 오류가 발생했습니다: $e');
     }
   }
 
@@ -346,9 +382,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
 
     try {
       await ApiService.updateReportData(data);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('보고서 제목이 업데이트되었습니다.')),
-      );
+      _showAlertDialog('보고서 제목이 업데이트되었습니다.');
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('제목 업데이트에 실패했습니다: $e')),
@@ -389,6 +423,39 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
       if (mounted) {
         setState(() {
           isLoading = false;
+        });
+      }
+    }
+  }
+
+  /// New method to handle sending mail
+  Future<void> _sendMail() async {
+    if (_reportId == null || _employeeId == null) {
+      _showAlertDialog('보고서 정보가 충분하지 않습니다.');
+      return;
+    }
+
+    setState(() {
+      isUploading = true; // Start uploading
+      hasError = false;
+    });
+
+    try {
+      final data = {
+        'reportId': _reportId,
+        'employeeId': int.tryParse(_employeeId!),
+        'approvalRequestId ': 2,
+      };
+
+      await ApiService.sendMail(data);
+
+      _showAlertDialog('메일이 성공적으로 전송되었습니다.');
+    } catch (e) {
+      _showError('메일 전송 중 오류가 발생했습니다: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          isUploading = false; // Stop uploading
         });
       }
     }
@@ -450,98 +517,136 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
           actions: [
             IconButton(
               icon: Icon(Icons.email_outlined, size: 24, color: Colors.white),
-              onPressed: () {},
+              onPressed: _sendMail, // Updated to call _sendMail
             ),
           ],
         ),
-        body: DefaultTabController(
-          length: 4,
-          child: Column(
-            children: [
-              // Header
-              CommonHeader(
-                reportTitle: _reportTitle,
-                totalAmount: totalAmount,
-                onTitleEdit: () async {
-                  final updatedTitle = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          TitleEditScreen(currentTitle: _reportTitle),
-                    ),
-                  );
+        body: Stack(
+          children: [
+            // Main Content
+            isLoading
+                ? Center(child: CircularProgressIndicator())
+                : DefaultTabController(
+                    length: 4,
+                    child: Column(
+                      children: [
+                        // Header
+                        CommonHeader(
+                          reportTitle: _reportTitle,
+                          totalAmount: totalAmount,
+                          onTitleEdit: () async {
+                            final updatedTitle = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    TitleEditScreen(currentTitle: _reportTitle),
+                              ),
+                            );
 
-                  if (updatedTitle != null && updatedTitle != _reportTitle) {
-                    if (mounted) {
-                      setState(() {
-                        _reportTitle = updatedTitle;
-                      });
-                    }
-                    _saveReportData();
-                  }
-                },
-              ),
-              // TabBar
-              Container(
-                color: Colors.white,
-                child: TabBar(
-                  labelColor: Color(0xFF009EB4),
-                  unselectedLabelColor: Colors.grey,
-                  indicatorColor: Color(0xFF009EB4),
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  tabs: [
-                    Tab(icon: Icon(Icons.description)),
-                    Tab(
-                      icon: Transform.rotate(
-                        angle: 45 * 3.1415926535897932 / 180,
-                        child: Icon(
-                          Icons.attach_file,
+                            if (updatedTitle != null &&
+                                updatedTitle != _reportTitle) {
+                              if (mounted) {
+                                setState(() {
+                                  _reportTitle = updatedTitle;
+                                });
+                              }
+                              _saveReportData();
+                            }
+                          },
+                          onStatistics: () async {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    Statistics(reportId: _reportId),
+                              ),
+                            );
+                          },
                         ),
+                        // TabBar
+                        Container(
+                          color: Colors.white,
+                          child: TabBar(
+                            labelColor: Color(0xFF009EB4),
+                            unselectedLabelColor: Colors.grey,
+                            indicatorColor: Color(0xFF009EB4),
+                            indicatorSize: TabBarIndicatorSize.tab,
+                            tabs: [
+                              Tab(icon: Icon(Icons.description)),
+                              Tab(
+                                icon: Transform.rotate(
+                                  angle: 45 * 3.1415926535897932 / 180,
+                                  child: Icon(
+                                    Icons.attach_file,
+                                  ),
+                                ),
+                              ),
+                              Tab(icon: Icon(Icons.history)),
+                              Tab(icon: Icon(Icons.chat)),
+                            ],
+                          ),
+                        ),
+                        // TabBarView
+                        Expanded(
+                          child: TabBarView(
+                            children: [
+                              // Expenses Tab
+                              ExpensesTab(
+                                expensesByDate: expensesByDate,
+                                totalExpenses: totalExpenses,
+                                categories: categories,
+                                onRefresh: _fetchData,
+                              ),
+                              // Attachments Tab
+                              AttachmentsTab(
+                                selectedFiles: _selectedFiles,
+                                onPickFile: _pickFile,
+                                onRemoveFile: _removeFile,
+                                onRefresh: _fetchData,
+                              ),
+                              // History Tab
+                              HistoryTab(
+                                historyList: historyList,
+                                onRefresh: _fetchData,
+                              ),
+                              // Comments Tab
+                              CommentsTab(
+                                commentsByDate: commentsByDate,
+                                employeeId: _employeeId,
+                                commentController: _commentController,
+                                isCommentNotEmpty: _isCommentNotEmpty,
+                                onSubmitComment: _submitComment,
+                                onRefresh: _fetchData,
+                                scrollController: _scrollController,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+            // Loading Overlay for Mail Sending
+            if (isUploading)
+              Container(
+                color: Colors.black54,
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
-                    ),
-                    Tab(icon: Icon(Icons.history)),
-                    Tab(icon: Icon(Icons.chat)),
-                  ],
+                      SizedBox(height: 16),
+                      Text(
+                        '발송중...',
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              // TabBarView
-              Expanded(
-                child: TabBarView(
-                  children: [
-                    // Expenses Tab
-                    ExpensesTab(
-                      expensesByDate: expensesByDate,
-                      totalExpenses: totalExpenses,
-                      categories: categories,
-                      onRefresh: _fetchData,
-                    ),
-                    // Attachments Tab
-                    AttachmentsTab(
-                      selectedFiles: _selectedFiles,
-                      onPickFile: _pickFile,
-                      onRemoveFile: _removeFile,
-                      onRefresh: _fetchData,
-                    ),
-                    // History Tab
-                    HistoryTab(
-                      historyList: historyList,
-                      onRefresh: _fetchData,
-                    ),
-                    // Comments Tab
-                    CommentsTab(
-                      commentsByDate: commentsByDate,
-                      employeeId: _employeeId,
-                      commentController: _commentController,
-                      isCommentNotEmpty: _isCommentNotEmpty,
-                      onSubmitComment: _submitComment,
-                      onRefresh: _fetchData,
-                      scrollController: _scrollController,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+          ],
         ),
       ),
     );
