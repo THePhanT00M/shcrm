@@ -47,6 +47,8 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
   String _expenseValue = 'CARD';
   Icon? _expenseIcon = Icon(Icons.money, color: Colors.grey);
 
+  String _url = '';
+
   String _selectedReport = '보고서 선택';
   int? _reportId;
 
@@ -158,7 +160,7 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
         _selectedDate = DateTime.parse(data['expenseDate']);
         _dateController.text =
             '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
-        _receiptImage = data['image'];
+        _receiptImage = data['url'];
 
         // 카테고리 데이터 업데이트
         _categoryId = data['categoryId'];
@@ -231,6 +233,28 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
 
           // JSON 응답 파싱
           final Map<String, dynamic> jsonResponse = jsonDecode(responseData);
+
+          // **이미지_URL 추출 및 설정**
+          if (jsonResponse.containsKey('이미지_URL')) {
+            setState(() {
+              _url = jsonResponse['이미지_URL'];
+            });
+          }
+
+          // **카테고리 추출 및 설정**
+          if (jsonResponse.containsKey('카테고리')) {
+            final categoryData = jsonResponse['카테고리'] as Map<String, dynamic>;
+            if (categoryData.containsKey('categoryId')) {
+              setState(() {
+                _categoryId = categoryData['categoryId'];
+              });
+            }
+            if (categoryData.containsKey('categoryName')) {
+              setState(() {
+                _selectedCategory = categoryData['categoryName'];
+              });
+            }
+          }
 
           // OCR 결과 추출
           final ocrResult = jsonResponse['OCR_결과'] as Map<String, dynamic>;
@@ -322,8 +346,11 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
         'reimbursement': 'N',
         'reportId': _reportId,
         'isDeleted': "N",
-        'paymentMethod': _expenseValue
+        'paymentMethod': _expenseValue,
+        'url': _url
       };
+
+      print('api : ${data}');
 
       if (widget.expenseId != null) {
         await ApiService.updateExpenseData(data);

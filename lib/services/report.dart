@@ -63,7 +63,11 @@ class _ReportScreenState extends State<ReportScreen> {
         isLoading = false;
       });
     } catch (e) {
-      _showError('데이터를 불러오지 못했습니다: $e');
+      setState(() {
+        reportsData = [];
+        isLoading = false;
+        hasError = true;
+      });
     }
   }
 
@@ -87,6 +91,7 @@ class _ReportScreenState extends State<ReportScreen> {
     String amount = '₩0';
 
     return Card(
+      color: Colors.white, // 배경색을 흰색으로 설정
       margin: EdgeInsets.symmetric(vertical: 8.0),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10.0),
@@ -206,7 +211,24 @@ class _ReportScreenState extends State<ReportScreen> {
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : hasError
-              ? Center(child: Text('데이터를 불러오는 중 오류가 발생했습니다.'))
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        '보고서가 없습니다.',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        '등록된 보고서가 없습니다 보고서 생성을 먼저 진행부탁드립니다.',
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                )
               : RefreshIndicator(
                   onRefresh: _refreshData,
                   backgroundColor: Colors.white, // 배경색을 흰색으로 설정

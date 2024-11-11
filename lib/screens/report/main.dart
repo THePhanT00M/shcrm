@@ -122,8 +122,9 @@ class _ReportsPageState extends State<ReportsPage> {
                 right: 0,
                 top: 3,
                 child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
+                  onTap: () async {
+                    // 수정된 부분: Navigator.push를 await하고 _refreshData 호출
+                    await Navigator.push(
                       context,
                       PageRouteBuilder(
                         pageBuilder: (context, animation, secondaryAnimation) =>
@@ -145,6 +146,7 @@ class _ReportsPageState extends State<ReportsPage> {
                         },
                       ),
                     );
+                    _refreshData(); // 데이터 새로고침
                   },
                   child: Icon(
                     Icons.add,
@@ -235,6 +237,7 @@ class _ReportsPageState extends State<ReportsPage> {
               reportId: report['reportId']!,
               status: report['status']!,
               title: report['title']!,
+              onRefresh: _refreshData, // 수정된 부분: 콜백 전달
             );
           },
         ),
@@ -247,11 +250,13 @@ class CustomCard extends StatelessWidget {
   final int reportId;
   final String status;
   final String title;
+  final VoidCallback onRefresh; // 추가된 부분
 
   CustomCard({
     required this.reportId,
     required this.status,
     required this.title,
+    required this.onRefresh, // 추가된 부분
   });
 
   @override
@@ -260,7 +265,8 @@ class CustomCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: () async {
-        final result = await Navigator.push(
+        // 수정된 부분: Navigator.push를 await하고 onRefresh 호출
+        await Navigator.push(
           context,
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
@@ -277,13 +283,7 @@ class CustomCard extends StatelessWidget {
             },
           ),
         );
-
-        // 새로 고침 실행
-        if (result == true &&
-            context.findAncestorStateOfType<_ReportsPageState>()?.mounted ==
-                true) {
-          context.findAncestorStateOfType<_ReportsPageState>()?._refreshData();
-        }
+        onRefresh(); // 데이터 새로고침 콜백 호출
       },
       child: Container(
         margin: EdgeInsets.only(bottom: 15.0),

@@ -206,7 +206,7 @@ class _ReceiptsPageState extends State<ReceiptsPage> {
             final receipt = receiptData[index];
             return ReceiptCard(
               expenseId: receipt['expenseId'],
-              iconPath: receipt['image'] ?? 'assets/icons/none_picture.svg',
+              iconPath: receipt['url'] ?? 'assets/icons/none_picture.svg',
               status: receipt['status'] ?? ' ',
               merchantName: receipt['merchantName'] ?? '제목 없음',
               amount: receipt['amount'] ?? 0,

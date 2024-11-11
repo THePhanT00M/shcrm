@@ -1,6 +1,13 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+// Helper function to check if a URL is an image
+bool isImageUrl(String? url) {
+  if (url == null) return false;
+  final imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'];
+  return imageExtensions.any((ext) => url.toLowerCase().endsWith(ext));
+}
+
 class ApiService {
   static const String _baseUrl = 'http://api.shcrm.site:8080';
   static const Map<String, String> _headers = {
@@ -72,18 +79,15 @@ class ApiService {
           final List<dynamic> results = responseData['result'];
 
           return results.map<Map<String, dynamic>>((item) {
-            print(item);
+            print('print : ${item}');
             return {
               'expenseId': item['expenseId'],
               'amount': item['amount'],
               'merchantName': item['merchantName'] ?? '알 수 없음',
               'expenseDate': item['expenseDate'],
               'categoryId': item['categoryId'] ?? '',
-              'image': (item['attachmentId'] != null &&
-                      item['attachmentId'] is Map &&
-                      item['attachmentId']!['fileUrl'] != null)
-                  ? item['attachmentId']['fileUrl']
-                  : null,
+              // Set 'url' to null if it's not an image URL
+              'url': isImageUrl(item['url'] as String?) ? item['url'] : null,
             };
           }).toList();
         } else {
@@ -133,11 +137,9 @@ class ApiService {
             'address': responseData['result']['address'],
             'expenseDate': responseData['result']['expenseDate'],
             'paymentMethod': responseData['result']['paymentMethod'],
-            'image': responseData['result']['attachmentId'] != null &&
-                    responseData['result']['attachmentId']
-                        is Map<String, dynamic>
-                ? responseData['result']['attachmentId']['fileUrl']
-                : '',
+            'url': isImageUrl(responseData['result']['url'] as String?)
+                ? responseData['result']['url']
+                : null,
             'categoryId':
                 responseData['result']['categoryId']['categoryId'] ?? '',
             'categoryName':
@@ -287,6 +289,7 @@ class ApiService {
             'expensesData': responseData['result']['expenses'],
             'attachmentsData': responseData['result']['attachments'],
             'commentsData': responseData['result']['comments'],
+            'categoryId': responseData['result']['categoryId'],
           };
         } else {
           throw Exception('Error: ${responseData['resultMsg']}');
@@ -372,11 +375,49 @@ class ApiService {
     }
   }
 
+  static Future<List<dynamic>> fetchCommentData(int reportId) async {
+    try {
+      final body = json.encode({'reportId': reportId});
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/comment/all'),
+        headers: _headers,
+        body: body,
+      );
+
+      print(response.statusCode);
+
+      if (response.statusCode == 200) {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final responseData = json.decode(decodedBody);
+
+        print('Response Data: $responseData');
+
+        if (responseData['resultCode'] == 'SUCCESS' &&
+            responseData['result'] != null) {
+          // Return the entire 'result' array as is
+          return List<Map<String, dynamic>>.from(responseData['result']);
+        } else {
+          throw Exception('Error: ${responseData['resultMsg']}');
+        }
+      } else {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final responseJson = json.decode(decodedBody);
+        final resultMsg = responseJson['resultMsg'] ?? 'Unknown error';
+
+        throw Exception('Error: ${response.statusCode}, Message: $resultMsg');
+      }
+    } catch (e) {
+      print('Failed to fetch comment data: $e');
+      throw Exception('Error fetching comment data');
+    }
+  }
+
   static Future<Map<String, dynamic>> submitComment(
       Map<String, dynamic> data) async {
     try {
       final response = await http.post(
-        Uri.parse('$_baseUrl/report/find'),
+        Uri.parse('$_baseUrl/comment/create'),
         headers: _headers,
         body: json.encode(data),
       );

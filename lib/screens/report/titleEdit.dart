@@ -82,8 +82,10 @@ class _TitleEditScreenState extends State<TitleEditScreen> {
           decoration: InputDecoration(
             labelText: '제목',
             border: OutlineInputBorder(),
+            fillColor: Colors.white, // 배경색을 흰색으로 설정
+            filled: true, // fillColor 적용을 위해 true로 설정
           ),
-          maxLength: 100, // Optional: Limit the title length
+          maxLength: 100, // 선택사항: 제목 길이 제한
         ),
       ),
     );
