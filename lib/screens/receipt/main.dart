@@ -60,7 +60,11 @@ class _ReceiptsPageState extends State<ReceiptsPage> {
         isLoading = false;
       });
     } catch (e) {
-      _showError('데이터를 불러오지 못했습니다: $e');
+      setState(() {
+        receiptData = [];
+        isLoading = false;
+      });
+      //_showError('데이터를 불러오지 못했습니다: $e');
     }
   }
 
@@ -81,7 +85,9 @@ class _ReceiptsPageState extends State<ReceiptsPage> {
       appBar: _buildAppBar(),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
-          : _buildReceiptList(),
+          : receiptData.isEmpty
+              ? _buildNoReceiptsMessage()
+              : _buildReceiptList(),
     );
   }
 
@@ -155,6 +161,29 @@ class _ReceiptsPageState extends State<ReceiptsPage> {
                   Text('검색 및 필터',
                       style: TextStyle(color: Colors.white, fontSize: 16)),
                 ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoReceiptsMessage() {
+    return RefreshIndicator(
+      onRefresh: _refreshData,
+      backgroundColor: Colors.white,
+      color: Color(0xFF009EB4),
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(), // 항상 스크롤 가능하게 설정
+        children: [
+          Container(
+            height: MediaQuery.of(context).size.height - 180, // 높이 조절
+            color: Color(0xFFf0f0f0),
+            child: Center(
+              child: Text(
+                '등록된 지출이 없습니다.',
+                style: TextStyle(fontSize: 14, color: Colors.grey),
               ),
             ),
           ),
@@ -289,15 +318,9 @@ class ReceiptCard extends StatelessWidget {
 
     // 정수 부분을 문자열로 변환하고 천 단위로 콤마 추가
     String formattedNumber = integerNumber.toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          RegExp(r'(\d)(?=(\d{3})+$)'),
           (Match m) => '${m[1]},',
         );
-
-    // 마지막에 붙는 불필요한 콤마 제거
-    if (formattedNumber.endsWith(',')) {
-      formattedNumber =
-          formattedNumber.substring(0, formattedNumber.length - 1);
-    }
 
     return formattedNumber;
   }

@@ -7,8 +7,18 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
+// timezone 패키지 임포트
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 시간대 데이터 초기화
+  tz.initializeTimeZones();
+  // 기본 시간대를 Asia/Seoul로 설정
+  tz.setLocalLocation(tz.getLocation('Asia/Seoul'));
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -39,15 +49,15 @@ class MyApp extends StatelessWidget {
           onError: const Color(0xFFF767676),
         ),
       ),
-      localizationsDelegates: [
+      localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: [
-        const Locale('ko', ''), // Korean
+      supportedLocales: const [
+        Locale('ko', ''), // 한국어 지원
       ],
-      locale: const Locale('ko', ''), // Set the locale to Korean
+      locale: const Locale('ko', ''), // 앱의 기본 로케일을 한국어로 설정
       initialRoute: '/',
       routes: {
         '/': (context) => LoadingScreen(),

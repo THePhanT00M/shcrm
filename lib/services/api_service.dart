@@ -59,9 +59,13 @@ class ApiService {
         body: body,
       );
 
+      print(response.statusCode);
+
       if (response.statusCode == 200) {
         final decodedBody = utf8.decode(response.bodyBytes);
         final responseData = json.decode(decodedBody);
+
+        print('print : ${responseData}');
 
         if (responseData['resultCode'] == 'SUCCESS' &&
             responseData['result'] != null) {
@@ -167,8 +171,8 @@ class ApiService {
         body: json.encode(data),
       );
 
-      print(json.encode(data));
-      print(response.statusCode);
+      print('print : ${json.encode(data)}');
+      print('print : ${response.statusCode}');
 
       if (response.statusCode == 200) {
         // 성공적으로 업데이트된 경우 처리
@@ -318,10 +322,12 @@ class ApiService {
         final decodedBody = utf8.decode(response.bodyBytes);
         final responseData = json.decode(decodedBody);
 
+        print('API 결과 : ${responseData}');
+
         if (responseData['resultCode'] == 'SUCCESS' &&
             responseData['result'] != null) {
           return {
-            'reportId': responseData['result'],
+            'reportId': responseData['result']['reportId'],
           };
         } else {
           throw Exception('Error: ${responseData['resultMsg']}');

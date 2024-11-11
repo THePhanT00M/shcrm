@@ -227,7 +227,7 @@ class _ReportScreenState extends State<ReportScreen> {
     switch (status) {
       case 'PENDING':
         return '작성 중';
-      case 'COMPLETE':
+      case 'APPROVED':
         return '완료';
       case 'REJECTED':
         return '반려';
@@ -240,7 +240,7 @@ class _ReportScreenState extends State<ReportScreen> {
     switch (status) {
       case 'PENDING':
         return Colors.blue;
-      case 'COMPLETE':
+      case 'APPROVED':
         return Colors.green;
       case 'REJECTED':
         return Colors.red;

@@ -59,7 +59,11 @@ class _ReportsPageState extends State<ReportsPage> {
         isLoading = false;
       });
     } catch (e) {
-      _showError('데이터를 불러오지 못했습니다: $e');
+      setState(() {
+        reportsData = [];
+        isLoading = false;
+      });
+      //_showError('데이터를 불러오지 못했습니다: $e');
     }
   }
 
@@ -87,7 +91,9 @@ class _ReportsPageState extends State<ReportsPage> {
       appBar: _buildAppBar(),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
-          : _buildReportsList(),
+          : reportsData.isEmpty
+              ? _buildNoReportsMessage()
+              : _buildReportsList(),
     );
   }
 
@@ -182,6 +188,29 @@ class _ReportsPageState extends State<ReportsPage> {
                     ),
                   ),
                 ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoReportsMessage() {
+    return RefreshIndicator(
+      onRefresh: _refreshData,
+      backgroundColor: Colors.white,
+      color: Color(0xFF009EB4),
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(), // 항상 스크롤 가능하게 설정
+        children: [
+          Container(
+            height: MediaQuery.of(context).size.height - 180, // 높이 조절
+            color: Color(0xFFf0f0f0),
+            child: Center(
+              child: Text(
+                '등록된 보고서가 없습니다.',
+                style: TextStyle(fontSize: 14, color: Colors.grey),
               ),
             ),
           ),
@@ -337,7 +366,7 @@ class CustomCard extends StatelessWidget {
     switch (status) {
       case 'PENDING':
         return Colors.blue;
-      case 'COMPLETE':
+      case 'APPROVED':
         return Colors.green;
       case 'REJECTED':
         return Colors.red;
@@ -350,7 +379,7 @@ class CustomCard extends StatelessWidget {
     switch (status) {
       case 'PENDING':
         return '작성 중';
-      case 'COMPLETE':
+      case 'APPROVED':
         return '완료';
       case 'REJECTED':
         return '반려';
