@@ -380,14 +380,15 @@ class _StatisticsState extends State<Statistics> {
                                     title: AxisTitle(text: ''),
                                     numberFormat: NumberFormat.compact(),
                                   ),
-                                  axes: <ChartAxis>[
-                                    NumericAxis(
-                                      name: 'secondaryYAxis',
-                                      title: AxisTitle(text: ''),
-                                      opposedPosition: true, // 오른쪽에 배치
-                                      numberFormat: NumberFormat.compact(),
-                                    ),
-                                  ],
+                                  // 'axes' 속성을 제거하여 두 시리즈가 동일한 Y축을 사용하도록 함
+                                  // axes: <ChartAxis>[
+                                  //   NumericAxis(
+                                  //     name: 'secondaryYAxis',
+                                  //     title: AxisTitle(text: ''),
+                                  //     opposedPosition: true, // 오른쪽에 배치
+                                  //     numberFormat: NumberFormat.compact(),
+                                  //   ),
+                                  // ],
                                   tooltipBehavior: TooltipBehavior(
                                     enable: true,
                                     shared: true,
@@ -398,7 +399,7 @@ class _StatisticsState extends State<Statistics> {
                                     position: LegendPosition.bottom,
                                   ),
                                   series: <CartesianSeries<_ChartData, String>>[
-                                    // 예측 지출 BarSeries (primaryYAxis에 매핑)
+                                    // 예측 지출 BarSeries (primaryYAxis 사용)
                                     BarSeries<_ChartData, String>(
                                       name: '예측',
                                       dataSource: predictionData
@@ -409,9 +410,9 @@ class _StatisticsState extends State<Statistics> {
                                           data.category,
                                       yValueMapper: (_ChartData data, _) =>
                                           data.amount,
-                                      color: Colors.blue
-                                          .withOpacity(0.8), // 불투명도 적용
-                                      yAxisName: 'primaryYAxis',
+                                      color: Colors.blue.withOpacity(0.7),
+                                      // 'yAxisName' 속성을 제거하여 기본 Y축 사용
+                                      // yAxisName: 'primaryYAxis',
                                       dataLabelSettings: DataLabelSettings(
                                         isVisible: true,
                                         labelPosition:
@@ -424,7 +425,7 @@ class _StatisticsState extends State<Statistics> {
                                       dataLabelMapper: (_ChartData data, _) =>
                                           '₩${currencyFormat.format(data.amount)}',
                                     ),
-                                    // 실제 지출 BarSeries (secondaryYAxis에 매핑)
+                                    // 실제 지출 BarSeries (primaryYAxis 사용)
                                     BarSeries<_ChartData, String>(
                                       name: '실제',
                                       dataSource: predictionData
@@ -435,9 +436,9 @@ class _StatisticsState extends State<Statistics> {
                                           data.category,
                                       yValueMapper: (_ChartData data, _) =>
                                           data.amount,
-                                      color: Colors.red
-                                          .withOpacity(0.8), // 불투명도 적용
-                                      yAxisName: 'secondaryYAxis',
+                                      color: Colors.red.withOpacity(0.7),
+                                      // 'yAxisName' 속성을 제거하여 기본 Y축 사용
+                                      // yAxisName: 'secondaryYAxis',
                                       dataLabelSettings: DataLabelSettings(
                                         isVisible: true,
                                         labelPosition:
