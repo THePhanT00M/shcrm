@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:firebase_messaging/firebase_messaging.dart'; // FCM 패키지 추가
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -11,7 +12,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // 텍스트 켄트롤리 및 포컨스 노드 선정
+  // 텍스트 컨트롤러 및 포커스 노드 설정
   final _idController = TextEditingController();
   final _passwordController = TextEditingController();
   final _idFocusNode = FocusNode();
@@ -22,9 +23,52 @@ class _LoginScreenState extends State<LoginScreen> {
   // FlutterSecureStorage 인스턴스 생성
   final _secureStorage = const FlutterSecureStorage();
 
+  // FCM 토큰 변수 추가
+  String? _fcmToken;
+
+  @override
+  void initState() {
+    super.initState();
+    _initFCM();
+  }
+
+  // FCM 초기화 및 토큰 획득 함수
+  Future<void> _initFCM() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+    // 사용자에게 알림 권한 요청 (iOS)
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      print('User granted permission');
+
+      // 토큰 획득
+      String? token = await messaging.getToken();
+      setState(() {
+        _fcmToken = token;
+      });
+      print('FCM Token: $_fcmToken');
+
+      // 토큰 갱신 시 처리
+      FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+        setState(() {
+          _fcmToken = newToken;
+        });
+        print('FCM Token refreshed: $_fcmToken');
+        // 필요시 서버에 새로운 토큰을 전송
+      });
+    } else {
+      print('User declined or has not accepted permission');
+    }
+  }
+
   // 경고 대화상자 표시 함수
   void _showAlertDialog(String message) {
-    if (!mounted) return; // 위저이 여유도이 되어 있는지 확인
+    if (!mounted) return; // 위젯이 마운트되어 있는지 확인
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -81,6 +125,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final url = Uri.parse('http://shcrm.ddns.net:8080/login');
 
+    // FCM 토큰을 포함한 바디 생성
+    final body = {
+      'employeeId': id,
+      'password': password,
+      'fcmToken': _fcmToken ?? '', // 토큰이 없을 경우 빈 문자열 전송
+    };
+
+    print('로그인 파라미터 : ${body}');
+
     try {
       final response = await http.post(
         url,
@@ -88,13 +141,13 @@ class _LoginScreenState extends State<LoginScreen> {
           'Content-Type': 'application/json',
           'Apikey': '4sfItxEd9YHjpTS96jxFnZoKseT5PdDM'
         },
-        body: jsonEncode({'employeeId': id, 'password': password}),
+        body: jsonEncode(body),
       );
 
       // 응답 출력
       print('Response 출력: ${response.body}');
 
-      if (!mounted) return; // 위저이 여유도이 되어 있는지 확인
+      if (!mounted) return; // 위젯이 마운트되어 있는지 확인
 
       if (response.statusCode == 200) {
         // 응답 바디에서 JSON 데이터 추출
@@ -178,6 +231,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   hintText: '숫자만 입력해 주세요',
                   border: OutlineInputBorder(),
                 ),
+                keyboardType: TextInputType.number,
                 textInputAction: TextInputAction.next,
                 onSubmitted: (_) {
                   FocusScope.of(context).requestFocus(_passwordFocusNode);
@@ -280,7 +334,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
-    // 텍스트 켄트롤리 및 포컨스 노드 해제
+    // 텍스트 컨트롤러 및 포커스 노드 해제
     _idController.dispose();
     _passwordController.dispose();
     _idFocusNode.dispose();
