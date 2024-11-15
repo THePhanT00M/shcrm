@@ -9,7 +9,7 @@ bool isImageUrl(String? url) {
 }
 
 class ApiService {
-  static const String _baseUrl = 'http://api.shcrm.site:8080';
+  static const String _baseUrl = 'http://shcrm.ddns.net:8080';
   static const Map<String, String> _headers = {
     'Content-Type': 'application/json',
     'Apikey': '4sfItxEd9YHjpTS96jxFnZoKseT5PdDM'

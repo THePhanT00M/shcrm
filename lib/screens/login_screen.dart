@@ -79,7 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    final url = Uri.parse('http://api.shcrm.site:8080/login');
+    final url = Uri.parse('http://shcrm.ddns.net:8080/login');
 
     try {
       final response = await http.post(
