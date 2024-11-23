@@ -2,11 +2,13 @@
 
 import 'dart:convert';
 import 'dart:collection';
+import 'dart:math' as math; // Added for icon rotation
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart'; // Import the WoltModalSheet
 
 import 'titleEdit.dart';
 import 'statistics.dart';
@@ -72,6 +74,12 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen>
 
   // New state variable for report status
   String? _reportStatus;
+
+  // New state variable for author's employee ID
+  String? _authorEmployeeId;
+
+  // Define a padding constant
+  static const double _pagePadding = 16.0;
 
   @override
   void initState() {
@@ -313,6 +321,8 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen>
       if (authorData != null) {
         String firstName = authorData['firstName'] ?? '';
         String lastName = authorData['lastName'] ?? '';
+        _authorEmployeeId =
+            authorData['employeeId']?.toString(); // Extracting employeeId
 
         setState(() {
           submitterName = '$firstName$lastName';
@@ -340,13 +350,11 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen>
         });
       }
 
-      // Extract Report Title
+      // Extract Report Title and Status
       setState(() {
         _reportTitle = data['reportData']?['title'] ?? '제목 없음';
         // Extract Status
         _reportStatus = data['reportData']?['status'] ?? 'UNKNOWN';
-
-        print(_reportStatus);
       });
     } catch (e) {
       _showAlertDialog('데이터를 불러오지 못했습니다: $e');
@@ -579,6 +587,18 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen>
       return;
     }
 
+    // Check if the current user is the author
+    if (_employeeId != _authorEmployeeId) {
+      _showAlertDialog('승인자를 수정할 권한이 없습니다.');
+      return;
+    }
+
+    // Check if the report status is PENDING
+    if (_reportStatus == null || _reportStatus!.toUpperCase() != 'PENDING') {
+      _showAlertDialog('보고서 상태가 PENDING이 아니어서 승인자를 수정할 수 없습니다.');
+      return;
+    }
+
     setState(() {
       isUploading = true; // Optionally, show loading while selecting
     });
@@ -628,6 +648,123 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen>
     }
   }
 
+  /// Submit the report for approval
+  Future<void> _submitReport() async {
+    if (_reportId == null || _employeeId == null) {
+      _showAlertDialog('보고서 정보가 충분하지 않습니다.');
+      return;
+    }
+
+    setState(() {
+      isUploading = true; // Show loading indicator
+      hasError = false;
+    });
+
+    try {
+      final data = {
+        'reportId': _reportId,
+        'employeeId': _employeeId,
+        'status': 'SUBMITTED', // Update status as needed
+      };
+
+      await ApiService.submitReport(data);
+
+      // Optionally, update local state
+      setState(() {
+        _reportStatus = 'SUBMITTED';
+      });
+
+      _showAlertDialog('보고서가 성공적으로 상신되었습니다.');
+
+      // Refresh data to reflect status change
+      await _fetchData();
+    } catch (e) {
+      _showError('보고서 상신 중 오류가 발생했습니다: $e');
+    } finally {
+      setState(() {
+        isUploading = false; // Hide loading indicator
+      });
+    }
+  }
+
+  /// Show approval modal using wolt_modal_sheet with coffee_maker_navigator_2
+  Future<void> _showApprovalModalSheet() async {
+    if (_reportId == null || _employeeId == null) {
+      _showAlertDialog('보고서 정보가 충분하지 않습니다.');
+      return;
+    }
+
+    await WoltModalSheet.show(
+      context: context,
+      pageListBuilder: (modalSheetContext) => [
+        SliverWoltModalSheetPage(
+          pageTitle: Padding(
+            padding: const EdgeInsets.all(_pagePadding),
+            child: Text(
+              '결제 진행',
+              style: Theme.of(context)
+                  .textTheme
+                  .headlineMedium!
+                  .copyWith(fontWeight: FontWeight.bold, fontSize: 22),
+            ),
+          ),
+          trailingNavBarWidget: IconButton(
+            padding: const EdgeInsets.all(_pagePadding),
+            icon: const Icon(Icons.close),
+            onPressed: () {
+              Navigator.of(modalSheetContext).pop();
+            },
+          ),
+          mainContentSliversBuilder: (context) => [
+            SliverPadding(
+              padding: EdgeInsets.symmetric(horizontal: _pagePadding),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  ApprovalForm(
+                    onSubmit: (decision) async {
+                      // Close the modal before processing
+                      Navigator.of(modalSheetContext).pop();
+
+                      setState(() {
+                        isUploading = true;
+                      });
+
+                      try {
+                        Map<String, dynamic> data = {
+                          'reportId': _reportId,
+                          'employeeId': _employeeId,
+                        };
+
+                        if (decision == 'Approve') {
+                          // Call the approved report submission
+                          await ApiService.submitApprovedReport(data);
+                          _showAlertDialog('보고서가 승인되었습니다.');
+                        } else if (decision == 'Reject') {
+                          // Call the rejected report submission
+                          await ApiService.submitRejectedReport(data);
+                          _showAlertDialog('보고서가 반려되었습니다.');
+                        }
+
+                        // Optionally, refresh the report data to reflect changes
+                        await _fetchData();
+                      } catch (e) {
+                        _showError('결제 처리 중 오류가 발생했습니다: $e');
+                      } finally {
+                        setState(() {
+                          isUploading = false;
+                        });
+                      }
+                    },
+                  ),
+                ]),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   /// Format numbers with commas
   String _formatNumber(num number) {
     int integerNumber = number.toInt();
@@ -675,10 +812,51 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen>
               fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         actions: [
-          IconButton(
-            icon: Icon(Icons.email_outlined, size: 24, color: Colors.white),
-            onPressed: _sendMail, // Call _sendMail when pressed
-          ),
+          // Conditionally display the email IconButton
+          if (_reportStatus != null &&
+              _reportStatus!.toUpperCase() == 'APPROVED' &&
+              _employeeId == _authorEmployeeId)
+            IconButton(
+              icon: Icon(Icons.email_outlined, size: 24, color: Colors.white),
+              onPressed: _sendMail, // Call _sendMail when pressed
+            ),
+
+          // Conditionally display the submit IconButton
+          if (_reportStatus != null &&
+              _reportStatus!.toUpperCase() == 'PENDING' &&
+              _employeeId == _authorEmployeeId)
+            IconButton(
+              icon: Transform.rotate(
+                angle: -math.pi / 4.5, // Approximately -40 degrees
+                child: Icon(Icons.send, size: 22, color: Colors.white),
+              ),
+              onPressed: _submitReport, // Call _submitReport when pressed
+              tooltip: '상신', // Tooltip for accessibility
+            ),
+
+          // Conditionally display the approval IconButton
+          if (_employeeId == approverId.toString() &&
+              _reportStatus != null &&
+              _reportStatus!.toUpperCase() ==
+                  'SUBMITTED') // Adjust status as needed
+            TextButton(
+              onPressed:
+                  _showApprovalModalSheet, // Call the new modal sheet method
+              child: Text(
+                '결제',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                ),
+              ),
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 8), // Padding
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8), // Rounded corners
+                ),
+              ),
+            ),
         ],
       ),
       body: Stack(
@@ -739,7 +917,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen>
                           Tab(icon: Icon(Icons.description)),
                           Tab(
                             icon: Transform.rotate(
-                              angle: 45 * 3.1415926535897932 / 180,
+                              angle: 45 * math.pi / 180, // 45 degrees
                               child: Icon(
                                 Icons.attach_file,
                               ),
@@ -790,7 +968,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen>
                   ],
                 ),
 
-          // Loading Overlay for Mail Sending or Approver Editing
+          // Loading Overlay for Mail Sending, Approver Editing, or Submitting Report
           if (isUploading)
             Container(
               color: Colors.black54,
@@ -803,7 +981,13 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen>
                     ),
                     SizedBox(height: 16),
                     Text(
-                      '발송중...',
+                      _reportStatus != null &&
+                              _reportStatus!.toUpperCase() == 'APPROVED'
+                          ? '메일 전송 중...' // When sending mail
+                          : _reportStatus != null &&
+                                  _reportStatus!.toUpperCase() == 'SUBMITTED'
+                              ? '결제 처리 중...' // When approving/rejecting
+                              : '처리 중...', // Default
                       style: TextStyle(color: Colors.white, fontSize: 16),
                     ),
                   ],
@@ -813,5 +997,116 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen>
         ],
       ),
     );
+  }
+}
+
+/// ApprovalForm Widget encapsulates the approval form logic
+class ApprovalForm extends StatefulWidget {
+  final Function(String decision) onSubmit;
+
+  ApprovalForm({required this.onSubmit});
+
+  @override
+  _ApprovalFormState createState() => _ApprovalFormState();
+}
+
+class _ApprovalFormState extends State<ApprovalForm> {
+  bool _isProcessing = false; // To manage loading state within the modal
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+        padding: const EdgeInsets.only(bottom: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '결제를 진행하려면 아래 버튼을 눌러 주세요.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey[500], // Light gray color
+                  ),
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue, // Approve button color
+                foregroundColor: Colors.white, // Text color
+                minimumSize: Size(double.infinity, 48), // Full width button
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5), // Rounded corners
+                ),
+              ),
+              onPressed: _isProcessing
+                  ? null
+                  : () async {
+                      setState(() {
+                        _isProcessing = true;
+                      });
+
+                      try {
+                        widget.onSubmit('Approve');
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('결제 처리 중 오류가 발생했습니다: $e')),
+                        );
+                      } finally {
+                        setState(() {
+                          _isProcessing = false;
+                        });
+                      }
+                    },
+              child: _isProcessing
+                  ? SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : Text('승인'),
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red, // Reject button color
+                foregroundColor: Colors.white, // Text color
+                minimumSize: Size(double.infinity, 48), // Full width button
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5), // Rounded corners
+                ),
+              ),
+              onPressed: _isProcessing
+                  ? null
+                  : () async {
+                      setState(() {
+                        _isProcessing = true;
+                      });
+
+                      try {
+                        widget.onSubmit('Reject');
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('결제 처리 중 오류가 발생했습니다: $e')),
+                        );
+                      } finally {
+                        setState(() {
+                          _isProcessing = false;
+                        });
+                      }
+                    },
+              child: _isProcessing
+                  ? SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : Text('반려'),
+            ),
+          ],
+        ));
   }
 }

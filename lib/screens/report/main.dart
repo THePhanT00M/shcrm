@@ -500,6 +500,8 @@ class CustomCard extends StatelessWidget {
     switch (status) {
       case 'PENDING':
         return Colors.blue;
+      case 'SUBMITTED':
+        return Colors.orange;
       case 'APPROVED':
         return Colors.green;
       case 'REJECTED':
@@ -514,6 +516,8 @@ class CustomCard extends StatelessWidget {
     switch (status) {
       case 'PENDING':
         return '작성 중';
+      case 'SUBMITTED':
+        return '상신';
       case 'APPROVED':
         return '완료';
       case 'REJECTED':
