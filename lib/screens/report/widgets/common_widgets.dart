@@ -6,6 +6,9 @@ class CommonHeader extends StatelessWidget {
   final double totalAmount;
   final VoidCallback onTitleEdit;
   final VoidCallback onStatistics;
+  final VoidCallback onApproverEdit; // Add this callback
+  final String submitterName;
+  final String approverName;
 
   const CommonHeader({
     Key? key,
@@ -13,6 +16,9 @@ class CommonHeader extends StatelessWidget {
     required this.totalAmount,
     required this.onTitleEdit,
     required this.onStatistics,
+    required this.onApproverEdit, // Initialize the callback
+    required this.submitterName,
+    required this.approverName,
   }) : super(key: key);
 
   String _formatNumber(num number) {
@@ -35,11 +41,12 @@ class CommonHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
-      color: Color(0xFF009EB4),
+      padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+      color: const Color(0xFF009EB4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Title Row
           Row(
             children: [
               Text(
@@ -51,7 +58,7 @@ class CommonHeader extends StatelessWidget {
                 ),
               ),
               IconButton(
-                icon: Icon(
+                icon: const Icon(
                   Icons.edit,
                   color: Colors.white,
                   size: 20,
@@ -60,14 +67,100 @@ class CommonHeader extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
+
+          // New Row with Two Fully Rounded Sections
+          Row(
+            children: [
+              // Left Section: 제출자 and Submitter Name
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 8.0, horizontal: 8.0),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF007792),
+                    borderRadius: BorderRadius.circular(5.0),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        '작성자',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        submitterName,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Gap between the two sections
+              const SizedBox(width: 10),
+              // Right Section: 승인자 and Approver Name
+              Expanded(
+                child: GestureDetector(
+                  onTap: onApproverEdit, // Make it tappable
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 8.0, horizontal: 8.0),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF007792),
+                      borderRadius: BorderRadius.circular(5.0),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          '승인자',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Text(
+                              approverName,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Icons.chevron_right,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+
+          // Existing Row with Total Amount and Statistics Button
           Row(
             children: [
               Expanded(
                 flex: 8,
                 child: Container(
-                  padding: EdgeInsets.all(8.0),
-                  decoration: BoxDecoration(
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: const BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(5.0),
@@ -81,7 +174,7 @@ class CommonHeader extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
+                          const Text(
                             '총 보고 금액',
                             style: TextStyle(
                               fontSize: 13,
@@ -90,7 +183,7 @@ class CommonHeader extends StatelessWidget {
                           ),
                           Text(
                             '₩${_formatNumber(totalAmount)}',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 13,
                               color: Colors.black87,
                               fontWeight: FontWeight.w700,
@@ -98,11 +191,11 @@ class CommonHeader extends StatelessWidget {
                           ),
                         ],
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       // 경비 환급 금액
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
+                        children: const [
                           Text(
                             '경비 환급 금액',
                             style: TextStyle(
@@ -128,7 +221,7 @@ class CommonHeader extends StatelessWidget {
                 flex: 2,
                 child: Container(
                   height: 62,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Color(0xFF007792),
                     borderRadius: BorderRadius.only(
                       topRight: Radius.circular(5.0),
@@ -136,7 +229,7 @@ class CommonHeader extends StatelessWidget {
                     ),
                   ),
                   child: IconButton(
-                    icon: Icon(
+                    icon: const Icon(
                       FontAwesomeIcons.chartPie,
                       color: Colors.white,
                       size: 28,

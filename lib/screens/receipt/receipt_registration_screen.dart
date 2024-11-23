@@ -12,12 +12,13 @@ import '../../services/report.dart';
 import 'package:http/http.dart' as http; // 추가
 import 'package:path/path.dart' as path; // 추가
 import 'package:intl/intl.dart'; // 추가
+import 'package:flutter_svg/flutter_svg.dart'; // 추가
 
 // 매핑 상수 정의
 const Map<String, String> paymentMethodMap = {
   'CASH': '현금',
   'CARD': '카드',
-  'TRANFER': '계좌이체',
+  'TRANSFER': '계좌이체', // 오타 수정: 'TRANFER' -> 'TRANSFER'
   'OTHER': '기타',
 };
 
@@ -80,7 +81,7 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
           ),
           content: Text(
             message,
-            style: TextStyle(color: Color(0xFFF7a7a7a)),
+            style: TextStyle(color: Color(0xFF7a7a7a)), // 색상 수정
           ),
           actions: [
             CupertinoDialogAction(
@@ -113,6 +114,9 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
       // paymentMethod 기본값 설정
       _expenseValue = 'CARD'; // 'CARD'를 기본값으로 설정
       _expenseMethod = paymentMethodMap[_expenseValue] ?? '카드';
+
+      _selectedReport = '보고서 선택';
+      _reportId = null;
 
       isLoading = false;
     });
@@ -257,64 +261,67 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
           }
 
           // OCR 결과 추출
-          final ocrResult = jsonResponse['OCR_결과'] as Map<String, dynamic>;
+          if (jsonResponse.containsKey('OCR_결과')) {
+            final ocrResult = jsonResponse['OCR_결과'] as Map<String, dynamic>;
 
-          // 금액 추출 및 설정
-          if (ocrResult.containsKey('금액')) {
-            setState(() {
-              _amountController.text = ocrResult['금액'].toString();
-            });
-          }
+            // 금액 추출 및 설정
+            if (ocrResult.containsKey('금액')) {
+              setState(() {
+                _amountController.text = ocrResult['금액'].toString();
+              });
+            }
 
-          // 상호명 추출 및 설정
-          if (ocrResult.containsKey('가맹점명') &&
-              (ocrResult['가맹점명'] as List).isNotEmpty) {
-            setState(() {
-              _businessNameController.text = ocrResult['가맹점명'][0];
-            });
-          } else if (jsonResponse['카테고리_키워드'] != null) {
-            // '카테고리_키워드'에서 '상호명' 추출
-            final categoryKeyword =
-                jsonResponse['카테고리_키워드'] as Map<String, dynamic>;
-            if (categoryKeyword.isNotEmpty) {
-              final firstKey = categoryKeyword.keys.first;
-              final subMap = categoryKeyword[firstKey] as Map<String, dynamic>;
-              if (subMap.containsKey('상호명')) {
+            // 상호명 추출 및 설정
+            if (ocrResult.containsKey('가맹점명') &&
+                (ocrResult['가맹점명'] as List).isNotEmpty) {
+              setState(() {
+                _businessNameController.text = ocrResult['가맹점명'][0];
+              });
+            } else if (jsonResponse.containsKey('카테고리_키워드')) {
+              // '카테고리_키워드'에서 '상호명' 추출
+              final categoryKeyword =
+                  jsonResponse['카테고리_키워드'] as Map<String, dynamic>;
+              if (categoryKeyword.isNotEmpty) {
+                final firstKey = categoryKeyword.keys.first;
+                final subMap =
+                    categoryKeyword[firstKey] as Map<String, dynamic>;
+                if (subMap.containsKey('상호명')) {
+                  setState(() {
+                    _businessNameController.text = subMap['상호명'];
+                  });
+                }
+              }
+            }
+
+            // 거래일시 추출 및 설정
+            if (ocrResult.containsKey('거래일시')) {
+              List<dynamic> transactionDates = ocrResult['거래일시'];
+              if (transactionDates.isNotEmpty) {
+                String firstDate = transactionDates[0];
+                // 점(.)을 하이픈(-)으로 교체
+                firstDate = firstDate.replaceAll('.', '-');
+                DateTime parsedDate;
+                try {
+                  parsedDate = DateTime.parse(firstDate);
+                } catch (e) {
+                  // intl 패키지 사용
+                  DateFormat format = DateFormat('yyyy-MM-dd');
+                  parsedDate = format.parse(firstDate);
+                }
                 setState(() {
-                  _businessNameController.text = subMap['상호명'];
+                  _selectedDate = parsedDate;
+                  _dateController.text =
+                      '${parsedDate.year}-${parsedDate.month.toString().padLeft(2, '0')}-${parsedDate.day.toString().padLeft(2, '0')}';
                 });
               }
             }
-          }
 
-          // 거래일시 추출 및 설정
-          if (ocrResult.containsKey('거래일시')) {
-            List<dynamic> transactionDates = ocrResult['거래일시'];
-            if (transactionDates.isNotEmpty) {
-              String firstDate = transactionDates[0];
-              // 점(.)을 하이픈(-)으로 교체
-              firstDate = firstDate.replaceAll('.', '-');
-              DateTime parsedDate;
-              try {
-                parsedDate = DateTime.parse(firstDate);
-              } catch (e) {
-                // intl 패키지 사용
-                DateFormat format = DateFormat('yyyy-MM-dd');
-                parsedDate = format.parse(firstDate);
-              }
-              setState(() {
-                _selectedDate = parsedDate;
-                _dateController.text =
-                    '${parsedDate.year}-${parsedDate.month.toString().padLeft(2, '0')}-${parsedDate.day.toString().padLeft(2, '0')}';
-              });
+            // paymentMethod 추출 및 설정 (필요 시)
+            if (jsonResponse.containsKey('paymentMethod')) {
+              _expenseValue = jsonResponse['paymentMethod'] ?? 'CASH';
+              _expenseMethod = paymentMethodMap[_expenseValue] ?? '현금';
+              setState(() {});
             }
-          }
-
-          // paymentMethod 추출 및 설정 (필요 시)
-          if (jsonResponse.containsKey('paymentMethod')) {
-            _expenseValue = jsonResponse['paymentMethod'] ?? 'CASH';
-            _expenseMethod = paymentMethodMap[_expenseValue] ?? '현금';
-            setState(() {});
           }
         } else {
           print('서버 오류: ${response.statusCode}');
@@ -530,11 +537,11 @@ class _ReceiptRegistrationScreenState extends State<ReceiptRegistrationScreen> {
                                                     fit: BoxFit.cover,
                                                     errorBuilder: (context,
                                                         error, stackTrace) {
-                                                      return Icon(
-                                                          Icons.broken_image,
-                                                          size: 40,
-                                                          color:
-                                                              Colors.grey[400]);
+                                                      return SvgPicture.asset(
+                                                        'assets/icons/none_picture.svg',
+                                                        height: 40,
+                                                        width: 40,
+                                                      );
                                                     },
                                                   )
                                                 : Image.file(

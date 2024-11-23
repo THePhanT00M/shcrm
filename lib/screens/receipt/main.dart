@@ -64,7 +64,7 @@ class _ReceiptsPageState extends State<ReceiptsPage> {
         receiptData = [];
         isLoading = false;
       });
-      //_showError('데이터를 불러오지 못했습니다: $e');
+      _showError('데이터를 불러오지 못했습니다: $e');
     }
   }
 
@@ -88,6 +88,21 @@ class _ReceiptsPageState extends State<ReceiptsPage> {
           : receiptData.isEmpty
               ? _buildNoReceiptsMessage()
               : _buildReceiptList(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => ReceiptRegistrationScreen()),
+          ).then((result) {
+            if (result == true) {
+              _refreshData();
+            }
+          });
+        },
+        backgroundColor: Color(0xFF009EB4),
+        child: Icon(Icons.add),
+      ),
     );
   }
 
@@ -277,9 +292,7 @@ class ReceiptCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            iconPath.endsWith('.svg')
-                ? SvgPicture.asset(iconPath, height: 50, width: 50)
-                : Image.network(iconPath, height: 50, width: 50),
+            _buildIcon(),
             SizedBox(width: 16),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -309,6 +322,39 @@ class ReceiptCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildIcon() {
+    if (iconPath.endsWith('.svg')) {
+      return SvgPicture.asset(
+        iconPath,
+        height: 50,
+        width: 50,
+        placeholderBuilder: (BuildContext context) => Container(
+          height: 50,
+          width: 50,
+          child: CircularProgressIndicator(),
+        ),
+      );
+    } else {
+      return Image.network(
+        iconPath,
+        height: 50,
+        width: 50,
+        fit: BoxFit.cover,
+        errorBuilder:
+            (BuildContext context, Object exception, StackTrace? stackTrace) {
+          // 오류 로그 출력
+          print('이미지 로딩 실패: $exception');
+          // 대체 이미지 반환
+          return SvgPicture.asset(
+            'assets/icons/none_picture.svg',
+            height: 50,
+            width: 50,
+          );
+        },
+      );
+    }
   }
 
   /// 금액을 천 단위로 콤마를 추가하여 문자열로 반환하는 함수

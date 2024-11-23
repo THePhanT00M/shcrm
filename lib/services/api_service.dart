@@ -282,6 +282,9 @@ class ApiService {
         final decodedBody = utf8.decode(response.bodyBytes);
         final responseData = json.decode(decodedBody);
 
+        print(responseData['result']['report']['employeeId']);
+        print(responseData['result']['report']['approvalRequestId']);
+
         if (responseData['resultCode'] == 'SUCCESS' &&
             responseData['result'] != null) {
           return {
@@ -290,6 +293,9 @@ class ApiService {
             'attachmentsData': responseData['result']['attachments'],
             'commentsData': responseData['result']['comments'],
             'categoryId': responseData['result']['categoryId'],
+            'authorData': responseData['result']['report']['employeeId'],
+            'approverData': responseData['result']['report']
+                ['approvalRequestId'],
           };
         } else {
           throw Exception('Error: ${responseData['resultMsg']}');
@@ -357,6 +363,8 @@ class ApiService {
         headers: _headers,
         body: json.encode(data),
       );
+
+      print(response.statusCode);
 
       if (response.statusCode == 200) {
         // 성공적으로 업데이트된 경우 처리
@@ -474,6 +482,49 @@ class ApiService {
     } catch (e) {
       print('Failed to update expense data: $e');
       throw Exception('Error updating expense data');
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> fetchMembersData() async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/member/all'),
+        headers: _headers,
+      );
+
+      if (response.statusCode == 200) {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final responseData = json.decode(decodedBody);
+
+        print(responseData);
+
+        if (responseData['resultCode'] == 'SUCCESS' &&
+            responseData['result'] != null) {
+          final List<dynamic> results = responseData['result'];
+
+          return results.map<Map<String, dynamic>>((item) {
+            return {
+              'employeeId': item['employeeId'],
+              'firstName': item['firstName'],
+              'lastName': item['lastName'],
+              'email': item['email'],
+            };
+          }).toList();
+        } else {
+          throw Exception('Error: ${responseData['resultMsg']}');
+        }
+      } else {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final responseJson = json.decode(decodedBody);
+        final resultMsgBytes = (responseJson['resultMsg'] as String).codeUnits;
+        final decodedResultMsg = utf8.decode(resultMsgBytes);
+
+        throw Exception(
+            'Error: ${response.statusCode}, Message: $decodedResultMsg');
+      }
+    } catch (e) {
+      print('Failed to fetch reports data: $e');
+      throw Exception('Error fetching reports data');
     }
   }
 }

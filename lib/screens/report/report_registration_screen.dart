@@ -1,14 +1,16 @@
+// report_registration_screen.dart
+
 import 'dart:convert';
 import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'titleEdit.dart';
 import 'statistics.dart';
+import 'approver_select_screen.dart'; // Import the ApproverSelectScreen
 
 import '../../services/api_service.dart';
 import '../report/widgets/expenses_tab.dart';
@@ -27,7 +29,8 @@ class ReportRegistrationScreen extends StatefulWidget {
       _ReportRegistrationScreenState();
 }
 
-class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
+class _ReportRegistrationScreenState extends State<ReportRegistrationScreen>
+    with SingleTickerProviderStateMixin {
   String? _employeeId;
   bool isLoading = true;
   bool hasError = false;
@@ -56,13 +59,25 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
 
   Map<String, List<Map<String, dynamic>>> commentsByDate = {};
 
-  /// New state variable to track mail sending process
+  /// State variable to track mail sending process
   bool isUploading = false;
+
+  // State Variables for Submitter and Approver Names
+  String submitterName = ""; // Default value
+  String approverName = ""; // Default value
+  int? approverId; // Variable to store approver ID
+
+  // TabController for managing tabs
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
     _reportId = widget.reportId;
+
+    // Initialize TabController with 4 tabs
+    _tabController = TabController(length: 4, vsync: this);
+
     _fetchData();
 
     _commentController.addListener(() {
@@ -78,9 +93,11 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
   void dispose() {
     _commentController.dispose();
     _scrollController.dispose();
+    _tabController.dispose(); // Dispose TabController
     super.dispose();
   }
 
+  /// Initialize a new report if no reportId is provided
   Future<void> _initializeNewReport(String employeeId) async {
     setState(() {
       isLoading = true;
@@ -125,6 +142,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
     }
   }
 
+  /// Fetch necessary data for the screen
   Future<void> _fetchData() async {
     setState(() {
       isLoading = true;
@@ -163,6 +181,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
     }
   }
 
+  /// Fetch report categories from the server
   Future<void> _fetchCategories() async {
     try {
       final data = await ApiService.fetchCategoriesData();
@@ -179,6 +198,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
     }
   }
 
+  /// Retrieve employee ID from secure storage
   Future<String?> _fetchEmployeeId() async {
     final userData = await _secureStorage.read(key: 'user_data');
     if (userData != null) {
@@ -188,6 +208,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
     return null;
   }
 
+  /// Load report data including expenses and history
   Future<void> _loadReportData(String employeeId) async {
     setState(() {
       isLoading = true;
@@ -228,6 +249,8 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
 
       expensesByDate = sortedExpensesByDate;
 
+      print('API 결과 : ${data['expensesData']}');
+
       if (data['historyData'] != null) {
         historyList = List<Map<String, dynamic>>.from(data['historyData']);
       } else {
@@ -235,12 +258,49 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
           {
             'createdAt': data['reportData']['createdAt'],
             'employeeId': {
-              'firstName': data['reportData']['employeeId']['firstName'],
-              'lastName': data['reportData']['employeeId']['lastName'],
+              'firstName': data['authorData']['firstName'],
+              'lastName': data['authorData']['lastName'],
             },
             'action': '보고서가 생성되었습니다.',
           }
         ];
+      }
+
+      print('API 결과 111111');
+
+      // Extract Submitter and Approver Names
+      final authorData = data['authorData'];
+      final approverData = data['approverData'];
+      print('API 결과 : ${data}');
+
+      if (authorData != null) {
+        String firstName = authorData['firstName'] ?? '';
+        String lastName = authorData['lastName'] ?? '';
+
+        setState(() {
+          submitterName = '$firstName$lastName';
+        });
+      } else {
+        // Fallback to default value or handle accordingly
+        setState(() {
+          submitterName = 'A';
+        });
+      }
+
+      if (approverData != null) {
+        String firstName = approverData['firstName'] ?? '';
+        String lastName = approverData['lastName'] ?? '';
+        setState(() {
+          approverName = '$firstName$lastName';
+          approverId =
+              approverData['employeeId']; // Assuming employeeId is available
+        });
+      } else {
+        // Fallback to default value or handle accordingly
+        setState(() {
+          approverName = '미지정';
+          approverId = null;
+        });
       }
 
       setState(() {
@@ -261,6 +321,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
     }
   }
 
+  /// Load comments associated with the report
   Future<void> _loadComments() async {
     try {
       final data = await ApiService.fetchCommentData(_reportId!);
@@ -283,6 +344,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
     }
   }
 
+  /// Group comments by date for display
   void _groupCommentsByDate() {
     commentsByDate.clear();
     for (var comment in commentsList) {
@@ -296,6 +358,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
     }
   }
 
+  /// Display error messages using SnackBar
   void _showError(String message) {
     if (!mounted) return;
     setState(() {
@@ -307,9 +370,9 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
     );
   }
 
-  // 경고 대화상자 표시 함수
+  /// Display alert dialogs using CupertinoAlertDialog
   void _showAlertDialog(String message) {
-    if (!mounted) return; // 위젯이 여전히 트리에 있는지 확인
+    if (!mounted) return; // Ensure the widget is still mounted
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -338,10 +401,12 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
     );
   }
 
+  /// Calculate total number of expenses
   int get totalExpenses {
     return expensesByDate.values.fold(0, (sum, list) => sum + list.length);
   }
 
+  /// Calculate total amount of expenses
   double get totalAmount {
     return expensesByDate.values
         .expand((list) => list)
@@ -349,6 +414,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
         .fold(0, (sum, amt) => sum + amt.toDouble());
   }
 
+  /// Pick files using file_picker package
   Future<void> _pickFile() async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -359,25 +425,28 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
         setState(() {
           _selectedFiles.addAll(result.files);
         });
-      } else {}
+      } else {
+        // User canceled the picker
+      }
     } catch (e) {
       print(e);
       _showAlertDialog('파일을 선택하는 중 오류가 발생했습니다: $e');
     }
   }
 
+  /// Remove a selected file
   void _removeFile(PlatformFile file) {
     setState(() {
       _selectedFiles.remove(file);
     });
   }
 
+  /// Save updated report data to the server
   Future<void> _saveReportData() async {
     final data = {
       'reportId': _reportId,
       'employeeId': _employeeId,
       'title': _reportTitle,
-      'approvalRequestId': 2,
     };
 
     try {
@@ -390,6 +459,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
     }
   }
 
+  /// Submit a new comment
   Future<void> _submitComment(String content) async {
     if (content.trim().isEmpty) return;
 
@@ -428,7 +498,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
     }
   }
 
-  /// New method to handle sending mail
+  /// Handle sending mail related to the report
   Future<void> _sendMail() async {
     if (_reportId == null || _employeeId == null) {
       _showAlertDialog('보고서 정보가 충분하지 않습니다.');
@@ -444,7 +514,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
       final data = {
         'reportId': _reportId,
         'employeeId': int.tryParse(_employeeId!),
-        'approvalRequestId ': 2,
+        'approvalRequestId': 2,
       };
 
       await ApiService.sendMail(data);
@@ -461,6 +531,63 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
     }
   }
 
+  /// Handle editing the approver by navigating to ApproverSelectScreen
+  Future<void> _editApprover() async {
+    if (_employeeId == null) {
+      _showAlertDialog('로그인 정보가 없습니다.');
+      return;
+    }
+
+    setState(() {
+      isUploading = true; // Optionally, show loading while selecting
+    });
+
+    try {
+      // Navigate to ApproverSelectScreen and pass the current approverId
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ApproverSelectScreen(
+            approverId: approverId, // Pass the current approverId
+          ),
+        ),
+      );
+
+      if (result != null && result is Map<String, dynamic>) {
+        setState(() {
+          approverName = result['name'] ?? approverName; // Update approverName
+          approverId = result['id'] ?? approverId; // Update approverId
+        });
+
+        // Optionally, update the report data on the server
+        await _updateApproverOnServer();
+      }
+    } catch (e) {
+      _showError('승인자를 선택하는 중 오류가 발생했습니다: $e');
+    } finally {
+      setState(() {
+        isUploading = false;
+      });
+    }
+  }
+
+  /// Update the approver information on the server
+  Future<void> _updateApproverOnServer() async {
+    try {
+      final data = {
+        'reportId': _reportId,
+        'approvalRequestId': approverId,
+      };
+
+      await ApiService.updateReportData(data);
+
+      _showAlertDialog('승인자가 업데이트되었습니다.');
+    } catch (e) {
+      _showError('승인자 업데이트 중 오류가 발생했습니다: $e');
+    }
+  }
+
+  /// Format numbers with commas
   String _formatNumber(num number) {
     int integerNumber = number.toInt();
 
@@ -477,6 +604,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
     return formattedNumber;
   }
 
+  /// Format DateTime strings
   String _formatDateTime(String dateTimeStr) {
     DateTime dateTime = DateTime.parse(dateTimeStr).toLocal();
     return DateFormat('yyyy.MM.dd HH:mm').format(dateTime);
@@ -484,170 +612,162 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      localizationsDelegates: [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: [
-        const Locale('ko'),
-      ],
-      home: Scaffold(
-        backgroundColor: Color(0xFFefefef),
-        appBar: AppBar(
-          backgroundColor: Color(0xFF009EB4),
-          toolbarHeight: 60,
-          elevation: 0,
-          centerTitle: true,
-          leading: Container(
-            alignment: Alignment.centerLeft,
-            child: IconButton(
-              icon: Icon(Icons.chevron_left, size: 24, color: Colors.white),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
+    return Scaffold(
+      backgroundColor: Color(0xFFefefef),
+      appBar: AppBar(
+        backgroundColor: Color(0xFF009EB4),
+        toolbarHeight: 60,
+        elevation: 0,
+        centerTitle: true,
+        leading: Container(
+          alignment: Alignment.centerLeft,
+          child: IconButton(
+            icon: Icon(Icons.chevron_left, size: 24, color: Colors.white),
+            onPressed: () {
+              Navigator.pop(context);
+            },
           ),
-          title: Text(
-            '보고서',
-            style: TextStyle(
-                fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
-          ),
-          actions: [
-            IconButton(
-              icon: Icon(Icons.email_outlined, size: 24, color: Colors.white),
-              onPressed: _sendMail, // Updated to call _sendMail
-            ),
-          ],
         ),
-        body: Stack(
-          children: [
-            // Main Content
-            isLoading
-                ? Center(child: CircularProgressIndicator())
-                : DefaultTabController(
-                    length: 4,
-                    child: Column(
-                      children: [
-                        // Header
-                        CommonHeader(
-                          reportTitle: _reportTitle,
-                          totalAmount: totalAmount,
-                          onTitleEdit: () async {
-                            final updatedTitle = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    TitleEditScreen(currentTitle: _reportTitle),
-                              ),
-                            );
+        title: Text(
+          '보고서',
+          style: TextStyle(
+              fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.email_outlined, size: 24, color: Colors.white),
+            onPressed: _sendMail, // Call _sendMail when pressed
+          ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          // Main Content
+          isLoading
+              ? Center(child: CircularProgressIndicator())
+              : Column(
+                  children: [
+                    // Header Section
+                    CommonHeader(
+                      reportTitle: _reportTitle,
+                      totalAmount: totalAmount,
+                      onTitleEdit: () async {
+                        final updatedTitle = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                TitleEditScreen(currentTitle: _reportTitle),
+                          ),
+                        );
 
-                            if (updatedTitle != null &&
-                                updatedTitle != _reportTitle) {
-                              if (mounted) {
-                                setState(() {
-                                  _reportTitle = updatedTitle;
-                                });
-                              }
-                              _saveReportData();
-                            }
-                          },
-                          onStatistics: () async {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    Statistics(reportId: _reportId),
-                              ),
-                            );
-                          },
-                        ),
-                        // TabBar
-                        Container(
-                          color: Colors.white,
-                          child: TabBar(
-                            labelColor: Color(0xFF009EB4),
-                            unselectedLabelColor: Colors.grey,
-                            indicatorColor: Color(0xFF009EB4),
-                            indicatorSize: TabBarIndicatorSize.tab,
-                            tabs: [
-                              Tab(icon: Icon(Icons.description)),
-                              Tab(
-                                icon: Transform.rotate(
-                                  angle: 45 * 3.1415926535897932 / 180,
-                                  child: Icon(
-                                    Icons.attach_file,
-                                  ),
-                                ),
-                              ),
-                              Tab(icon: Icon(Icons.history)),
-                              Tab(icon: Icon(Icons.chat)),
-                            ],
+                        if (updatedTitle != null &&
+                            updatedTitle != _reportTitle) {
+                          if (mounted) {
+                            setState(() {
+                              _reportTitle = updatedTitle;
+                            });
+                          }
+                          _saveReportData();
+                        }
+                      },
+                      onStatistics: () async {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                Statistics(reportId: _reportId),
                           ),
-                        ),
-                        // TabBarView
-                        Expanded(
-                          child: TabBarView(
-                            children: [
-                              // Expenses Tab
-                              ExpensesTab(
-                                expensesByDate: expensesByDate,
-                                totalExpenses: totalExpenses,
-                                categories: categories,
-                                onRefresh: _fetchData,
-                              ),
-                              // Attachments Tab
-                              AttachmentsTab(
-                                selectedFiles: _selectedFiles,
-                                onPickFile: _pickFile,
-                                onRemoveFile: _removeFile,
-                                onRefresh: _fetchData,
-                              ),
-                              // History Tab
-                              HistoryTab(
-                                historyList: historyList,
-                                onRefresh: _fetchData,
-                              ),
-                              // Comments Tab
-                              CommentsTab(
-                                commentsByDate: commentsByDate,
-                                employeeId: _employeeId,
-                                commentController: _commentController,
-                                isCommentNotEmpty: _isCommentNotEmpty,
-                                onSubmitComment: _submitComment,
-                                onRefresh: _fetchData,
-                                scrollController: _scrollController,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                        );
+                      },
+                      onApproverEdit: _editApprover, // Pass the callback
+                      submitterName: submitterName, // Pass submitter name
+                      approverName: approverName, // Pass approver name
                     ),
-                  ),
+                    // TabBar Section
+                    Container(
+                      color: Colors.white,
+                      child: TabBar(
+                        controller: _tabController, // Assign TabController
+                        labelColor: Color(0xFF009EB4),
+                        unselectedLabelColor: Colors.grey,
+                        indicatorColor: Color(0xFF009EB4),
+                        indicatorSize: TabBarIndicatorSize.tab,
+                        tabs: [
+                          Tab(icon: Icon(Icons.description)),
+                          Tab(
+                            icon: Transform.rotate(
+                              angle: 45 * 3.1415926535897932 / 180,
+                              child: Icon(
+                                Icons.attach_file,
+                              ),
+                            ),
+                          ),
+                          Tab(icon: Icon(Icons.history)),
+                          Tab(icon: Icon(Icons.chat)),
+                        ],
+                      ),
+                    ),
+                    // TabBarView Section
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tabController, // Assign TabController
+                        children: [
+                          // Expenses Tab
+                          ExpensesTab(
+                            expensesByDate: expensesByDate,
+                            totalExpenses: totalExpenses,
+                            categories: categories,
+                            onRefresh: _fetchData,
+                          ),
+                          // Attachments Tab
+                          AttachmentsTab(
+                            selectedFiles: _selectedFiles,
+                            onPickFile: _pickFile,
+                            onRemoveFile: _removeFile,
+                            onRefresh: _fetchData,
+                          ),
+                          // History Tab
+                          HistoryTab(
+                            historyList: historyList,
+                            onRefresh: _fetchData,
+                          ),
+                          // Comments Tab
+                          CommentsTab(
+                            commentsByDate: commentsByDate,
+                            employeeId: _employeeId,
+                            commentController: _commentController,
+                            isCommentNotEmpty: _isCommentNotEmpty,
+                            onSubmitComment: _submitComment,
+                            onRefresh: _fetchData,
+                            scrollController: _scrollController,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
 
-            // Loading Overlay for Mail Sending
-            if (isUploading)
-              Container(
-                color: Colors.black54,
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                      SizedBox(height: 16),
-                      Text(
-                        '발송중...',
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
-                    ],
-                  ),
+          // Loading Overlay for Mail Sending or Approver Editing
+          if (isUploading)
+            Container(
+              color: Colors.black54,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      '발송중...',
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ],
                 ),
               ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }
