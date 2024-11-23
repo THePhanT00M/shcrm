@@ -65,9 +65,16 @@ class HistoryTab extends StatelessWidget {
           final action = history['action'] ?? '';
 
           return Container(
-            color: Colors.white,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                bottom: BorderSide(
+                  color: Color(0xFFF1F1F1), // Border color
+                  width: 1.0, // Border thickness
+                ),
+              ),
+            ),
             child: ListTile(
-              tileColor: Colors.white,
               leading: CircleAvatar(
                 child: Icon(Icons.person, color: Colors.white),
                 backgroundColor: const Color.fromARGB(255, 227, 227, 227),
@@ -82,6 +89,7 @@ class HistoryTab extends StatelessWidget {
                       color: Colors.grey[700],
                     ),
                   ),
+                  SizedBox(height: 4), // Add some spacing between texts
                   Text(
                     action,
                     style: TextStyle(
@@ -91,6 +99,7 @@ class HistoryTab extends StatelessWidget {
                   ),
                 ],
               ),
+              // Optionally, you can add trailing widgets or other properties here
             ),
           );
         },

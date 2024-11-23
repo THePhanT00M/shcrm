@@ -282,9 +282,6 @@ class ApiService {
         final decodedBody = utf8.decode(response.bodyBytes);
         final responseData = json.decode(decodedBody);
 
-        print(responseData['result']['report']['employeeId']);
-        print(responseData['result']['report']['approvalRequestId']);
-
         if (responseData['resultCode'] == 'SUCCESS' &&
             responseData['result'] != null) {
           return {
@@ -296,6 +293,7 @@ class ApiService {
             'authorData': responseData['result']['report']['employeeId'],
             'approverData': responseData['result']['report']
                 ['approvalRequestId'],
+            'historyData': responseData['result']['history']
           };
         } else {
           throw Exception('Error: ${responseData['resultMsg']}');

@@ -221,15 +221,28 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen>
         employeeId,
       );
 
+      // Process Expenses
       final List<Map<String, dynamic>> expensesList =
-          List<Map<String, dynamic>>.from(data['expensesData']);
+          List<Map<String, dynamic>>.from(data['expensesData'] ?? []);
       expensesByDate = LinkedHashMap();
 
       for (var expense in expensesList) {
-        final date = DateTime.parse(expense['expenseDate'])
-            .toLocal()
-            .toString()
-            .split(' ')[0];
+        final expenseDateStr = expense['expenseDate'];
+        if (expenseDateStr == null || expenseDateStr.trim().isEmpty) {
+          print('Warning: expenseDate is null or empty for expense: $expense');
+          continue; // Skip this expense
+        }
+
+        DateTime? dateTime;
+        try {
+          dateTime = DateTime.parse(expenseDateStr).toLocal();
+        } catch (e) {
+          print('Error parsing expenseDate: "$expenseDateStr" - $e');
+          continue; // Skip this expense
+        }
+
+        final date = DateFormat('yyyy-MM-dd').format(dateTime);
+
         if (expensesByDate.containsKey(date)) {
           expensesByDate[date]!.add(expense);
         } else {
@@ -249,29 +262,50 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen>
 
       expensesByDate = sortedExpensesByDate;
 
-      print('API 결과 : ${data['expensesData']}');
+      print(data['reportData']['createdAt']);
 
-      if (data['historyData'] != null) {
-        historyList = List<Map<String, dynamic>>.from(data['historyData']);
-      } else {
-        historyList = [
-          {
-            'createdAt': data['reportData']['createdAt'],
-            'employeeId': {
-              'firstName': data['authorData']['firstName'],
-              'lastName': data['authorData']['lastName'],
-            },
-            'action': '보고서가 생성되었습니다.',
+      // Initialize historyList with default entry
+      historyList = [
+        {
+          'createdAt': data['reportData']['createdAt'],
+          'employeeId': {
+            'firstName': '',
+            'lastName': '',
+          },
+          'action': data['authorData']?['firstName'] +
+              data['authorData']?['lastName'] +
+              '님이 보고서를 생성 하였습니다.',
+        }
+      ];
+
+      // Append historyData entries if available
+      if (data['historyData'] != null && data['historyData'] is List) {
+        for (var item in data['historyData']) {
+          // Ensure item is a Map
+          if (item is Map<String, dynamic>) {
+            final createdAtStr = item['createdAt'];
+            final content =
+                item['content'] ?? 'No action description provided.';
+
+            historyList.add({
+              'createdAt': createdAtStr,
+              'employeeId': {
+                'firstName': '',
+                'lastName': '',
+              },
+              'action': content,
+            });
+          } else {
+            print('Warning: historyData item is not a Map: $item');
           }
-        ];
+        }
+      } else {
+        print('No historyData found or historyData is not a list.');
       }
-
-      print('API 결과 111111');
 
       // Extract Submitter and Approver Names
       final authorData = data['authorData'];
       final approverData = data['approverData'];
-      print('API 결과 : ${data}');
 
       if (authorData != null) {
         String firstName = authorData['firstName'] ?? '';
@@ -304,7 +338,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen>
       }
 
       setState(() {
-        _reportTitle = data['reportData']['title'];
+        _reportTitle = data['reportData']?['title'] ?? '제목 없음';
         isLoading = false;
       });
     } catch (e) {
