@@ -595,7 +595,7 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen>
 
     // Check if the report status is PENDING
     if (_reportStatus == null || _reportStatus!.toUpperCase() != 'PENDING') {
-      _showAlertDialog('보고서 상태가 PENDING이 아니어서 승인자를 수정할 수 없습니다.');
+      _showAlertDialog('보고서 상태가 작성 중 일 경우에만 승인선 지정이 가능합니다.');
       return;
     }
 
