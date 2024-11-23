@@ -70,6 +70,9 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen>
   // TabController for managing tabs
   late TabController _tabController;
 
+  // New state variable for report status
+  String? _reportStatus;
+
   @override
   void initState() {
     super.initState();
@@ -337,9 +340,13 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen>
         });
       }
 
+      // Extract Report Title
       setState(() {
         _reportTitle = data['reportData']?['title'] ?? '제목 없음';
-        isLoading = false;
+        // Extract Status
+        _reportStatus = data['reportData']?['status'] ?? 'UNKNOWN';
+
+        print(_reportStatus);
       });
     } catch (e) {
       _showAlertDialog('데이터를 불러오지 못했습니다: $e');
@@ -713,9 +720,11 @@ class _ReportRegistrationScreenState extends State<ReportRegistrationScreen>
                           ),
                         );
                       },
-                      onApproverEdit: _editApprover, // Pass the callback
-                      submitterName: submitterName, // Pass submitter name
-                      approverName: approverName, // Pass approver name
+                      onApproverEdit: _editApprover,
+                      submitterName: submitterName,
+                      approverName: approverName,
+                      reportStatus:
+                          _reportStatus ?? 'UNKNOWN', // Pass the status
                     ),
                     // TabBar Section
                     Container(

@@ -11,36 +11,57 @@ class ReportsPage extends StatefulWidget {
   _ReportsPageState createState() => _ReportsPageState();
 }
 
-class _ReportsPageState extends State<ReportsPage> {
+class _ReportsPageState extends State<ReportsPage>
+    with SingleTickerProviderStateMixin {
+  // Explicit TabController
+  late TabController _tabController;
+
+  // Data for "내 보고서" (My Reports)
   List<Map<String, dynamic>> reportsData = [];
-  bool isLoading = true;
-  bool hasError = false;
+  bool isLoadingReports = true;
+  bool hasErrorReports = false;
+
+  // Data for "결제 요청 보고서" (Payment Request Reports)
+  List<Map<String, dynamic>> paymentReportsData = [];
+  bool isLoadingPayments = true;
+  bool hasErrorPayments = false;
 
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   @override
   void initState() {
     super.initState();
-    _fetchData();
+    // Initialize TabController with length 2 for two tabs
+    _tabController = TabController(length: 2, vsync: this);
+    _fetchAllData();
+
+    // Optionally, listen to tab changes if needed
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) {
+        // Handle tab change if necessary
+        // For example, you can refresh data when the user switches tabs
+      }
+    });
   }
 
-  Future<void> _fetchData() async {
-    try {
-      final employeeId = await _fetchEmployeeId();
-      if (employeeId != null) {
-        await _loadReportsData(employeeId);
-      } else {
-        _showError('로그인 정보가 없습니다. 다시 로그인 해주세요.');
-      }
-    } catch (e) {
-      _showError('오류가 발생했습니다: $e');
+  // Fetch data for both tabs
+  Future<void> _fetchAllData() async {
+    await Future.wait([
+      _fetchReportsData(),
+      _fetchPaymentReportsData(),
+    ]);
+  }
+
+  // Refresh data based on the current tab index
+  Future<void> _refreshData(int tabIndex) async {
+    if (tabIndex == 0) {
+      await _fetchReportsData();
+    } else if (tabIndex == 1) {
+      await _fetchPaymentReportsData();
     }
   }
 
-  Future<void> _refreshData() async {
-    await _fetchData();
-  }
-
+  // Fetch employee ID from secure storage
   Future<String?> _fetchEmployeeId() async {
     final userData = await _secureStorage.read(key: 'user_data');
     if (userData != null) {
@@ -50,38 +71,162 @@ class _ReportsPageState extends State<ReportsPage> {
     return null;
   }
 
-  Future<void> _loadReportsData(String employeeId) async {
+  // Fetch data for "내 보고서"
+  Future<void> _fetchReportsData() async {
+    setState(() {
+      isLoadingReports = true;
+      hasErrorReports = false;
+    });
+
     try {
-      final data = await ApiService.fetchReportsData(employeeId);
-      if (!mounted) return; // Ensure the widget is still mounted
-      setState(() {
-        reportsData = data;
-        isLoading = false;
-      });
+      final employeeId = await _fetchEmployeeId();
+      if (employeeId != null) {
+        final data = await ApiService.fetchReportsData(employeeId);
+        if (!mounted) return;
+        setState(() {
+          reportsData = data;
+          isLoadingReports = false;
+        });
+      } else {
+        _showError('로그인 정보가 없습니다. 다시 로그인 해주세요.', isPayment: false);
+      }
     } catch (e) {
       setState(() {
         reportsData = [];
-        isLoading = false;
+        isLoadingReports = false;
+        hasErrorReports = true;
       });
-      //_showError('데이터를 불러오지 못했습니다: $e');
+      //_showError('데이터를 불러오지 못했습니다: $e', isPayment: false);
     }
   }
 
-  void _showError(String message) {
-    if (!mounted) return; // Check if the widget is still mounted
+  // Fetch data for "결제 요청 보고서"
+  Future<void> _fetchPaymentReportsData() async {
     setState(() {
-      isLoading = false;
-      hasError = true;
+      isLoadingPayments = true;
+      hasErrorPayments = false;
     });
+
+    try {
+      final employeeId = await _fetchEmployeeId();
+      if (employeeId != null) {
+        final data = await ApiService.fetchReportPaymentsData(employeeId);
+        if (!mounted) return;
+        setState(() {
+          paymentReportsData = data;
+          isLoadingPayments = false;
+        });
+      } else {
+        _showError('로그인 정보가 없습니다. 다시 로그인 해주세요.', isPayment: true);
+      }
+    } catch (e) {
+      setState(() {
+        paymentReportsData = [];
+        isLoadingPayments = false;
+        hasErrorPayments = true;
+      });
+      //_showError('데이터를 불러오지 못했습니다: $e', isPayment: true);
+    }
+  }
+
+  // Display error messages using SnackBar
+  void _showError(String message, {required bool isPayment}) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
+    setState(() {
+      if (isPayment) {
+        isLoadingPayments = false;
+        hasErrorPayments = true;
+      } else {
+        isLoadingReports = false;
+        hasErrorReports = true;
+      }
+    });
   }
 
   @override
   void dispose() {
-    // Clean up any resources if needed
+    _tabController.dispose();
     super.dispose();
+  }
+
+  // Build the list of reports based on the provided data and state
+  Widget _buildReportsList(
+    List<Map<String, dynamic>> data,
+    bool isLoading,
+    bool hasError,
+    Future<void> Function() onRefresh,
+  ) {
+    if (isLoading) {
+      return Center(child: CircularProgressIndicator());
+    } else if (hasError) {
+      return RefreshIndicator(
+        onRefresh: onRefresh,
+        backgroundColor: Colors.white,
+        color: Color(0xFF009EB4),
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            Container(
+              height: MediaQuery.of(context).size.height - 180,
+              color: Color(0xFFf0f0f0),
+              child: Center(
+                child: Text(
+                  '',
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    } else if (data.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: onRefresh,
+        backgroundColor: Colors.white,
+        color: Color(0xFF009EB4),
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            Container(
+              height: MediaQuery.of(context).size.height - 180,
+              color: Color(0xFFf0f0f0),
+              child: Center(
+                child: Text(
+                  '등록된 보고서가 없습니다.',
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      return RefreshIndicator(
+        onRefresh: onRefresh,
+        backgroundColor: Colors.white,
+        color: Color(0xFF009EB4),
+        child: Padding(
+          padding: EdgeInsets.only(bottom: 70),
+          child: ListView.builder(
+            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+            itemCount: data.length,
+            itemBuilder: (context, index) {
+              final report = data[index];
+              return CustomCard(
+                reportId: report['reportId']!,
+                status: report['status']!,
+                title: report['title']!,
+                onRefresh:
+                    onRefresh, // Correctly passed as Future<void> Function()
+              );
+            },
+          ),
+        ),
+      );
+    }
   }
 
   @override
@@ -89,14 +234,50 @@ class _ReportsPageState extends State<ReportsPage> {
     return Scaffold(
       backgroundColor: Color(0xFFf0f0f0),
       appBar: _buildAppBar(),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : reportsData.isEmpty
-              ? _buildNoReportsMessage()
-              : _buildReportsList(),
+      body: Column(
+        children: [
+          // Move TabBar from AppBar to body
+          Container(
+            color: Colors.white,
+            child: TabBar(
+              controller: _tabController, // Assign TabController
+              labelColor: Color(0xFF009EB4),
+              unselectedLabelColor: Colors.grey,
+              indicatorColor: Color(0xFF009EB4),
+              indicatorSize: TabBarIndicatorSize.tab,
+              tabs: [
+                Tab(text: '내 보고서'),
+                Tab(text: '결제 요청 보고서'),
+              ],
+            ),
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                // 첫번째 탭: 내 보고서 (My Reports)
+                _buildReportsList(
+                  reportsData,
+                  isLoadingReports,
+                  hasErrorReports,
+                  () => _refreshData(0), // Correctly passing tabIndex 0
+                ),
+                // 두번째 탭: 결제 요청 보고서 (Payment Request Reports)
+                _buildReportsList(
+                  paymentReportsData,
+                  isLoadingPayments,
+                  hasErrorPayments,
+                  () => _refreshData(1), // Correctly passing tabIndex 1
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
+  // Build the AppBar without TabBar
   AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: Color(0xFF009EB4),
@@ -123,7 +304,6 @@ class _ReportsPageState extends State<ReportsPage> {
                 top: 3,
                 child: GestureDetector(
                   onTap: () async {
-                    // 수정된 부분: Navigator.push를 await하고 _refreshData 호출
                     await Navigator.push(
                       context,
                       PageRouteBuilder(
@@ -146,7 +326,8 @@ class _ReportsPageState extends State<ReportsPage> {
                         },
                       ),
                     );
-                    _refreshData(); // 데이터 새로고침
+                    // Refresh data based on the current tab
+                    await _refreshData(_tabController.index);
                   },
                   child: Icon(
                     Icons.add,
@@ -197,66 +378,19 @@ class _ReportsPageState extends State<ReportsPage> {
       ),
     );
   }
-
-  Widget _buildNoReportsMessage() {
-    return RefreshIndicator(
-      onRefresh: _refreshData,
-      backgroundColor: Colors.white,
-      color: Color(0xFF009EB4),
-      child: ListView(
-        physics: const AlwaysScrollableScrollPhysics(), // 항상 스크롤 가능하게 설정
-        children: [
-          Container(
-            height: MediaQuery.of(context).size.height - 180, // 높이 조절
-            color: Color(0xFFf0f0f0),
-            child: Center(
-              child: Text(
-                '등록된 보고서가 없습니다.',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildReportsList() {
-    return RefreshIndicator(
-      onRefresh: _refreshData,
-      backgroundColor: Colors.white, // 배경색을 흰색으로 설정
-      color: Color(0xFF009EB4), // 프로그레스 인디케이터의 색상 설정
-      child: Padding(
-        padding: EdgeInsets.only(bottom: 70),
-        child: ListView.builder(
-          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-          itemCount: reportsData.length,
-          itemBuilder: (context, index) {
-            final report = reportsData[index];
-            return CustomCard(
-              reportId: report['reportId']!,
-              status: report['status']!,
-              title: report['title']!,
-              onRefresh: _refreshData, // 수정된 부분: 콜백 전달
-            );
-          },
-        ),
-      ),
-    );
-  }
 }
 
 class CustomCard extends StatelessWidget {
   final int reportId;
   final String status;
   final String title;
-  final VoidCallback onRefresh; // 추가된 부분
+  final Future<void> Function() onRefresh; // Correctly typed
 
   CustomCard({
     required this.reportId,
     required this.status,
     required this.title,
-    required this.onRefresh, // 추가된 부분
+    required this.onRefresh, // Correctly passed
   });
 
   @override
@@ -265,7 +399,6 @@ class CustomCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: () async {
-        // 수정된 부분: Navigator.push를 await하고 onRefresh 호출
         await Navigator.push(
           context,
           PageRouteBuilder(
@@ -283,7 +416,7 @@ class CustomCard extends StatelessWidget {
             },
           ),
         );
-        onRefresh(); // 데이터 새로고침 콜백 호출
+        await onRefresh(); // Correctly await the refresh callback
       },
       child: Container(
         margin: EdgeInsets.only(bottom: 15.0),
@@ -362,6 +495,7 @@ class CustomCard extends StatelessWidget {
     );
   }
 
+  // Determine the color based on the status
   Color _getStatusColor(String status) {
     switch (status) {
       case 'PENDING':
@@ -375,6 +509,7 @@ class CustomCard extends StatelessWidget {
     }
   }
 
+  // Get the status text based on the status code
   String _getStatusText(String status) {
     switch (status) {
       case 'PENDING':

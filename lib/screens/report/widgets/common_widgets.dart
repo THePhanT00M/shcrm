@@ -6,9 +6,10 @@ class CommonHeader extends StatelessWidget {
   final double totalAmount;
   final VoidCallback onTitleEdit;
   final VoidCallback onStatistics;
-  final VoidCallback onApproverEdit; // Add this callback
+  final VoidCallback onApproverEdit;
   final String submitterName;
   final String approverName;
+  final String reportStatus; // New parameter
 
   const CommonHeader({
     Key? key,
@@ -16,9 +17,10 @@ class CommonHeader extends StatelessWidget {
     required this.totalAmount,
     required this.onTitleEdit,
     required this.onStatistics,
-    required this.onApproverEdit, // Initialize the callback
+    required this.onApproverEdit,
     required this.submitterName,
     required this.approverName,
+    required this.reportStatus, // Initialize the new parameter
   }) : super(key: key);
 
   String _formatNumber(num number) {
@@ -57,14 +59,16 @@ class CommonHeader extends StatelessWidget {
                   color: Colors.white,
                 ),
               ),
-              IconButton(
-                icon: const Icon(
-                  Icons.edit,
-                  color: Colors.white,
-                  size: 20,
+              // Conditionally display the edit button
+              if (reportStatus.toUpperCase() == 'PENDING')
+                IconButton(
+                  icon: const Icon(
+                    Icons.edit,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  onPressed: onTitleEdit,
                 ),
-                onPressed: onTitleEdit,
-              ),
             ],
           ),
           const SizedBox(height: 8),

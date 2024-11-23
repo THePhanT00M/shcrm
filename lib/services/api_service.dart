@@ -262,6 +262,50 @@ class ApiService {
     }
   }
 
+  static Future<List<Map<String, dynamic>>> fetchReportPaymentsData(
+      String employeeId) async {
+    try {
+      final body = json.encode({'approvalRequestId': employeeId});
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/report/payment'),
+        headers: _headers,
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final responseData = json.decode(decodedBody);
+
+        if (responseData['resultCode'] == 'SUCCESS' &&
+            responseData['result'] != null) {
+          final List<dynamic> results = responseData['result'];
+
+          return results.map<Map<String, dynamic>>((item) {
+            return {
+              'reportId': item['reportId'],
+              'status': item['status'] ?? '알 수 없음',
+              'title': item['title'] ?? '제목 없음',
+            };
+          }).toList();
+        } else {
+          throw Exception('Error: ${responseData['resultMsg']}');
+        }
+      } else {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final responseJson = json.decode(decodedBody);
+        final resultMsgBytes = (responseJson['resultMsg'] as String).codeUnits;
+        final decodedResultMsg = utf8.decode(resultMsgBytes);
+
+        throw Exception(
+            'Error: ${response.statusCode}, Message: $decodedResultMsg');
+      }
+    } catch (e) {
+      print('Failed to fetch reports data: $e');
+      throw Exception('Error fetching reports data');
+    }
+  }
+
   static Future<Map<String, dynamic>> fetchReportDetails(
       int reportId, String employeeId) async {
     try {
